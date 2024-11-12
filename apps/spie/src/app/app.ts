@@ -1,8 +1,10 @@
-import { BrowserWindow, shell, screen } from 'electron';
+import { BrowserWindow, shell, screen, Event, app } from 'electron';
 import { rendererAppName, rendererAppPort } from './constants';
 import { environment } from '../environments/environment';
 import { join } from 'path';
 import { pathToFileURL } from 'url';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
@@ -10,6 +12,12 @@ export default class App {
   static mainWindow: Electron.BrowserWindow;
   static application: Electron.App;
   static BrowserWindow;
+
+  // Path to the window state file
+  private static windowStateFile = path.join(
+    app.getPath('userData'),
+    'window-state.json'
+  );
 
   public static isDevelopmentMode() {
     const isEnvironmentSet: boolean = 'ELECTRON_IS_DEV' in process.env;
@@ -58,15 +66,40 @@ export default class App {
     }
   }
 
-  private static initMainWindow() {
-    const workAreaSize = screen.getPrimaryDisplay().workAreaSize;
-    const width = Math.min(1280, workAreaSize.width || 1280);
-    const height = Math.min(720, workAreaSize.height || 720);
+  // Retrieve window state from file, with defaults if not available
+  private static getWindowState() {
+    try {
+      return JSON.parse(fs.readFileSync(App.windowStateFile, 'utf-8'));
+    } catch {
+      const primaryDisplay = screen.getPrimaryDisplay().workAreaSize;
+      return {
+        width: Math.min(1280, primaryDisplay.width),
+        height: Math.min(720, primaryDisplay.height),
+        x: undefined,
+        y: undefined,
+      };
+    }
+  }
 
-    // Create the browser window.
+  // Save the window state to file
+  private static saveWindowState() {
+    if (!App.mainWindow) {
+      return;
+    }
+
+    const { x, y, width, height } = App.mainWindow.getBounds();
+    const windowState = { x, y, width, height };
+    fs.writeFileSync(App.windowStateFile, JSON.stringify(windowState));
+  }
+
+  private static initMainWindow() {
+    const windowState = App.getWindowState();
+
     App.mainWindow = new BrowserWindow({
-      width: width,
-      height: height,
+      width: windowState.width,
+      height: windowState.height,
+      x: windowState.x,
+      y: windowState.y,
       show: false,
       webPreferences: {
         contextIsolation: true,
@@ -74,8 +107,8 @@ export default class App {
         preload: join(__dirname, 'main.preload.js'),
       },
     });
+
     App.mainWindow.setMenu(null);
-    App.mainWindow.center();
 
     // if main window is ready to show, close the splash window and show the main window
     App.mainWindow.once('ready-to-show', () => {
@@ -87,6 +120,11 @@ export default class App {
     // App.mainWindow.webContents.on('new-window', (event, url, frameName, disposition, options) => {
     //     App.onRedirect(event, url);
     // });
+
+    // Emitted when the window is going to be closed.
+    App.mainWindow.on('close', () => {
+      App.saveWindowState();
+    });
 
     // Emitted when the window is closed.
     App.mainWindow.on('closed', () => {
