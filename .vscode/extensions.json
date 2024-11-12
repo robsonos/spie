@@ -1,7 +1,16 @@
 {
   "recommendations": [
-    "nrwl.angular-console",
+    "adam-bender.commit-message-editor",
+    "angular.ng-template",
+    "dbaeumer.vscode-eslint",
+    "eamodio.gitlens",
     "esbenp.prettier-vscode",
-    "firsttris.vscode-jest-runner"
+    "firsttris.vscode-jest-runner",
+    "gruntfuggly.todo-tree",
+    "ionic.ionic",
+    "joshbolduc.commitlint",
+    "naumovs.color-highlight",
+    "nrwl.angular-console",
+    "streetsidesoftware.code-spell-checker"
   ]
 }

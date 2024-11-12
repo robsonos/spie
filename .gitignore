@@ -42,3 +42,9 @@ Thumbs.db
 .nx/workspace-data
 
 .angular
+
+*.env*
+
+# act
+*.vars*
+*.actrc*

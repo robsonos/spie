@@ -1,0 +1,47 @@
+{
+  // General editor settings
+  "editor.formatOnSave": true,
+  "editor.wordWrap": "wordWrapColumn",
+  "editor.wordWrapColumn": 120,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "terminal.integrated.scrollback": 10000,
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.profiles.osx": {
+    "zsh": { "path": "/bin/zsh", "args": ["-l", "-i"] }
+  },
+  "typescript.preferences.autoImportFileExcludePatterns": [
+    "@ionic/angular/common",
+    "@ionic/angular/standalone",
+    "@ionic/angular"
+  ],
+
+  // Todo tree settings
+  "todo-tree.general.tags": ["BUG", "HACK", "FIXME", "TODO", "INFO"],
+  "todo-tree.highlights.defaultHighlight": {
+    "type": "tag-and-comment",
+    "foreground": "#000000"
+  },
+  "todo-tree.highlights.customHighlight": {
+    "TODO": { "background": "#FFFF00" },
+    "FIXME": { "background": "#FF0000" },
+    "INFO": { "background": "#FFA500" }
+  },
+  "todo-tree.regex.regex": "(//|#|<!--|;|/\\*|\\*|/\\*\\*|^|^[ \\t]*(-|\\d+.))\\s*($TAGS)",
+
+  // Prettier settings
+  "prettier.singleQuote": true,
+  "prettier.printWidth": 120,
+
+  // Eslint settings
+  "eslint.useFlatConfig": true,
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "eslint.options": {
+    "overrideConfigFile": "./eslint.config.js"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "cSpell.words": ["Oliveira", "Scrollback", "SPIE"]
+}
