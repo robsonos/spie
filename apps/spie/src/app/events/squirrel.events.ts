@@ -1,5 +1,5 @@
 /**
- * This module is responsible on handling all the setup events that is submitted by squirrel.
+ * This module is responsible for handling all the setup events that is submitted by squirrel.
  */
 
 import { app } from 'electron';
@@ -66,7 +66,7 @@ export default class SquirrelEvents {
         'close',
         () => setTimeout(app.quit, 1000)
       );
-    } catch (error) {
+    } catch {
       setTimeout(app.quit, 1000);
     }
   }

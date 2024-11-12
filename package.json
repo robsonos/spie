@@ -25,6 +25,7 @@
     "@ionic/angular": "^8.0.0",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
+    "serialport": "^12.0.0",
     "zone.js": "~0.14.3"
   },
   "devDependencies": {
