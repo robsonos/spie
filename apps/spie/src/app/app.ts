@@ -2,7 +2,7 @@ import { BrowserWindow, shell, screen } from 'electron';
 import { rendererAppName, rendererAppPort } from './constants';
 import { environment } from '../environments/environment';
 import { join } from 'path';
-import { format } from 'url';
+import { pathToFileURL } from 'url';
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
@@ -32,7 +32,7 @@ export default class App {
     App.mainWindow = null;
   }
 
-  private static onRedirect(event: any, url: string) {
+  private static onRedirect(event: Event, url: string) {
     if (url !== App.mainWindow.webContents.getURL()) {
       // this is a normal external redirect, open it in a new browser window
       event.preventDefault();
@@ -103,11 +103,9 @@ export default class App {
       App.mainWindow.loadURL(`http://localhost:${rendererAppPort}`);
     } else {
       App.mainWindow.loadURL(
-        format({
-          pathname: join(__dirname, '..', rendererAppName, 'index.html'),
-          protocol: 'file:',
-          slashes: true,
-        })
+        pathToFileURL(
+          join(__dirname, '..', rendererAppName, 'browser', 'index.html')
+        ).href
       );
     }
   }
