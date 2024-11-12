@@ -1,9 +1,17 @@
 {
   "name": "@spie/source",
   "version": "0.0.0",
+  "description": "Minimal serial monitor application using Electron, Node SerialPort and Ionic/Angular",
+  "author": "Robson Oliveira dos Santos",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ronbsonos/spie.git"
+  },
   "license": "MIT",
-  "scripts": {},
   "private": true,
+  "scripts": {
+    "prepare": "husky"
+  },
   "dependencies": {
     "@angular/animations": "~18.2.0",
     "@angular/common": "~18.2.0",
@@ -23,6 +31,8 @@
     "@angular/cli": "~18.2.0",
     "@angular/compiler-cli": "~18.2.0",
     "@angular/language-service": "~18.2.0",
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
     "@eslint/js": "^9.8.0",
     "@nx/angular": "19.8.8",
     "@nx/cypress": "19.8.8",
@@ -44,6 +54,7 @@
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-cypress": "^3.5.0",
+    "husky": "^9.1.6",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jest-preset-angular": "~14.1.0",
