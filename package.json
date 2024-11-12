@@ -21,6 +21,8 @@
     "@angular/platform-browser": "~18.2.0",
     "@angular/platform-browser-dynamic": "~18.2.0",
     "@angular/router": "~18.2.0",
+    "@ionic/angular": "^8.0.0",
+    "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
     "zone.js": "~0.14.3"
   },
@@ -42,6 +44,7 @@
     "@nx/js": "19.8.8",
     "@nx/web": "19.8.8",
     "@nx/workspace": "19.8.8",
+    "@nxext/ionic-angular": "^19.1.2",
     "@schematics/angular": "~18.2.0",
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",

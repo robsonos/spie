@@ -1,28 +1,32 @@
 {
-  "name": "spie",
+  "name": "spie-ui",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "app",
-  "sourceRoot": "apps/spie/src",
+  "sourceRoot": "apps/spie-ui/src",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:application",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/spie",
-        "index": "apps/spie/src/index.html",
-        "browser": "apps/spie/src/main.ts",
+        "outputPath": "dist/apps/spie-ui",
+        "index": "apps/spie-ui/src/index.html",
+        "browser": "apps/spie-ui/src/main.ts",
         "polyfills": ["zone.js"],
-        "tsConfig": "apps/spie/tsconfig.app.json",
+        "tsConfig": "apps/spie-ui/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
           {
             "glob": "**/*",
-            "input": "apps/spie/public"
+            "input": "apps/spie-ui/src/assets",
+            "output": "assets"
           }
         ],
-        "styles": ["apps/spie/src/styles.scss"],
+        "styles": [
+          "apps/spie-ui/src/global.scss",
+          "apps/spie-ui/src/theme/variables.scss"
+        ],
         "scripts": []
       },
       "configurations": {
@@ -44,7 +48,11 @@
         "development": {
           "optimization": false,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "namedChunks": true
+        },
+        "ci": {
+          "progress": false
         }
       },
       "defaultConfiguration": "production"
@@ -53,10 +61,10 @@
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
         "production": {
-          "buildTarget": "spie:build:production"
+          "buildTarget": "spie-ui:build:production"
         },
         "development": {
-          "buildTarget": "spie:build:development"
+          "buildTarget": "spie-ui:build:development"
         }
       },
       "defaultConfiguration": "development"
@@ -64,7 +72,7 @@
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "buildTarget": "spie:build"
+        "buildTarget": "spie-ui:build"
       }
     },
     "lint": {
@@ -74,15 +82,15 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/spie/jest.config.ts"
+        "jestConfig": "apps/spie-ui/jest.config.ts"
       }
     },
     "serve-static": {
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "spie:build",
+        "buildTarget": "spie-ui:build",
         "port": 4200,
-        "staticFilePath": "dist/apps/spie/browser",
+        "staticFilePath": "dist/apps/spie-ui/browser",
         "spa": true
       }
     }
