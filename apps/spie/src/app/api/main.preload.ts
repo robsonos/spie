@@ -1,6 +1,7 @@
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import { type OpenOptions } from '@serialport/bindings-interface';
-import { type Encoding, ElectronAPI } from '@spie/types';
+import type { ElectronAPI, Encoding } from '@spie/types';
+import { contextBridge, ipcRenderer } from 'electron';
+import type { IpcRendererEvent } from 'electron';
 
 export const electronAPI: ElectronAPI = {
   platform: process.platform,

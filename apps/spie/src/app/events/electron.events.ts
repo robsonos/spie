@@ -3,11 +3,12 @@
  * between the frontend and the Electron backend.
  */
 
-import { app, ipcMain } from 'electron';
-import { environment } from '../../environments/environment';
-import { InterByteTimeoutParser, SerialPort } from 'serialport';
 import { type OpenOptions } from '@serialport/bindings-interface';
 import type { Encoding } from '@spie/types';
+import { app, ipcMain } from 'electron';
+import { InterByteTimeoutParser, SerialPort } from 'serialport';
+
+import { environment } from '../../environments/environment';
 
 export default class ElectronEvents {
   private static serialPort: SerialPort | null = null;
@@ -93,7 +94,7 @@ export default class ElectronEvents {
 
     ipcMain.handle(
       'serial-port-write',
-      (_, data: string | Buffer | Array<number>, encoding: Encoding) => {
+      (_, data: string | Buffer | number[], encoding: Encoding) => {
         // console.warn('serial-port-write', data, encoding);
         return new Promise<boolean>((resolve, reject) => {
           if (

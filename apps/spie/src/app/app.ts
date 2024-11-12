@@ -1,10 +1,13 @@
-import { BrowserWindow, shell, screen, Event, app } from 'electron';
-import { rendererAppName, rendererAppPort } from './constants';
-import { environment } from '../environments/environment';
-import { join } from 'path';
-import { pathToFileURL } from 'url';
+import type { Event } from 'electron';
+import { BrowserWindow, shell, screen, app } from 'electron';
 import * as fs from 'fs';
+import { join } from 'path';
 import * as path from 'path';
+import { pathToFileURL } from 'url';
+
+import { environment } from '../environments/environment';
+
+import { rendererAppName, rendererAppPort } from './constants';
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
@@ -19,7 +22,7 @@ export default class App {
     'window-state.json'
   );
 
-  public static isDevelopmentMode() {
+  public static isDevelopmentMode(): boolean {
     const isEnvironmentSet: boolean = 'ELECTRON_IS_DEV' in process.env;
     const getFromEnvironment: boolean =
       parseInt(process.env.ELECTRON_IS_DEV, 10) === 1;
@@ -151,7 +154,7 @@ export default class App {
     }
   }
 
-  static main(app: Electron.App, browserWindow: typeof BrowserWindow) {
+  static main(app: Electron.App, browserWindow: typeof BrowserWindow): void {
     // we pass the Electron.App object and the
     // Electron.BrowserWindow into this function
     // so this class has no dependencies. This

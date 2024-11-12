@@ -1,6 +1,7 @@
-import { ipcRenderer, contextBridge } from 'electron';
-import { electronAPI } from './main.preload';
 import { type Encoding } from '@spie/types';
+import { ipcRenderer, contextBridge } from 'electron';
+
+import { electronAPI } from './main.preload';
 
 jest.mock('electron', () => ({
   ipcRenderer: {
