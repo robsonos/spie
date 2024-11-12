@@ -1,7 +1,396 @@
 <ion-app>
   <ion-header>
-    <ion-toolbar>
+    <ion-toolbar color="primary">
       <ion-title>Serial Monitor</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <ion-content>
+    <!-- Serial Port Configuration Panel -->
+    <ion-card>
+      <ion-card-header>
+        <ion-text color="secondary">Serial Port Configuration</ion-text>
+      </ion-card-header>
+
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6">
+            <ion-item>
+              <ion-select
+                label="Serial Port"
+                placeholder="Select Port"
+                [disabled]="isOpen()"
+                (click)="onClickSerialPort($event)"
+                (ionChange)="onChangeSerialPort($event)"
+              >
+                @for (serialPort of serialPorts(); track $index) {
+                <ion-select-option [value]="serialPort.path">
+                  {{ serialPort.path }} - {{ serialPort.manufacturer }}
+                </ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="6">
+            <ion-item>
+              <ion-select
+                label="Baud Rate"
+                placeholder="Select Baud Rate"
+                (ionChange)="onChangeBaudRate($event)"
+                [value]="openOptions().baudRate"
+              >
+                @for (baudRate of baudRates; track $index) {
+                <ion-select-option [value]="baudRate">{{
+                  baudRate
+                }}</ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <!-- Connect Button and Advanced Settings -->
+        <ion-row>
+          <ion-col>
+            @if (isOpen()) {
+            <ion-button
+              expand="block"
+              color="danger"
+              (click)="onClickDisconnect()"
+              >Disconnect</ion-button
+            >
+            } @else {
+            <ion-button
+              expand="block"
+              color="secondary"
+              [disabled]="openOptions().path === ''"
+              (click)="onClickConnect()"
+              >Connect</ion-button
+            >
+            }
+          </ion-col>
+          <ion-col size="auto">
+            <ion-button
+              id="connect-advanced-modal"
+              fill="clear"
+              color="secondary"
+            >
+              <ion-icon name="settings-outline"></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <!-- Connect Advanced Modal -->
+      @if (true) {
+      <ion-modal #connectAdvancedModal trigger="connect-advanced-modal">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar color="primary">
+              <ion-title>Advanced Connection Settings</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="connectAdvancedModal.dismiss()"
+                  >Close</ion-button
+                >
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+
+          <ion-content>
+            <ion-list lines="full">
+              <ion-item>
+                <ion-select
+                  label="Data Bits"
+                  placeholder="Select Data Bits"
+                  justify="space-between"
+                  (ionChange)="onChangeDataBits($event)"
+                  [value]="openOptions().dataBits"
+                >
+                  <ion-select-option [value]="5">5</ion-select-option>
+                  <ion-select-option [value]="6">6</ion-select-option>
+                  <ion-select-option [value]="7">7</ion-select-option>
+                  <ion-select-option [value]="8">8</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item>
+                <ion-select
+                  label="Stop Bits"
+                  placeholder="Select Stop Bits"
+                  justify="space-between"
+                  (ionChange)="onChangeStopBits($event)"
+                  [value]="openOptions().stopBits"
+                >
+                  <ion-select-option [value]="1">1</ion-select-option>
+                  <ion-select-option [value]="1.5">1.5</ion-select-option>
+                  <ion-select-option [value]="2">2</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item>
+                <ion-select
+                  label="Parity"
+                  placeholder="Select Parity"
+                  justify="space-between"
+                  (ionChange)="onChangeParity($event)"
+                  [value]="openOptions().parity"
+                >
+                  <ion-select-option value="none">None</ion-select-option>
+                  <ion-select-option value="even">Even</ion-select-option>
+                  <ion-select-option value="odd">Odd</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="space-between"
+                  checked="{{ openOptions().rtscts }}"
+                  (ionChange)="onChangeRtscts($event)"
+                  >RTS/CTS</ion-checkbox
+                >
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="space-between"
+                  checked="{{ openOptions().xon }}"
+                  (ionChange)="onChangeXon($event)"
+                  >XON</ion-checkbox
+                >
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="space-between"
+                  checked="{{ openOptions().xoff }}"
+                  (ionChange)="onChangeXoff($event)"
+                  >XOFF</ion-checkbox
+                >
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="space-between"
+                  checked="{{ openOptions().xany }}"
+                  (ionChange)="onChangeXany($event)"
+                  >XANY</ion-checkbox
+                >
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="space-between"
+                  checked="{{ openOptions().hupcl }}"
+                  (ionChange)="onChangeHupcl($event)"
+                  >HUPCL</ion-checkbox
+                >
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+      }
+    </ion-card>
+
+    <!-- Terminal View for Incoming Data -->
+    <ion-card>
+      <ion-card-header>
+        <ion-text color="secondary">Terminal</ion-text>
+      </ion-card-header>
+
+      <!-- Terminal Display -->
+      <ion-item lines="none">
+        <ion-textarea
+          #terminalTextArea
+          readonly
+          rows="10"
+          placeholder="Incoming data will appear here"
+          class="terminal-textarea"
+          [value]="data()"
+        ></ion-textarea>
+      </ion-item>
+
+      <!-- Clear Terminal Button and Advanced Settings -->
+      <ion-grid>
+        <ion-row>
+          <ion-col>
+            <ion-button
+              expand="block"
+              color="secondary"
+              (click)="onClickClearTerminal()"
+              >Clear Terminal</ion-button
+            >
+          </ion-col>
+          <ion-col size="auto">
+            <ion-button
+              id="terminal-advanced-modal"
+              fill="clear"
+              color="secondary"
+            >
+              <ion-icon name="settings-outline"></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <!-- Terminal Advanced Modal -->
+      @if (true) {
+      <ion-modal #terminalAdvancedModal trigger="terminal-advanced-modal">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar color="primary">
+              <ion-title>Advanced Terminal Settings</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="terminalAdvancedModal.dismiss()"
+                  >Close</ion-button
+                >
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+
+          <ion-content>
+            <ion-list lines="full">
+              <ion-item>
+                <ion-select
+                  label="Encoding"
+                  placeholder="Select Encoding"
+                  justify="space-between"
+                  (ionChange)="onChangeTerminalEncoding($event)"
+                  [value]="terminalEncoding()"
+                >
+                  <ion-select-option value="ascii">ASCII</ion-select-option>
+                  <ion-select-option value="hex">Hex</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="space-between"
+                  checked="{{ isAutoScrollEnabled() }}"
+                  (ionChange)="onChangeAutoScroll($event)"
+                  >Auto Scroll</ion-checkbox
+                >
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="space-between"
+                  checked="{{ showTimestampsEnabled() }}"
+                  (ionChange)="onChangeShowTimestamps($event)"
+                  >Show Timestamps</ion-checkbox
+                >
+              </ion-item>
+
+              <ion-item>
+                <ion-range
+                  labelPlacement="start"
+                  label="Scrollback size"
+                  [pin]="true"
+                  [snaps]="true"
+                  [min]="1"
+                  [max]="10"
+                  [pinFormatter]="pinFormatter"
+                  [value]="scrollbackLength()"
+                  (ionKnobMoveEnd)="onScrollbackLength($event)"
+                >
+                </ion-range>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+      }
+    </ion-card>
+
+    <!-- Data Input Section -->
+    <ion-card>
+      <ion-card-header>
+        <ion-text color="secondary">Send Data</ion-text>
+      </ion-card-header>
+
+      <ion-item lines="none">
+        <ion-input
+          #sendInput
+          placeholder="Type data to send..."
+          class="data-input"
+          [clearInput]="true"
+          (ionInput)="onChangeSendInput($event)"
+          (keyup.enter)="onClickSend()"
+        ></ion-input>
+      </ion-item>
+
+      <!-- Send Button and Advanced Settings -->
+      <ion-grid>
+        <ion-row>
+          <ion-col>
+            <ion-button
+              expand="block"
+              color="secondary"
+              [disabled]="!isOpen() || !isSendInputValid()"
+              (click)="onClickSend()"
+              >Send</ion-button
+            >
+          </ion-col>
+          <ion-col size="auto">
+            <ion-button id="send-advanced-modal" fill="clear" color="secondary">
+              <ion-icon name="settings-outline"></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <!-- Send Advanced Modal -->
+      @if (true) {
+      <ion-modal #sendAdvancedModal trigger="send-advanced-modal">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar color="primary">
+              <ion-title>Advanced Send Data Settings</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="sendAdvancedModal.dismiss()"
+                  >Close</ion-button
+                >
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+
+          <ion-content>
+            <ion-list lines="full">
+              <ion-item>
+                <ion-select
+                  label="Encoding"
+                  placeholder="Select Encoding"
+                  justify="space-between"
+                  (ionChange)="onChangeSendEncoding($event)"
+                  [value]="sendEncoding()"
+                >
+                  <ion-select-option value="ascii">ASCII</ion-select-option>
+                  <ion-select-option value="hex">Hex</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item>
+                <ion-select
+                  label="Delimiter"
+                  placeholder="Select Delimiter"
+                  justify="space-between"
+                  (ionChange)="onChangeDelimiter($event)"
+                  [value]="delimiter()"
+                >
+                  <ion-select-option value="none">None</ion-select-option>
+                  <ion-select-option value="cr">CR (\r)</ion-select-option>
+                  <ion-select-option value="lf">LF (\n)</ion-select-option>
+                  <ion-select-option value="crlf"
+                    >CRLF (\r\n)</ion-select-option
+                  >
+                </ion-select>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+      }
+    </ion-card>
+  </ion-content>
 </ion-app>
