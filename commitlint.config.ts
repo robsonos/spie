@@ -8,7 +8,7 @@ const Configuration: UserConfig = {
     'scope-enum': [
       RuleConfigSeverity.Error,
       'always',
-      ['chore', 'spie', 'spie-ui'],
+      ['repo', 'spie', 'spie-ui', 'spie-ui-e2e'],
     ],
     // Ensures that a scope is always provided
     'scope-empty': [RuleConfigSeverity.Error, 'never'],
