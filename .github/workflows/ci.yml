@@ -11,12 +11,8 @@ on:
 #   contents: read
 
 jobs:
-  ci:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest] #, windows-latest,macos-latest,]
-
+  verify:
+    runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
@@ -40,24 +36,63 @@ jobs:
       # - name: Derive appropriate SHAs for base and head for `nx affected` commands
       #   uses: nrwl/nx-set-shas@v4
 
-      - run: npx nx reset
-
       - name: Run CI on affected projects
-        run: npx nx run-many -t lint test build --verbose # TODO: use 'affected' ans add 'e2e-ci'
+        run: npx nx affected -t lint test build e2e
 
-      - name: Create executable
-        run: npx nx run spie:make
+      - name: Run nx release dry-run
+        id: nx-release
+        run: |
+          # Capture the output of nx release to a variable
+          OUTPUT=$(npx nx release --dry-run)
+          echo "$OUTPUT"
+          # Extract the new release version from the output, ensuring any whitespace is trimmed
+          VERSION=$(echo "$OUTPUT" | grep -oP 'New version \K[0-9]+\.[0-9]+\.[0-9]+' | tr -d '[:space:]')
 
-      - name: Preview release for affected projects
-        run: npx nx release --dry-run
+          # Set the new release version as a job output
+          echo "new_release_version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      # - name: Build/release Electron app
-      #   uses: samuelmeuli/action-electron-builder@v1
-      #   with:
-      #     # GitHub token, automatically provided to the action
-      #     # (No need to define this secret in the repo settings)
-      #     github_token: ${{ secrets.github_token }}
+      - name: Add to job summary
+        if: ${{ steps.nx-release.outputs.new_release_version != '' }}
+        run: |
+          echo "${{ steps.nx-release.outputs.new_release_version }} will be released" >> $GITHUB_STEP_SUMMARY
 
-      #     # If the commit is tagged with a version (e.g. "v1.0.0"),
-      #     # release the app after building
-      #     release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+  build:
+    needs: [verify]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install setuptools on macOS
+        if: matrix.os == 'macos-latest'
+        run: python3 -m pip install setuptools --break-system-packages
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build executable
+        run: npx nx run-many -t build && npx nx run spie:package
+
+    # - name: Build/release Electron app
+    #   uses: samuelmeuli/action-electron-builder@v1
+    #   with:
+    #     # GitHub token, automatically provided to the action
+    #     # (No need to define this secret in the repo settings)
+    #     github_token: ${{ secrets.github_token }}
+
+    #     # If the commit is tagged with a version (e.g. "v1.0.0"),
+    #     # release the app after building
+    #     release: ${{ startsWith(github.ref, 'refs/tags/v') }}
