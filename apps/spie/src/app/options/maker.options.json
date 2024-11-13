@@ -17,6 +17,8 @@
     "target": "dmg"
   },
   "linux": {
+    "executableName": "${productName}",
+    "artifactName": "${productName}-${version}.${ext}",
     "category": "Development",
     "target": ["AppImage", "snap"]
   },

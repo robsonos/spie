@@ -82,5 +82,21 @@
     "@nx/angular:component": {
       "style": "scss"
     }
+  },
+  "release": {
+    "projects": ["*", "!*-e2e", "!libs/*"],
+    "projectsRelationship": "fixed",
+    "version": {
+      "conventionalCommits": true,
+      "generatorOptions": {
+        "fallbackCurrentVersionResolver": "disk"
+      }
+    },
+    "changelog": {
+      "automaticFromRef": true,
+      "projectChangelogs": {
+        "createRelease": "github"
+      }
+    }
   }
 }
