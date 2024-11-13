@@ -1,0 +1,28 @@
+diff --git a/node_modules/@nx/eslint-plugin/src/flat-configs/javascript.js b/node_modules/@nx/eslint-plugin/src/flat-configs/javascript.js
+index 8768261..01bb575 100644
+--- a/node_modules/@nx/eslint-plugin/src/flat-configs/javascript.js
++++ b/node_modules/@nx/eslint-plugin/src/flat-configs/javascript.js
+@@ -22,7 +22,8 @@ const isPrettierAvailable = (0, config_utils_1.packageExists)('prettier') && (0,
+  * breaking changes - we should also look to replace all the @typescript-eslint
+  * related plugins and rules below.
+  */
+-exports.default = typescript_eslint_1.default.config(js_1.default.configs.recommended, ...typescript_eslint_1.default.configs.recommended, ...(isPrettierAvailable ? [require('eslint-config-prettier')] : []), {
++exports.default = typescript_eslint_1.default.config({files: ['**/*.js', '**/*.jsx'],
++    extends: [js_1.default.configs.recommended, ...typescript_eslint_1.default.configs.recommended]}, ...(isPrettierAvailable ? [require('eslint-config-prettier')] : []), {
+     languageOptions: {
+         parser: typescript_eslint_1.default.parser,
+         ecmaVersion: 2020,
+diff --git a/node_modules/@nx/eslint-plugin/src/flat-configs/typescript.js b/node_modules/@nx/eslint-plugin/src/flat-configs/typescript.js
+index 889d98e..de7692d 100644
+--- a/node_modules/@nx/eslint-plugin/src/flat-configs/typescript.js
++++ b/node_modules/@nx/eslint-plugin/src/flat-configs/typescript.js
+@@ -13,7 +13,8 @@ const isPrettierAvailable = (0, config_utils_1.packageExists)('prettier') && (0,
+  * It should therefore NOT contain any rules or plugins which are specific
+  * to one ecosystem, such as React, Angular, Node etc.
+  */
+-exports.default = typescript_eslint_1.default.config(js_1.default.configs.recommended, ...typescript_eslint_1.default.configs.recommended, ...(isPrettierAvailable ? [require('eslint-config-prettier')] : []), {
++exports.default = typescript_eslint_1.default.config({files: ['**/*.js', '**/*.jsx'],
++    extends: [js_1.default.configs.recommended, ...typescript_eslint_1.default.configs.recommended]}, ...(isPrettierAvailable ? [require('eslint-config-prettier')] : []), {
+     plugins: { '@typescript-eslint': typescript_eslint_1.default.plugin },
+     languageOptions: {
+         parser: typescript_eslint_1.default.parser,
