@@ -57,6 +57,7 @@
     "angular-eslint": "^18.3.0",
     "cypress": "^13.13.0",
     "electron": "^31.0.1",
+    "electron-icon-builder": "^2.0.1",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-cypress": "^3.5.0",

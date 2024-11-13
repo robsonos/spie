@@ -62,6 +62,9 @@
       "options": {
         "jestConfig": "apps/spie/jest.config.ts"
       }
+    },
+    "icons": {
+      "command": "electron-icon-builder --input=./docs/logo.png --output=./apps/spie/resources/ -f"
     }
   }
 }

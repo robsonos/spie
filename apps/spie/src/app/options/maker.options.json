@@ -1,3 +1,36 @@
 {
-  "$schema": "../../../../../node_modules/nx-electron/src/validation/maker.schema.json"
+  "$schema": "../../../../../node_modules/nx-electron/src/validation/maker.schema.json",
+  "productName": "SPIE",
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "robsonos",
+      "repo": "spie"
+    }
+  ],
+  "directories": {
+    "output": "dist",
+    "buildResources": "apps/spie/resources"
+  },
+  "mac": {
+    "category": "public.app-category.developer-tools",
+    "target": "dmg"
+  },
+  "linux": {
+    "category": "Development",
+    "target": ["AppImage", "snap"]
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "nsis": {
+    "deleteAppDataOnUninstall": true,
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  }
 }
