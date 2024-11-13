@@ -8,6 +8,7 @@ describe('ElectronService', () => {
 
   // Mock for the window.electron API to simulate Electron behavior
   const mockElectronAPI = {
+    platform: '',
     quitApp: jest.fn(),
     getAppVersion: jest.fn(),
     serialPort: {
@@ -17,12 +18,13 @@ describe('ElectronService', () => {
       write: jest.fn(),
       isOpen: jest.fn(),
       onData: jest.fn(),
+      onError: jest.fn(),
     },
   };
 
   beforeEach(() => {
     // Set up the mock on the global window object
-    (window as any).electron = mockElectronAPI;
+    (window as Window).electron = mockElectronAPI;
 
     TestBed.configureTestingModule({
       providers: [ElectronService],
