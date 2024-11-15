@@ -45,8 +45,9 @@ jobs:
           # Capture the output of nx release to a variable
           OUTPUT=$(npx nx release --dry-run)
           echo "$OUTPUT"
-          # Extract the new release version from the output, ensuring any whitespace is trimmed
-          VERSION=$(echo "$OUTPUT" | grep -oP 'New version \K[0-9]+\.[0-9]+\.[0-9]+' | tr -d '[:space:]')
+
+          # Extract only the first occurrence of the new release version
+          VERSION=$(echo "$OUTPUT" | grep -oP 'New version \K[0-9]+\.[0-9]+\.[0-9]+' | head -n 1 | tr -d '[:space:]')
 
           # Set the new release version as a job output
           echo "new_release_version=$VERSION" >> "$GITHUB_OUTPUT"
