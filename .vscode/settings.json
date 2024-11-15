@@ -43,5 +43,8 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always"
   },
+
+  // Code spell checker serrings
+  "cSpell.language": "en,en-AU",
   "cSpell.words": ["Oliveira", "Scrollback", "SPIE"]
 }
