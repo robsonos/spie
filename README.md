@@ -1,82 +1,182 @@
-# Spie
+<p align=center>
+  <img src="./docs/logo.png" width="500">
+<h3 align=center> SPIE</h3>
+</p>
+<p align=center>
+  <img src="https://img.shields.io/maintenance/yes/2024?style=flat-square"/>
+  <a href="https://github.com/robsonos/spie/actions/workflows/ci.yaml">
+    <img
+      alt="GitHub Workflow Status (with event)"
+      src="https://img.shields.io/github/actions/workflow/status/robsonos/spie/ci.yml"/>
+  </a>
+  <a href="LICENSE">
+    <img alt="GitHub License" src="https://img.shields.io/github/license/robsonos/spie">
+  </a>
+</p>
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+This repository helps you quickly set up and develop your serial port communication project. Built with **ElectronJS** and a modern **Ionic/Angular** front-end, it uses an **NX monorepo** structure for efficient project management.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+The repository provides:
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+- Core functionality of Arduino's Serial Monitor (legacy editor) enhanced with tools to configure, monitor, and communicate with serial devices.
+- Designed for developers and hobbyists working on serial communication projects.
+- Includes **hot-reloading** for seamless development.
+- Streamlined workspace management with [NX](https://nx.dev/). Learn more in this [Angular Monorepo tutorial](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects).
+- Hot-reloading accelerates development and testing cycles.
+- Modern tech stack:
 
-## Finish your CI setup
+| Package  | version |
+| -------- | ------- |
+| nodejs   | 22.x.x  |
+| angular  | 18.2.x  |
+| ionic    | 8.x.x   |
+| electron | 31.x.x  |
+| nx       | 19.8.10 |
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/qsPC6099n3)
+## Index
 
+- [Features](#features)
+- [Getting started](#getting-started)
+- [Nx tasks](#nx-tasks)
+- [Troubleshooting](#troubleshooting)
 
-## Run tasks
+## Features
 
-To run the dev server for your app, use:
+<p align="center"><br><img src="./docs/demo.gif" width="500"></p>
+
+- **Port Configuration**
+
+  - **Port Selection:** Displays available serial ports with details like path and manufacturer.
+  - **Baud Rate:** Match your serial device configuration with flexible baud rate selection.
+  - **Connect/Disconnect Control:** Toggle the connection with a single click.
+  - **Advanced Settings:**
+    - **Data Bits:** Choose from 5, 6, 7, or 8 data bits.
+    - **Stop Bits:** Options include 1, 1.5, or 2 stop bits.
+    - **Parity:** Support for None, Even, and Odd parity.
+    - **Flow Control:** Configure RTS/CTS, XON/XOFF, XANY, and HUPCL settings.
+
+- **Terminal**
+
+  - **Display Incoming Data:** View serial data in a user-friendly terminal.
+  - **Clear Terminal:** Clear the terminal display at any time.
+  - **Advanced Display Options:**
+    - **Encoding:** Display data in ASCII or Hex.
+    - **Auto Scroll:** Automatically scroll to display the latest data.
+    - **Show Timestamps:** Enable timestamps for incoming data.
+    - **Scrollback Size:** Adjust scrollback length to retain a custom amount of data history.
+
+- **Sending Data**
+  - **Quick Input:** Type and send data instantly.
+  - **Advanced Send Options:**
+    - **Encoding:** ASCII or Hex support.
+    - **Delimiter:** Append CR, LF, CRLF, or send data as-is.
+
+[Back to Index](#index)
+
+## Getting Started
+
+To set up the repository, ensure the following are installed:
+
+- [Node.js](https://nodejs.org) (preferably using `nvm` for version management)
+- [NX CLI](https://nx.dev) (`npm install -g nx`)
+
+### Steps
+
+1. Clone the repository:
 
 ```sh
-npx nx serve spie
+git clone https://github.com/robsonos/spie
+cd spie
 ```
 
-To create a production bundle:
+2. Install dependencies:
 
 ```sh
-npx nx build spie
+npm i
 ```
 
-To see all available targets to run for a project, run:
+3. Run the application:
 
 ```sh
-npx nx show project spie
+nx run-many -t serve
 ```
-        
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Sample Arduino code
 
-## Add new projects
+For testing the application, use this Arduino code:
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+```cpp
+#include <Arduino.h>
 
-Use the plugin's generator to create new projects.
+int period = 1000;
+unsigned long time_now = 0;
 
-To generate a new application, use:
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  if (Serial.available() > 0)
+    Serial.write(Serial.read());
+
+  if (millis() > time_now + period) {
+    time_now = millis();
+    Serial.print("Hello World ");
+    Serial.println(millis());
+  }
+}
+```
+
+[Back to Index](#index)
+
+## NX tasks
+
+Here are the most commonly used NX tasks:
+
+- Serve the application
 
 ```sh
-npx nx g @nx/angular:app demo
+nx run-many -t serve
 ```
 
-To generate a new library, use:
+- Lint the code:
 
 ```sh
-npx nx g @nx/angular:lib mylib
+nx run-many -t lint
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+- Run unit tests:
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```sh
+nx run-many -t test
+```
 
+- Build and generate unpacked executables:
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```sh
+nx run-many -t build; nx run spie:package
+```
 
-## Install Nx Console
+Output files are located in `dist\packages`
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+- Build and generate the executables:
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```sh
+nx run-many -t build; nx run spie:make
+```
 
-## Useful links
+Output files are located in `dist\executables`
 
-Learn more:
+[Back to Index](#index)
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Troubleshooting
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Known issues
+
+- Serial data may be delivered in more than one .on('data') event. This means data received by the serialport library might arrive in multiple packets. For details, see [node-serialport/issues/659](https://github.com/serialport/node-serialport/issues/659) for more information. This is not a problem in most cases, but things may start looking strange if you are trying to monitor data at a fast rate. A good way to demonstrate the issues is to send data every `5ms`, `115200` baud rate and with `show timestamps`. You will notice that every so often there is a "broken" message. If you are developing your own application, I would recommend having a specific line terminator and use one of the [parsers](https://serialport.io/docs/api-parsers-overview) available.
+
+### Limitations
+
+- Due to the issue where serial data may be delivered in more than on `.on('data'` event (see [known issues](#known-issues)), enabling "Show Timestamps" may result in fragmented messages at high transmission rates. An [InterByteTimeoutParser](https://serialport.io/docs/api-parser-inter-byte-timeout) with `interval: 5` was used to alleviate that.
+
+[Back to Index](#index)
