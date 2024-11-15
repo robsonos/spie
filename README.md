@@ -12,6 +12,13 @@
   <a href="LICENSE">
     <img alt="GitHub License" src="https://img.shields.io/github/license/robsonos/spie">
   </a>
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+  <a href="#contributors">
+    <img
+      alt="GitHub contributors from allcontributors.org"
+      src="https://img.shields.io/badge/all_contributors-0-orange.svg?style=flat-square"/>
+  </a>
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
 This repository helps you quickly set up and develop your serial port communication project. Built with **ElectronJS** and a modern **Ionic/Angular** front-end, it uses an **NX monorepo** structure for efficient project management.
@@ -178,5 +185,18 @@ Output files are located in `dist\executables`
 ### Limitations
 
 - Due to the issue where serial data may be delivered in more than on `.on('data'` event (see [known issues](#known-issues)), enabling "Show Timestamps" may result in fragmented messages at high transmission rates. An [InterByteTimeoutParser](https://serialport.io/docs/api-parser-inter-byte-timeout) with `interval: 5` was used to alleviate that.
+
+[Back to Index](#index)
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 [Back to Index](#index)
