@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - main # TODO: dev
+      - dev
   pull_request:
 
 # permissions:
@@ -11,7 +11,7 @@ on:
 #   contents: read
 
 jobs:
-  verify:
+  ci-renderer:
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
@@ -55,10 +55,10 @@ jobs:
       - name: Add to job summary
         if: ${{ steps.nx-release.outputs.new_release_version != '' }}
         run: |
-          echo "${{ steps.nx-release.outputs.new_release_version }} will be released" >> $GITHUB_STEP_SUMMARY
+          echo "Version ${{ steps.nx-release.outputs.new_release_version }} will be released" >> $GITHUB_STEP_SUMMARY
 
-  build:
-    needs: [verify]
+  ci-electron:
+    needs: [ci-renderer]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -84,16 +84,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build executable
-        run: npx nx run-many -t build && npx nx run spie:package
+      - name: Build renderer
+        run: npx nx run-many -t build
 
-    # - name: Build/release Electron app
-    #   uses: samuelmeuli/action-electron-builder@v1
-    #   with:
-    #     # GitHub token, automatically provided to the action
-    #     # (No need to define this secret in the repo settings)
-    #     github_token: ${{ secrets.github_token }}
-
-    #     # If the commit is tagged with a version (e.g. "v1.0.0"),
-    #     # release the app after building
-    #     release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      - name: Build unpacked executable
+        run: npx nx run spie:package
