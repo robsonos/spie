@@ -68,3 +68,16 @@ jobs:
 
       - name: Run nx release
         run: npx nx release
+
+      - name: Upload Assets to Release
+        uses: csexton/release-asset-action@v3
+        with:
+          pattern: |
+            'dist/executables/latest*.yml'
+            'dist/executables/*.xz'
+            'dist/executables/*.rpm'
+            'dist/executables/*.zip'
+            'dist/executables/*.dmg'
+            'dist/executables/*.exe'
+            'dist/executables/*.deb'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
