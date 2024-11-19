@@ -14,23 +14,16 @@
   },
   "mac": {
     "category": "public.app-category.developer-tools",
-    "target": "dmg"
+    "artifactName": "${productName}-${os}-${arch}-${version}-install.${ext}"
   },
   "linux": {
     "executableName": "${productName}",
-    "artifactName": "${productName}-${version}.${ext}",
+    "artifactName": "${productName}-${os}-${arch}-${version}-install.${ext}",
     "category": "Development",
-    "target": ["AppImage", "snap"]
-  },
-  "win": {
-    "target": [
-      {
-        "target": "nsis",
-        "arch": ["x64"]
-      }
-    ]
+    "target": ["deb", "tar.xz"]
   },
   "nsis": {
+    "artifactName": "${productName}-${os}-${arch}-${version}-install.${ext}",
     "deleteAppDataOnUninstall": true,
     "oneClick": false,
     "allowToChangeInstallationDirectory": true

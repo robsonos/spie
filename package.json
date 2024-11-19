@@ -2,7 +2,11 @@
   "name": "@spie/source",
   "version": "0.0.0",
   "description": "Minimal serial monitor application using Electron, Node SerialPort and Ionic/Angular",
-  "author": "Robson Oliveira dos Santos",
+  "author": {
+    "name": "Robson Oliveira dos Santos",
+    "email": "robsonos@outlook.com",
+    "url": "https://github.com/ronbsonos/"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ronbsonos/spie.git"
