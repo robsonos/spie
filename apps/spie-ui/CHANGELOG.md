@@ -1,3 +1,17 @@
+## 0.2.0 (2024-11-25)
+
+
+### 🚀 Features
+
+- **spie:** fix auto updater ([37166b5](https://github.com/robsonos/spie/commit/37166b5))
+
+- **repo:** refactor electronService.serialPort to be able to listen to all serialport events ([d22e529](https://github.com/robsonos/spie/commit/d22e529))
+
+
+### ❤️  Thank You
+
+- Robson Oliveira dos Santos @robsonos
+
 ## 0.1.0 (2024-11-19)
 
 
