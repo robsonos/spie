@@ -19,6 +19,13 @@ export type AutoUpdaterEvent =
 
 export type Delimiter = 'none' | 'cr' | 'lf' | 'crlf';
 export type Encoding = 'ascii' | 'hex';
+export type SerialPortEventType = 'error' | 'open' | 'close' | 'data' | 'drain';
+export type SerialPortEvent =
+  | { event: 'error'; error: Error }
+  | { event: 'open' }
+  | { event: 'close' }
+  | { event: 'data'; data: string }
+  | { event: 'drain' };
 
 export interface ElectronAPI {
   platform: string;
@@ -35,11 +42,10 @@ export interface ElectronAPI {
     close: () => Promise<void>;
     write: (data: string, encoding: Encoding) => Promise<boolean>;
     isOpen: () => Promise<boolean>;
-    onData: (
-      callback: (data: string) => void,
-      encoding: Encoding
+    setReadEncoding: (encoding: Encoding) => Promise<void>;
+    onEvent: (
+      callback: (serialPortEvent: SerialPortEvent) => void
     ) => () => void;
-    onError: (callback: (error: Error) => void) => () => void;
   };
 }
 

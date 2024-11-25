@@ -1,5 +1,5 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import {
   type AlertButton,
   AlertController,
@@ -34,7 +34,7 @@ import {
   type OpenOptions,
   type PortInfo,
 } from '@serialport/bindings-interface';
-import type { Delimiter, Encoding } from '@spie/types';
+import type { Delimiter, Encoding, SerialPortEvent } from '@spie/types';
 import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline,
@@ -44,7 +44,7 @@ import {
   statsChartOutline,
   timeOutline,
 } from 'ionicons/icons';
-import { Subject, map, scan, startWith, switchMap, tap } from 'rxjs';
+import { Subject, filter, from, map, merge, scan, switchMap, tap } from 'rxjs';
 
 import { ElectronService } from './electron.service';
 import { UpdateModalComponent } from './update-modal.component';
@@ -136,8 +136,6 @@ export class AppComponent {
   terminalTextArea = viewChild<IonTextarea>('terminalTextArea');
   sendInput = viewChild<IonInput>('sendInput');
 
-  private clearTerminalSubject = new Subject<void>();
-
   baudRates = [
     110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 31250, 38400,
     57600, 115200,
@@ -161,61 +159,90 @@ export class AppComponent {
   sendEncoding = signal<Encoding>('ascii');
   terminalEncoding = signal<Encoding>('ascii');
   serialPorts = signal<PortInfo[]>([]);
-  isOpen = signal(false);
   isAutoScrollEnabled = signal(true);
   showTimestampsEnabled = signal(false);
   isSendInputValid = signal(false);
-  unhandledError = toSignal(this.electronService.serialPort.onError());
-  data = toSignal<string>(
-    this.clearTerminalSubject.pipe(
-      startWith(''),
-      switchMap(() =>
-        this.electronService.serialPort.onData(this.terminalEncoding()).pipe(
-          startWith(''),
-          map((value) => {
-            if (!value) {
-              return '';
-            }
+  private clearTerminalSubject = new Subject<SerialPortEvent>();
 
-            if (!this.showTimestampsEnabled()) {
-              return value;
-            }
-
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            const timestamp = `${hours}:${minutes}:${seconds}`;
-
-            return `[${timestamp}] ${value}`;
-          }),
-          scan(
-            (acc, value) => {
-              if (value) {
-                acc.items.push(value);
-                acc.length += value.length;
-              }
-
-              while (acc.length > this.scrollbackLength() * 10000) {
-                const removed = acc.items.shift();
-                if (removed) {
-                  acc.length -= removed.length;
-                }
-              }
-
-              return acc;
-            },
-            { items: [] as string[], length: 0 }
+  isOpen = toSignal(
+    from(this.electronService.serialPort.isOpen()).pipe(
+      switchMap((isOpen) =>
+        this.electronService.serialPort.onEvent().pipe(
+          filter(
+            (serialPortEvent) =>
+              serialPortEvent.event === 'close' ||
+              serialPortEvent.event === 'open'
           ),
-          map((buffer) => {
-            if (this.terminalEncoding() === 'hex') {
-              return buffer.items.join('\n');
+          scan((currentIsOpen, serialPortEvent) => {
+            if (serialPortEvent.event === 'open') {
+              return true;
             }
 
-            return buffer.items.join('');
-          })
+            if (serialPortEvent.event === 'close') {
+              return false;
+            }
+
+            return currentIsOpen;
+          }, isOpen)
         )
       )
+    ),
+    { initialValue: false }
+  );
+
+  data = toSignal<string>(
+    toObservable(this.isOpen).pipe(
+      switchMap(() =>
+        merge(
+          // Emissions to this.isOpen will resubscribe these
+          this.electronService.serialPort.onEvent(),
+          this.clearTerminalSubject
+        )
+      ),
+      filter((serialPortEvent) => serialPortEvent.event === 'data'),
+      map((serialPortEvent) => {
+        const data = serialPortEvent.data;
+        // If data it is clear terminal indication
+        if (data === '') {
+          return '';
+        }
+
+        if (this.showTimestampsEnabled()) {
+          return `${this.formatTimestamp(new Date())} ${data}`;
+        }
+
+        return data;
+      }),
+      scan(
+        (acc, value) => {
+          // Reset on empty string
+          if (value === '') {
+            return { items: [] as string[], length: 0 };
+          }
+
+          acc.items.push(value);
+          acc.length += value.length;
+          const maxLength = this.scrollbackLength() * 10000;
+
+          while (acc.length > maxLength) {
+            const removed = acc.items.shift();
+            if (removed) {
+              acc.length -= removed.length;
+            }
+          }
+
+          return acc;
+        },
+        { items: [] as string[], length: 0 }
+      ),
+      map((buffer) => {
+        if (this.terminalEncoding() === 'hex') {
+          return buffer.items.join('\n');
+        }
+
+        return buffer.items.join('');
+      }),
+      tap(async () => this.handleAutoScroll())
     )
   );
 
@@ -333,9 +360,7 @@ export class AppComponent {
 
     try {
       await this.electronService.serialPort.open(this.openOptions());
-      this.isOpen.set(true);
     } catch (error) {
-      // TODO: port is already connected. disconnect and retry
       this.presentErrorToast(error);
     }
 
@@ -348,7 +373,6 @@ export class AppComponent {
 
     try {
       await this.electronService.serialPort.close();
-      this.isOpen.set(false);
     } catch (error) {
       this.presentErrorToast(error);
     }
@@ -437,13 +461,14 @@ export class AppComponent {
   }
 
   onClickClearTerminal(): void {
-    this.clearTerminalSubject.next();
+    this.clearTerminalSubject.next({ event: 'data', data: '' });
   }
 
   onChangeTerminalEncoding(event: SelectCustomEvent<Encoding>): void {
     const selectedOption = event.detail.value;
     this.terminalEncoding.set(selectedOption);
-    this.clearTerminalSubject.next();
+    this.electronService.serialPort.setReadEncoding(selectedOption);
+    this.onClickClearTerminal();
   }
 
   onChangeAutoScroll(event: CheckboxCustomEvent<boolean>): void {
@@ -485,13 +510,13 @@ export class AppComponent {
           : formatDelimitedData(rawData);
 
       try {
-        const waitForDrainNeeded = !this.electronService.serialPort.write(
+        const canDandleMoreData = await this.electronService.serialPort.write(
           data,
           this.sendEncoding()
         );
 
-        if (!waitForDrainNeeded) {
-          console.warn('waitForDrainNeeded'); // TODO: improve this
+        if (!canDandleMoreData) {
+          this.presentWarningToast('Write buffer is full!');
         }
       } catch (error) {
         this.presentErrorToast(error);
@@ -537,17 +562,14 @@ export class AppComponent {
     this.applyConnectAdvanced();
   }
 
-  async applyConnectAdvanced(): Promise<void> {
-    const isOpen = await this.electronService.serialPort.isOpen();
-
-    if (isOpen && this.isOpen()) {
+  private async applyConnectAdvanced(): Promise<void> {
+    if (this.isOpen()) {
       const loading = await this.loadingController.create();
       await loading.present();
       try {
         await this.electronService.serialPort.close();
-        this.isOpen.set(false);
         await this.electronService.serialPort.open(this.openOptions());
-        this.isOpen.set(true);
+        this.onClickClearTerminal();
       } catch (error) {
         this.presentErrorToast(error);
       }
@@ -575,6 +597,10 @@ export class AppComponent {
     await this.presentToast(header, undefined);
   }
 
+  private async presentWarningToast(message: string): Promise<void> {
+    await this.presentToast('Warning', message, 'warning');
+  }
+
   private async presentErrorToast(error: unknown): Promise<void> {
     await this.presentToast('Error', `${error}`, 'danger');
   }
@@ -590,5 +616,23 @@ export class AppComponent {
       buttons,
     });
     alert.present();
+  }
+
+  private formatTimestamp(date: Date): string {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `[${hours}:${minutes}:${seconds}]`;
+  }
+
+  private async handleAutoScroll(): Promise<void> {
+    const terminalTextArea = this.terminalTextArea();
+    if (this.isAutoScrollEnabled() && terminalTextArea) {
+      const textarea = await terminalTextArea.getInputElement();
+      textarea.scrollTo({
+        top: textarea.scrollHeight,
+        behavior: 'instant',
+      });
+    }
   }
 }
