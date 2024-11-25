@@ -320,8 +320,10 @@ export class AppComponent {
       pointerEvent.pointerId === -1 &&
       pointerEvent.clientX === 0 &&
       pointerEvent.clientY === 0;
+    const isCypressClick =
+      pointerEvent.pointerId === -1 && pointerEvent.pointerType === '';
 
-    if (isClickFromMouse || isClickFromKeyboard) {
+    if (isClickFromMouse || isClickFromKeyboard || isCypressClick) {
       const loading = await this.loadingController.create();
       await loading.present();
 
