@@ -1,13 +1,11 @@
-import type { Event } from 'electron';
-import { BrowserWindow, shell, screen, app } from 'electron';
 import * as fs from 'fs';
 import { join } from 'path';
-import * as path from 'path';
 import { pathToFileURL } from 'url';
 
-import { environment } from '../environments/environment';
+import { BrowserWindow, app, screen } from 'electron';
 
 import { rendererAppName, rendererAppPort } from './constants';
+import { environment } from '../environments/environment';
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
@@ -17,17 +15,13 @@ export default class App {
   static BrowserWindow;
 
   // Path to the window state file
-  private static windowStateFile = path.join(
+  private static windowStateFile = join(
     app.getPath('userData'),
     'window-state.json'
   );
 
   public static isDevelopmentMode(): boolean {
-    const isEnvironmentSet: boolean = 'ELECTRON_IS_DEV' in process.env;
-    const getFromEnvironment: boolean =
-      parseInt(process.env.ELECTRON_IS_DEV, 10) === 1;
-
-    return isEnvironmentSet ? getFromEnvironment : !environment.production;
+    return !environment.production;
   }
 
   private static onWindowAllClosed() {
@@ -37,18 +31,13 @@ export default class App {
   }
 
   private static onClose() {
+    // Store current window state
+    App.saveWindowState();
+
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     App.mainWindow = null;
-  }
-
-  private static onRedirect(event: Event, url: string) {
-    if (url !== App.mainWindow.webContents.getURL()) {
-      // this is a normal external redirect, open it in a new browser window
-      event.preventDefault();
-      shell.openExternal(url);
-    }
   }
 
   private static onReady() {
@@ -118,15 +107,9 @@ export default class App {
       App.mainWindow.show();
     });
 
-    // handle all external redirects in a new browser window
-    // App.mainWindow.webContents.on('will-navigate', App.onRedirect);
-    // App.mainWindow.webContents.on('new-window', (event, url, frameName, disposition, options) => {
-    //     App.onRedirect(event, url);
-    // });
-
     // Emitted when the window is going to be closed.
     App.mainWindow.on('close', () => {
-      App.saveWindowState();
+      App.onClose();
     });
 
     // Emitted when the window is closed.
@@ -142,15 +125,15 @@ export default class App {
     // load the index.html of the app.
     if (!App.application.isPackaged) {
       App.mainWindow.loadURL(`http://localhost:${rendererAppPort}`);
-      if (App.isDevelopmentMode()) {
-        App.mainWindow.webContents.openDevTools();
-      }
     } else {
       App.mainWindow.loadURL(
         pathToFileURL(
           join(__dirname, '..', rendererAppName, 'browser', 'index.html')
         ).href
       );
+    }
+    if (App.isDevelopmentMode()) {
+      App.mainWindow.webContents.openDevTools();
     }
   }
 

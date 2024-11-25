@@ -84,7 +84,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npx nx run-many -t build
+        run: npx nx run-many -t build --prod
 
       - name: Build unpacked executable
         run: npx nx run spie:package

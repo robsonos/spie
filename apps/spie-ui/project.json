@@ -54,8 +54,7 @@
         "ci": {
           "progress": false
         }
-      },
-      "defaultConfiguration": "production"
+      }
     },
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",
