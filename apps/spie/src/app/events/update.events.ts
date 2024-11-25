@@ -1,6 +1,7 @@
+import { arch, platform } from 'os';
+
 import type { MessageBoxOptions } from 'electron';
 import { app, autoUpdater, dialog } from 'electron';
-import { platform, arch } from 'os';
 
 import App from '../app';
 import { updateServerUrl } from '../constants';

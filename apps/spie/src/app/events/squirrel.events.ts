@@ -3,8 +3,9 @@
  */
 
 import { spawn } from 'child_process';
+import { basename, join, resolve } from 'path';
+
 import { app } from 'electron';
-import { resolve, join, basename } from 'path';
 
 import { environment } from '../../environments/environment';
 

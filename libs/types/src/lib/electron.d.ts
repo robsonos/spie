@@ -1,6 +1,6 @@
 import {
-  type PortInfo,
   type OpenOptions,
+  type PortInfo,
 } from '@serialport/bindings-interface';
 
 export type Delimiter = 'none' | 'cr' | 'lf' | 'crlf';

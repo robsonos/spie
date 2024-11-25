@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import {
-  type PortInfo,
   type OpenOptions,
+  type PortInfo,
 } from '@serialport/bindings-interface';
 import type { Encoding } from '@spie/types';
 import {
   BehaviorSubject,
-  distinctUntilChanged,
   EMPTY,
   Observable,
+  distinctUntilChanged,
   switchMap,
 } from 'rxjs';
 

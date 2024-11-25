@@ -1,13 +1,14 @@
-import type { Event } from 'electron';
-import { BrowserWindow, shell, screen, app } from 'electron';
 import * as fs from 'fs';
 import { join } from 'path';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
 
-import { environment } from '../environments/environment';
+import { BrowserWindow, app, screen, shell } from 'electron';
+import type { Event } from 'electron';
+
 
 import { rendererAppName, rendererAppPort } from './constants';
+import { environment } from '../environments/environment';
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will

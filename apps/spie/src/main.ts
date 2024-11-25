@@ -1,5 +1,5 @@
 // import UpdateEvents from './app/events/update.events';
-import { app, BrowserWindow } from 'electron';
+import { BrowserWindow, app } from 'electron';
 
 import App from './app/app';
 import ElectronEvents from './app/events/electron.events';

@@ -33,17 +33,40 @@ module.exports = [
     },
     rules: {
       'import/first': 'error',
-      'import/order': [
-        'error',
-        {
-          alphabetize: { order: 'asc', caseInsensitive: false },
-          groups: [['builtin', 'external'], 'parent', ['sibling', 'index']],
-          'newlines-between': 'always',
-        },
-      ],
+      // 'import/no-unresolved': 'error',
       'import/newline-after-import': 'error',
       'import/no-duplicates': 'error',
       'import/no-mutable-exports': 'error',
+      'import/order': [
+        'error',
+        {
+          alphabetize: { order: 'asc', caseInsensitive: true },
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            ['sibling', 'parent'],
+            'index',
+            'unknown',
+          ],
+          'newlines-between': 'always',
+        },
+      ],
+      'sort-imports': [
+        'error',
+        {
+          ignoreDeclarationSort: true,
+          memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+          allowSeparatedGroups: true,
+        },
+      ],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          disallowTypeAnnotations: false,
+          fixStyle: 'inline-type-imports',
+        },
+      ],
     },
   },
 ];

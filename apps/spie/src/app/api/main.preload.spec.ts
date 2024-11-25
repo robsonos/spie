@@ -1,5 +1,5 @@
 import { type Encoding } from '@spie/types';
-import { ipcRenderer, contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 
 import { electronAPI } from './main.preload';
 

@@ -1,8 +1,6 @@
 import { Component, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
-  LoadingController,
-  ToastController,
   IonApp,
   IonButton,
   IonButtons,
@@ -22,19 +20,21 @@ import {
   IonRow,
   IonSelect,
   IonSelectOption,
+  IonText,
   IonTextarea,
   IonTitle,
   IonToolbar,
-  IonText,
+  LoadingController,
+  ToastController,
 } from '@ionic/angular/standalone';
 import {
-  type PortInfo,
   type OpenOptions,
+  type PortInfo,
 } from '@serialport/bindings-interface';
 import type { Delimiter, Encoding } from '@spie/types';
 import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
-import { map, scan, startWith, Subject, switchMap, tap } from 'rxjs';
+import { Subject, map, scan, startWith, switchMap, tap } from 'rxjs';
 
 import { ElectronService } from './electron.service';
 
