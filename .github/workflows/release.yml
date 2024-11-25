@@ -31,7 +31,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npx nx run-many -t build
+        run: npx nx run-many -t build --prod
 
       # Temporary fix for https://github.com/bennymeg/nx-electron/issues/270
       - name: Update version in package.json
