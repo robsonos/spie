@@ -2,6 +2,7 @@ import { BrowserWindow, app } from 'electron';
 
 import App from './app/app';
 import ElectronEvents from './app/events/electron.events';
+import SerialPortEvents from './app/events/serial-port.events';
 import UpdateEvents from './app/events/update.events';
 
 export default class Main {
@@ -14,8 +15,9 @@ export default class Main {
   }
 
   static bootstrapAppEvents(): void {
-    ElectronEvents.bootstrapElectronEvents();
     UpdateEvents.bootstrapEvents();
+    ElectronEvents.bootstrapEvents();
+    SerialPortEvents.bootstrapEvents();
   }
 }
 
