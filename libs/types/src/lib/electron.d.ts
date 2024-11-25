@@ -22,8 +22,8 @@ export type Encoding = 'ascii' | 'hex';
 
 export interface ElectronAPI {
   platform: string;
-  quitApp: (code: number) => void;
-  getAppVersion: () => Promise<string>;
+  quit: (code: number) => void;
+  getVersion: () => Promise<string>;
   downloadUpdate: () => Promise<string>;
   installUpdate: () => Promise<Array<string>>;
   onUpdateEvent: (

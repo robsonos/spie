@@ -20,8 +20,12 @@ export class ElectronService {
     return window.electron.platform;
   }
 
-  quitApp(code = 0): void {
-    window.electron.quitApp(code);
+  quit(code = 0): void {
+    window.electron.quit(code);
+  }
+
+  getVersion(): Promise<string> {
+    return window.electron.getVersion();
   }
 
   downloadUpdate(): Promise<string> {

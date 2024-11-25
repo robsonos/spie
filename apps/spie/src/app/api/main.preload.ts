@@ -8,8 +8,8 @@ import { type IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
 
 export const electronAPI: ElectronAPI = {
   platform: process.platform,
-  quitApp: (code: number) => ipcRenderer.send('quit', code),
-  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  quit: (code: number) => ipcRenderer.send('quit', code),
+  getVersion: () => ipcRenderer.invoke('app-get-version'),
   downloadUpdate: () => ipcRenderer.invoke('app-download-update'),
   installUpdate: () => ipcRenderer.invoke('app-install-update'),
   onUpdateEvent: (callback: (autoUpdaterEvent: AutoUpdaterEvent) => void) => {
