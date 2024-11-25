@@ -1,71 +1,157 @@
-import { arch, platform } from 'os';
+import { join } from 'path';
 
-import type { MessageBoxOptions } from 'electron';
-import { app, autoUpdater, dialog } from 'electron';
+import { type AutoUpdaterEvent } from '@spie/types';
+import { Notification, ipcMain } from 'electron';
+import {
+  type ProgressInfo,
+  type UpdateDownloadedEvent,
+  type UpdateInfo,
+  type UpdaterEvents,
+  autoUpdater,
+} from 'electron-updater';
 
 import App from '../app';
-import { updateServerUrl } from '../constants';
 
 export default class UpdateEvents {
-  // initialize auto update service - most be invoked only in production
-  static initAutoUpdateService(): void {
-    const platform_arch =
-      platform() === 'win32' ? platform() : platform() + '_' + arch();
-    const version = app.getVersion();
-    const feed: Electron.FeedURLOptions = {
-      url: `${updateServerUrl}/update/${platform_arch}/${version}`,
+  private static areListenersRegistered = false;
+  private static eventListeners = new Map<
+    UpdaterEvents,
+    (...args: any[]) => void
+  >();
+
+  static bootstrapEvents(): void {
+    const checkForUpdates = async () => {
+      try {
+        autoUpdater.autoDownload = false;
+        autoUpdater.disableWebInstaller = true;
+
+        if (App.isDevelopmentMode()) {
+          autoUpdater.updateConfigPath = join(
+            __dirname,
+            '..',
+            '..',
+            '..',
+            'dev-app-update.yml'
+          );
+          autoUpdater.allowDowngrade = true;
+          autoUpdater.forceDevUpdateConfig = true;
+        }
+        await autoUpdater.checkForUpdates();
+      } catch (error) {
+        new Notification({
+          title: 'Error',
+          body: `${error}`,
+          icon: join(__dirname, 'assets/icon.ico'),
+        }).show();
+      }
     };
 
-    if (!App.isDevelopmentMode()) {
-      console.log('Initializing auto update service...\n');
+    const delayAfterAppReady = App.isDevelopmentMode() ? 3000 : 10000;
+    setTimeout(checkForUpdates, delayAfterAppReady);
 
-      autoUpdater.setFeedURL(feed);
-      UpdateEvents.checkForUpdates();
-    }
-  }
+    ipcMain.on('app-update-add-notification-event-listener', (event) => {
+      if (UpdateEvents.areListenersRegistered) {
+        return;
+      }
 
-  // check for updates - most be invoked after initAutoUpdateService() and only in production
-  static checkForUpdates(): void {
-    if (!App.isDevelopmentMode() && autoUpdater.getFeedURL() !== '') {
-      autoUpdater.checkForUpdates();
-    }
+      UpdateEvents.areListenersRegistered = true;
+
+      const addEventListener = (
+        event: UpdaterEvents,
+        callback: (...args: any[]) => void
+      ) => {
+        if (!UpdateEvents.eventListeners.has(event)) {
+          autoUpdater.on(event, callback);
+          UpdateEvents.eventListeners.set(event, callback);
+        }
+      };
+
+      addEventListener('error', (error: Error, message: string) => {
+        const updateNotification: AutoUpdaterEvent = {
+          event: 'error',
+          error,
+          message,
+        };
+        event.sender.send('app-update-notification', updateNotification);
+      });
+
+      addEventListener('checking-for-update', () => {
+        const updateNotification: AutoUpdaterEvent = {
+          event: 'checking-for-update',
+        };
+        event.sender.send('app-update-notification', updateNotification);
+      });
+
+      addEventListener('update-not-available', (updateInfo: UpdateInfo) => {
+        const updateNotification: AutoUpdaterEvent = {
+          event: 'update-not-available',
+          updateInfo,
+        };
+        event.sender.send('app-update-notification', updateNotification);
+      });
+
+      addEventListener('update-available', (updateInfo: UpdateInfo) => {
+        new Notification({
+          title: 'Update Available for Download',
+          body: `Version ${updateInfo.releaseName} is ready for download.`,
+          icon: join(__dirname, 'assets/icon.ico'),
+        }).show();
+
+        const updateNotification: AutoUpdaterEvent = {
+          event: 'update-available',
+          updateInfo,
+        };
+
+        event.sender.send('app-update-notification', updateNotification);
+      });
+
+      addEventListener(
+        'update-downloaded',
+        (updateDownloadedEvent: UpdateDownloadedEvent) => {
+          const updateNotification: AutoUpdaterEvent = {
+            event: 'update-downloaded',
+            updateDownloadedEvent,
+          };
+          event.sender.send('app-update-notification', updateNotification);
+        }
+      );
+
+      addEventListener('download-progress', (progressInfo: ProgressInfo) => {
+        const updateNotification: AutoUpdaterEvent = {
+          event: 'download-progress',
+          progressInfo,
+        };
+        event.sender.send('app-update-notification', updateNotification);
+      });
+
+      addEventListener('update-cancelled', (updateInfo: UpdateInfo) => {
+        const updateNotification: AutoUpdaterEvent = {
+          event: 'update-cancelled',
+          updateInfo,
+        };
+        event.sender.send('app-update-notification', updateNotification);
+      });
+    });
+
+    ipcMain.on('app-update-remove-notification-event-listener', () => {
+      if (!UpdateEvents.areListenersRegistered) {
+        return;
+      }
+
+      UpdateEvents.eventListeners.forEach((listener, event) => {
+        autoUpdater.off(event, listener);
+      });
+      UpdateEvents.eventListeners.clear();
+
+      UpdateEvents.areListenersRegistered = false;
+    });
+
+    ipcMain.handle('app-download-update', () => {
+      return autoUpdater.downloadUpdate();
+    });
+
+    ipcMain.handle('app-install-update', () => {
+      autoUpdater.quitAndInstall();
+    });
   }
 }
-
-autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-  const dialogOpts: MessageBoxOptions = {
-    type: 'info' as const,
-    buttons: ['Restart', 'Later'],
-    title: 'Application Update',
-    message: process.platform === 'win32' ? releaseNotes : releaseName,
-    detail:
-      'A new version has been downloaded. Restart the application to apply the updates.',
-  };
-
-  dialog.showMessageBox(dialogOpts).then((returnValue) => {
-    if (returnValue.response === 0) {
-      autoUpdater.quitAndInstall();
-    }
-  });
-});
-
-autoUpdater.on('checking-for-update', () => {
-  console.log('Checking for updates...\n');
-});
-
-autoUpdater.on('update-available', () => {
-  console.log('New update available!\n');
-});
-
-autoUpdater.on('update-not-available', () => {
-  console.log('Up to date!\n');
-});
-
-autoUpdater.on('before-quit-for-update', () => {
-  console.log('Application update is about to begin...\n');
-});
-
-autoUpdater.on('error', (message) => {
-  console.error('There was a problem updating the application');
-  console.error(message, '\n');
-});

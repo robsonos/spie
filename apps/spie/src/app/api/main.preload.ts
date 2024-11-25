@@ -1,12 +1,31 @@
 import { type OpenOptions } from '@serialport/bindings-interface';
-import type { ElectronAPI, Encoding } from '@spie/types';
-import { contextBridge, ipcRenderer } from 'electron';
-import type { IpcRendererEvent } from 'electron';
+import {
+  type AutoUpdaterEvent,
+  type ElectronAPI,
+  type Encoding,
+} from '@spie/types';
+import { type IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
 
 export const electronAPI: ElectronAPI = {
   platform: process.platform,
   quitApp: (code: number) => ipcRenderer.send('quit', code),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  downloadUpdate: () => ipcRenderer.invoke('app-download-update'),
+  installUpdate: () => ipcRenderer.invoke('app-install-update'),
+  onUpdateEvent: (callback: (autoUpdaterEvent: AutoUpdaterEvent) => void) => {
+    const eventName = 'app-update-notification';
+    const dataListener = (
+      _: IpcRendererEvent,
+      autoUpdaterEvent: AutoUpdaterEvent
+    ) => callback(autoUpdaterEvent);
+    ipcRenderer.send('app-update-add-notification-event-listener');
+    ipcRenderer.on(eventName, dataListener);
+
+    return () => {
+      ipcRenderer.removeListener(eventName, dataListener);
+      ipcRenderer.send('app-update-remove-notification-event-listener');
+    };
+  },
   serialPort: {
     list: () => ipcRenderer.invoke('serial-port-list'),
     open: (openOptions: OpenOptions) =>

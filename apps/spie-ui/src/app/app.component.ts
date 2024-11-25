@@ -1,6 +1,8 @@
-import { Component, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
+  type AlertButton,
+  AlertController,
   IonApp,
   IonButton,
   IonButtons,
@@ -25,6 +27,7 @@ import {
   IonTitle,
   IonToolbar,
   LoadingController,
+  ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
 import {
@@ -33,10 +36,18 @@ import {
 } from '@serialport/bindings-interface';
 import type { Delimiter, Encoding } from '@spie/types';
 import { addIcons } from 'ionicons';
-import { settingsOutline } from 'ionicons/icons';
+import {
+  cloudUploadOutline,
+  documentOutline,
+  settingsOutline,
+  speedometerOutline,
+  statsChartOutline,
+  timeOutline,
+} from 'ionicons/icons';
 import { Subject, map, scan, startWith, switchMap, tap } from 'rxjs';
 
 import { ElectronService } from './electron.service';
+import { UpdateModalComponent } from './update-modal.component';
 
 interface SelectChangeEventDetail<T> {
   value: T;
@@ -107,18 +118,21 @@ interface IonInputCustomEvent extends CustomEvent {
   ],
 })
 export class AppComponent {
+  private readonly alertController = inject(AlertController);
   private readonly loadingController = inject(LoadingController);
+  private readonly modalController = inject(ModalController);
   private readonly toastController = inject(ToastController);
   private readonly electronService = inject(ElectronService);
 
   constructor() {
     addIcons({ settingsOutline });
-    effect(() => {
-      if (this.unhandledError()) {
-        this.presentErrorToast(this.unhandledError());
-      }
-    });
+    addIcons({ documentOutline });
+    addIcons({ cloudUploadOutline });
+    addIcons({ speedometerOutline });
+    addIcons({ statsChartOutline });
+    addIcons({ timeOutline });
   }
+
   terminalTextArea = viewChild<IonTextarea>('terminalTextArea');
   sendInput = viewChild<IonInput>('sendInput');
 
@@ -199,32 +213,88 @@ export class AppComponent {
             }
 
             return buffer.items.join('');
-          }),
-          tap(async () => {
-            const terminalTextArea = this.terminalTextArea();
-            if (this.isAutoScrollEnabled() && terminalTextArea) {
-              const textarea = await terminalTextArea.getInputElement();
-              textarea.scrollTo({
-                top: textarea.scrollHeight,
-                behavior: 'instant',
-              });
-            }
           })
         )
       )
     )
   );
 
+  autoUpdaterEvent = toSignal(
+    this.electronService.onUpdateEvent().pipe(
+      tap((autoUpdaterEvent) => {
+        if (autoUpdaterEvent.event === 'checking-for-update') {
+          this.presentInfoToast('Checking for Updates');
+        }
+
+        if (autoUpdaterEvent.event === 'update-not-available') {
+          this.presentInfoToast('No Updates Available');
+        }
+
+        if (autoUpdaterEvent.event === 'update-available') {
+          this.presentAlert(
+            'Update Available for Download',
+            `Version ${autoUpdaterEvent.updateInfo.version} is ready for download.`,
+            [
+              {
+                text: 'Cancel',
+                role: 'cancel',
+              },
+              {
+                text: 'Download',
+                role: 'confirm',
+                handler: async () => {
+                  const modal = await this.modalController.create({
+                    component: UpdateModalComponent,
+                    backdropDismiss: false,
+                    id: 'update-modal',
+                    componentProps: {
+                      autoUpdaterEvent: this.autoUpdaterEvent,
+                    },
+                  });
+                  await modal.present();
+                },
+              },
+            ]
+          );
+        }
+
+        if (autoUpdaterEvent.event === 'update-downloaded') {
+          this.presentAlert(
+            'Update Ready to Install',
+            `Version ${autoUpdaterEvent.updateDownloadedEvent.version} is ready to install.`,
+            [
+              {
+                text: 'Cancel',
+                role: 'cancel',
+              },
+              {
+                text: 'Install',
+                role: 'confirm',
+                handler: () => {
+                  this.electronService.installUpdate();
+                },
+              },
+            ]
+          );
+        }
+
+        if (autoUpdaterEvent.event === 'update-cancelled') {
+          this.presentErrorToast('Update Cancelled');
+        }
+      })
+    )
+  );
+
   async onClickSerialPort(event: MouseEvent): Promise<void> {
     const pointerEvent = event as PointerEvent;
-    const isOpenFromMouse =
+    const isClickFromMouse =
       pointerEvent.pointerId > 0 && pointerEvent.pointerType === 'mouse';
-    const isOpenFromKeyboard =
+    const isClickFromKeyboard =
       pointerEvent.pointerId === -1 &&
       pointerEvent.clientX === 0 &&
       pointerEvent.clientY === 0;
 
-    if (isOpenFromMouse || isOpenFromKeyboard) {
+    if (isClickFromMouse || isClickFromKeyboard) {
       const loading = await this.loadingController.create();
       await loading.present();
 
@@ -285,6 +355,7 @@ export class AppComponent {
 
     await loading.dismiss();
   }
+
   onChangeDataBits(event: SelectCustomEvent<string>): void {
     const selectedOption = event.detail.value;
     this.openOptions.update((currentOpenOptions) => ({
@@ -484,14 +555,40 @@ export class AppComponent {
     }
   }
 
-  async presentErrorToast(error: unknown): Promise<void> {
+  private async presentToast(
+    header: string,
+    message?: string,
+    color?: string
+  ): Promise<void> {
     const toast = await this.toastController.create({
-      message: `${error}`,
+      header,
+      message,
       duration: 3000,
       position: 'bottom',
-      color: 'danger',
+      color,
     });
 
     await toast.present();
+  }
+
+  private async presentInfoToast(header: string): Promise<void> {
+    await this.presentToast(header, undefined);
+  }
+
+  private async presentErrorToast(error: unknown): Promise<void> {
+    await this.presentToast('Error', `${error}`, 'danger');
+  }
+
+  private async presentAlert(
+    header: string,
+    message?: string,
+    buttons?: (AlertButton | string)[]
+  ): Promise<void> {
+    const alert = await this.alertController.create({
+      header,
+      message,
+      buttons,
+    });
+    alert.present();
   }
 }

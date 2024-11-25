@@ -3,7 +3,7 @@ import {
   type OpenOptions,
   type PortInfo,
 } from '@serialport/bindings-interface';
-import type { Encoding } from '@spie/types';
+import { type AutoUpdaterEvent, type Encoding } from '@spie/types';
 import {
   BehaviorSubject,
   EMPTY,
@@ -24,8 +24,24 @@ export class ElectronService {
     window.electron.quitApp(code);
   }
 
-  getAppVersion(): Promise<string> {
-    return window.electron.getAppVersion();
+  downloadUpdate(): Promise<string> {
+    return window.electron.downloadUpdate();
+  }
+
+  installUpdate(): Promise<Array<string>> {
+    return window.electron.installUpdate();
+  }
+
+  onUpdateEvent(): Observable<AutoUpdaterEvent> {
+    return new Observable((observer) => {
+      const removeListener = window.electron.onUpdateEvent((data) => {
+        observer.next(data);
+      });
+
+      return () => {
+        removeListener();
+      };
+    });
   }
 
   public serialPort = new (class {

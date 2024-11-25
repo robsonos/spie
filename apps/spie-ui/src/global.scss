@@ -33,3 +33,9 @@
  */
 
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+ion-modal#update-modal.md,
+ion-modal#update-modal.ios {
+  --width: 400px;
+  --height: 325px;
+}
