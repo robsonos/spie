@@ -18,11 +18,7 @@
       [data]="data()"
     />
 
-    <app-send
-      [(sendOptions)]="sendOptions"
-      [isOpen]="isOpen()"
-      [reconnectSubject]="reconnectSubject"
-    />
+    <app-send [(sendOptions)]="sendOptions" [isOpen]="isOpen()" />
 
     <app-update-modal [progressInfo]="progressInfo()" />
 

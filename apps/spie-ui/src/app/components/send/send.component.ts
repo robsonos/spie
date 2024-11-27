@@ -13,7 +13,7 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { type Delimiter } from '@spie/types';
-import { type Subject, scan } from 'rxjs';
+import { scan } from 'rxjs';
 
 import { type SendOptions } from '../../interfaces/app.interface';
 import { type IonInputCustomEvent } from '../../interfaces/ionic.interface';
@@ -45,7 +45,6 @@ export class SendComponent {
   private readonly electronService = inject(ElectronService);
 
   isOpen = input.required<boolean>();
-  reconnectSubject = input.required<Subject<void>>();
   sendOptions = model.required<SendOptions>();
 
   constructor() {
