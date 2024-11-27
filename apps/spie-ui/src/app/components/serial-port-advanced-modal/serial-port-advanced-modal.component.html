@@ -1,0 +1,106 @@
+<ion-modal #serialPortAdvancedModal id="serial-port-advanced-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Advanced Connection Settings</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="serialPortAdvancedModal.dismiss()"
+            >Close</ion-button
+          >
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-select
+            label="Data Bits"
+            placeholder="Select Data Bits"
+            justify="space-between"
+            (ionChange)="onChangeDataBits($event)"
+            [value]="openOptions().dataBits"
+          >
+            <ion-select-option [value]="5">5</ion-select-option>
+            <ion-select-option [value]="6">6</ion-select-option>
+            <ion-select-option [value]="7">7</ion-select-option>
+            <ion-select-option [value]="8">8</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-select
+            label="Stop Bits"
+            placeholder="Select Stop Bits"
+            justify="space-between"
+            (ionChange)="onChangeStopBits($event)"
+            [value]="openOptions().stopBits"
+          >
+            <ion-select-option [value]="1">1</ion-select-option>
+            <ion-select-option [value]="1.5">1.5</ion-select-option>
+            <ion-select-option [value]="2">2</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-select
+            label="Parity"
+            placeholder="Select Parity"
+            justify="space-between"
+            (ionChange)="onChangeParity($event)"
+            [value]="openOptions().parity"
+          >
+            <ion-select-option value="none">None</ion-select-option>
+            <ion-select-option value="even">Even</ion-select-option>
+            <ion-select-option value="odd">Odd</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-checkbox
+            justify="space-between"
+            checked="{{ openOptions().rtscts }}"
+            (ionChange)="onChangeRtscts($event)"
+            >RTS/CTS</ion-checkbox
+          >
+        </ion-item>
+
+        <ion-item>
+          <ion-checkbox
+            justify="space-between"
+            checked="{{ openOptions().xon }}"
+            (ionChange)="onChangeXon($event)"
+            >XON</ion-checkbox
+          >
+        </ion-item>
+
+        <ion-item>
+          <ion-checkbox
+            justify="space-between"
+            checked="{{ openOptions().xoff }}"
+            (ionChange)="onChangeXoff($event)"
+            >XOFF</ion-checkbox
+          >
+        </ion-item>
+
+        <ion-item>
+          <ion-checkbox
+            justify="space-between"
+            checked="{{ openOptions().xany }}"
+            (ionChange)="onChangeXany($event)"
+            >XANY</ion-checkbox
+          >
+        </ion-item>
+
+        <ion-item>
+          <ion-checkbox
+            justify="space-between"
+            checked="{{ openOptions().hupcl }}"
+            (ionChange)="onChangeHupcl($event)"
+            >HUPCL</ion-checkbox
+          >
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

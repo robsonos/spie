@@ -1,0 +1,83 @@
+<ion-card>
+  <ion-card-header>
+    <ion-text color="secondary">Serial Port</ion-text>
+  </ion-card-header>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6">
+        <ion-item>
+          <ion-select
+            label="Serial Port"
+            placeholder="Select Port"
+            [disabled]="isOpen()"
+            (click)="onClickSerialPort($event)"
+            (ionChange)="onChangeSerialPort($event)"
+            data-cy="serial-port-select"
+          >
+            @for (serialPort of serialPorts(); track $index) {
+            <ion-select-option [value]="serialPort.path">
+              {{ serialPort.path }} - {{ serialPort.manufacturer }}
+            </ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="6">
+        <ion-item>
+          <ion-select
+            label="Baud Rate"
+            placeholder="Select Baud Rate"
+            (ionChange)="onChangeBaudRate($event)"
+            [value]="openOptions().baudRate"
+            data-cy="baud-rate-select"
+          >
+            @for (baudRate of baudRates; track $index) {
+            <ion-select-option [value]="baudRate">{{
+              baudRate
+            }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col>
+        @if (isOpen()) {
+        <ion-button
+          expand="block"
+          color="danger"
+          (click)="onClickDisconnect()"
+          data-cy="disconnect-button"
+          >Disconnect</ion-button
+        >
+        } @else {
+        <ion-button
+          expand="block"
+          color="secondary"
+          [disabled]="openOptions().path === ''"
+          (click)="onClickConnect()"
+          data-cy="connect-button"
+          >Connect</ion-button
+        >
+        }
+      </ion-col>
+      <ion-col size="auto">
+        <ion-button
+          fill="clear"
+          color="secondary"
+          (click)="onClickSerialPortAdvancedModal()"
+        >
+          <ion-icon name="settings-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <app-serial-port-advanced-modal
+    [(openOptions)]="openOptions"
+    [reconnectSubject]="reconnectSubject()"
+  />
+</ion-card>

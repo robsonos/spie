@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, computed, effect, inject, input } from '@angular/core';
+import { Component, input, viewChild } from '@angular/core';
 import {
   IonContent,
   IonHeader,
@@ -7,71 +7,41 @@ import {
   IonItem,
   IonLabel,
   IonList,
+  IonModal,
   IonNote,
   IonProgressBar,
   IonSpinner,
   IonTitle,
   IonToolbar,
-  ModalController,
 } from '@ionic/angular/standalone';
-import { type AutoUpdaterEvent } from '@spie/types';
-
-import { ElectronService } from './electron.service';
+import { type ProgressInfo } from 'electron-updater';
 
 @Component({
-  selector: 'app-dfu-progress',
+  selector: 'app-update-modal',
   templateUrl: './update-modal.component.html',
   styleUrls: ['./update-modal.component.scss'],
   standalone: true,
   imports: [
-    DecimalPipe,
     IonContent,
+    IonHeader,
     IonIcon,
     IonItem,
     IonLabel,
     IonList,
+    IonModal,
     IonNote,
-    IonHeader,
     IonProgressBar,
     IonSpinner,
     IonTitle,
     IonToolbar,
+    IonToolbar,
+    DecimalPipe,
   ],
 })
 export class UpdateModalComponent {
-  private readonly modalController: ModalController = inject(ModalController);
-  private readonly electronService = inject(ElectronService);
+  updateModal = viewChild.required<IonModal>('updateModal');
 
-  autoUpdaterEvent = input.required<AutoUpdaterEvent>();
-  progressInfo = computed(() => {
-    const autoUpdaterEvent = this.autoUpdaterEvent();
-    if (autoUpdaterEvent?.event === 'download-progress') {
-      return autoUpdaterEvent.progressInfo;
-    }
-
-    return {
-      total: 0,
-      delta: 0,
-      transferred: 0,
-      percent: 0,
-      bytesPerSecond: 0,
-    };
-  });
-
-  constructor() {
-    this.electronService.downloadUpdate();
-
-    effect(async () => {
-      const autoUpdaterEvent = this.autoUpdaterEvent();
-      if (
-        autoUpdaterEvent.event === 'update-downloaded' ||
-        autoUpdaterEvent.event === 'update-cancelled' ||
-        autoUpdaterEvent.event === 'error'
-      ) {
-        await this.modalController.dismiss();
-      }
-    });
-  }
+  progressInfo = input.required<ProgressInfo>();
 
   formatBytes(bytes: number, decimals = 2): string {
     if (bytes === 0) return '0 Bytes';
