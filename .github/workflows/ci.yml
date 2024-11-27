@@ -55,36 +55,3 @@ jobs:
         if: ${{ steps.nx-release.outputs.new_release_version != '' }}
         run: |
           echo "Version ${{ steps.nx-release.outputs.new_release_version }} will be released" >> $GITHUB_STEP_SUMMARY
-
-  ci-electron:
-    needs: [ci-renderer]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup NodeJS
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: npm
-
-      - name: Install setuptools on macOS
-        if: matrix.os == 'macos-latest'
-        run: python3 -m pip install setuptools --break-system-packages
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npx nx run-many -t build --prod
-
-      - name: Build unpacked executable
-        run: npx nx run spie:package
