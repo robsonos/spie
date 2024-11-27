@@ -1,0 +1,44 @@
+<ion-modal #sendAdvancedModal>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Advanced Send Data Settings</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="sendAdvancedModal.dismiss()">Close</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-select
+            label="Encoding"
+            placeholder="Select Encoding"
+            justify="space-between"
+            (ionChange)="onChangeSendEncoding($event)"
+            [value]="sendOptions().encoding"
+          >
+            <ion-select-option value="ascii">ASCII</ion-select-option>
+            <ion-select-option value="hex">Hex</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-select
+            label="Delimiter"
+            placeholder="Select Delimiter"
+            justify="space-between"
+            (ionChange)="onChangeDelimiter($event)"
+            [value]="sendOptions().delimiter"
+          >
+            <ion-select-option value="none">None</ion-select-option>
+            <ion-select-option value="cr">CR (\r)</ion-select-option>
+            <ion-select-option value="lf">LF (\n)</ion-select-option>
+            <ion-select-option value="crlf">CRLF (\r\n)</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

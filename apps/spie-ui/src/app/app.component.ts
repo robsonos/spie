@@ -1,40 +1,21 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import {
+  takeUntilDestroyed,
+  toObservable,
+  toSignal,
+} from '@angular/core/rxjs-interop';
 import {
   type AlertButton,
   AlertController,
   IonApp,
-  IonButton,
-  IonButtons,
-  IonCard,
-  IonCardHeader,
-  IonCheckbox,
-  IonCol,
   IonContent,
-  IonGrid,
   IonHeader,
-  IonIcon,
-  IonInput,
-  IonItem,
-  IonList,
-  IonModal,
-  IonRange,
-  IonRow,
-  IonSelect,
-  IonSelectOption,
-  IonText,
-  IonTextarea,
   IonTitle,
   IonToolbar,
   LoadingController,
-  ModalController,
-  ToastController,
 } from '@ionic/angular/standalone';
-import {
-  type OpenOptions,
-  type PortInfo,
-} from '@serialport/bindings-interface';
-import type { Delimiter, Encoding, SerialPortEvent } from '@spie/types';
+import { type OpenOptions } from '@serialport/bindings-interface';
+import type { SerialPortEvent } from '@spie/types';
 import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline,
@@ -44,47 +25,28 @@ import {
   statsChartOutline,
   timeOutline,
 } from 'ionicons/icons';
-import { Subject, filter, from, map, merge, scan, switchMap, tap } from 'rxjs';
+import {
+  Subject,
+  filter,
+  from,
+  map,
+  merge,
+  of,
+  scan,
+  switchMap,
+  tap,
+} from 'rxjs';
 
-import { ElectronService } from './electron.service';
-import { UpdateModalComponent } from './update-modal.component';
-
-interface SelectChangeEventDetail<T> {
-  value: T;
-}
-interface SelectCustomEvent<T> extends CustomEvent {
-  detail: SelectChangeEventDetail<T>;
-  target: HTMLIonSelectElement;
-}
-
-interface CheckboxChangeEventDetail<T> {
-  value: T;
-  checked: boolean;
-}
-
-interface CheckboxCustomEvent<T> extends CustomEvent {
-  detail: CheckboxChangeEventDetail<T>;
-  target: HTMLIonCheckboxElement;
-}
-
-type RangeValue = number | { lower: number; upper: number };
-
-interface RangeChangeEventDetail {
-  value: RangeValue;
-}
-
-interface RangeCustomEvent extends CustomEvent {
-  detail: RangeChangeEventDetail;
-  target: HTMLIonRangeElement;
-}
-
-interface InputChangeEventDetail {
-  value?: string | undefined | null;
-}
-interface IonInputCustomEvent extends CustomEvent {
-  detail: InputChangeEventDetail;
-  target: HTMLIonInputElement;
-}
+import { SendComponent } from './components/send/send.component';
+import { SerialPortComponent } from './components/serial-port/serial-port.component';
+import { TerminalComponent } from './components/terminal/terminal.component';
+import { UpdateModalComponent } from './components/update-modal/update-modal.component';
+import {
+  type SendOptions,
+  type TerminalOptions,
+} from './interfaces/app.interface';
+import { ElectronService } from './services/electron.service';
+import { ToasterService } from './services/toaster.service';
 
 @Component({
   selector: 'app-root',
@@ -92,36 +54,21 @@ interface IonInputCustomEvent extends CustomEvent {
   styleUrls: ['./app.component.scss'],
   standalone: true,
   imports: [
-    IonText,
     IonApp,
-    IonButton,
-    IonButtons,
-    IonCard,
-    IonCardHeader,
-    IonCheckbox,
-    IonCol,
     IonContent,
-    IonGrid,
     IonHeader,
-    IonIcon,
-    IonInput,
-    IonItem,
-    IonList,
-    IonModal,
-    IonRange,
-    IonRow,
-    IonSelect,
-    IonSelectOption,
-    IonTextarea,
     IonTitle,
     IonToolbar,
+    SerialPortComponent,
+    TerminalComponent,
+    SendComponent,
+    UpdateModalComponent,
   ],
 })
 export class AppComponent {
   private readonly alertController = inject(AlertController);
   private readonly loadingController = inject(LoadingController);
-  private readonly modalController = inject(ModalController);
-  private readonly toastController = inject(ToastController);
+  private readonly toasterService = inject(ToasterService);
   private readonly electronService = inject(ElectronService);
 
   constructor() {
@@ -131,15 +78,29 @@ export class AppComponent {
     addIcons({ speedometerOutline });
     addIcons({ statsChartOutline });
     addIcons({ timeOutline });
+
+    this.reconnectSubject
+      .pipe(
+        takeUntilDestroyed(),
+        tap(async () => {
+          if (this.isOpen()) {
+            const loading = await this.loadingController.create();
+            await loading.present();
+            try {
+              await this.electronService.serialPort.close();
+              await this.electronService.serialPort.open(this.openOptions());
+              this.clearTerminalSubject.next({ event: 'data', data: '' });
+            } catch (error) {
+              await this.toasterService.presentErrorToast(error);
+            }
+            await loading.dismiss();
+          }
+        })
+      )
+      .subscribe();
   }
 
-  terminalTextArea = viewChild<IonTextarea>('terminalTextArea');
-  sendInput = viewChild<IonInput>('sendInput');
-
-  baudRates = [
-    110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 31250, 38400,
-    57600, 115200,
-  ];
+  private updateModalComponent = viewChild.required(UpdateModalComponent);
 
   openOptions = signal<OpenOptions>({
     path: '',
@@ -154,15 +115,23 @@ export class AppComponent {
     xany: false,
     hupcl: true,
   });
-  scrollbackLength = signal(1);
-  delimiter = signal<Delimiter>('lf');
-  sendEncoding = signal<Encoding>('ascii');
-  terminalEncoding = signal<Encoding>('ascii');
-  serialPorts = signal<PortInfo[]>([]);
-  isAutoScrollEnabled = signal(true);
-  showTimestampsEnabled = signal(false);
-  isSendInputValid = signal(false);
-  private clearTerminalSubject = new Subject<SerialPortEvent>();
+  reconnectSubject = new Subject<void>();
+
+  terminalOptions = signal<TerminalOptions>({
+    encoding: 'ascii',
+    isAutoScrollEnabled: true,
+    showTimestampsEnabled: false,
+    scrollbackLength: 1,
+  });
+  clearTerminalSubject = new Subject<SerialPortEvent>();
+  terminalComponent = viewChild.required<TerminalComponent>(TerminalComponent);
+
+  sendOptions = signal<SendOptions>({
+    delimiter: 'lf',
+    encoding: 'ascii',
+    isSendInputValid: false,
+  }); // TODO: Move to SendComponent?
+  clearInputSubject = new Subject<void>();
 
   isOpen = toSignal(
     from(this.electronService.serialPort.isOpen()).pipe(
@@ -190,7 +159,7 @@ export class AppComponent {
     { initialValue: false }
   );
 
-  data = toSignal<string>(
+  data = toSignal(
     toObservable(this.isOpen).pipe(
       switchMap(() =>
         merge(
@@ -207,7 +176,7 @@ export class AppComponent {
           return '';
         }
 
-        if (this.showTimestampsEnabled()) {
+        if (this.terminalOptions().showTimestampsEnabled) {
           return `${this.formatTimestamp(new Date())} ${data}`;
         }
 
@@ -222,7 +191,7 @@ export class AppComponent {
 
           acc.items.push(value);
           acc.length += value.length;
-          const maxLength = this.scrollbackLength() * 10000;
+          const maxLength = this.terminalOptions().scrollbackLength * 10000;
 
           while (acc.length > maxLength) {
             const removed = acc.items.shift();
@@ -236,29 +205,30 @@ export class AppComponent {
         { items: [] as string[], length: 0 }
       ),
       map((buffer) => {
-        if (this.terminalEncoding() === 'hex') {
+        if (this.terminalOptions().encoding === 'hex') {
           return buffer.items.join('\n');
         }
 
         return buffer.items.join('');
       }),
-      tap(async () => this.handleAutoScroll())
-    )
+      tap(async () => await this.handleAutoScroll())
+    ),
+    { initialValue: '' }
   );
 
-  autoUpdaterEvent = toSignal(
+  progressInfo = toSignal(
     this.electronService.onUpdateEvent().pipe(
-      tap((autoUpdaterEvent) => {
+      tap(async (autoUpdaterEvent) => {
         if (autoUpdaterEvent.event === 'checking-for-update') {
-          this.presentInfoToast('Checking for Updates');
+          await this.toasterService.presentInfoToast('Checking for Updates');
         }
 
         if (autoUpdaterEvent.event === 'update-not-available') {
-          this.presentInfoToast('No Updates Available');
+          await this.toasterService.presentInfoToast('No Updates Available');
         }
 
         if (autoUpdaterEvent.event === 'update-available') {
-          this.presentAlert(
+          await this.presentAlert(
             'Update Available for Download',
             `Version ${autoUpdaterEvent.updateInfo.version} is ready for download.`,
             [
@@ -270,15 +240,8 @@ export class AppComponent {
                 text: 'Download',
                 role: 'confirm',
                 handler: async () => {
-                  const modal = await this.modalController.create({
-                    component: UpdateModalComponent,
-                    backdropDismiss: false,
-                    id: 'update-modal',
-                    componentProps: {
-                      autoUpdaterEvent: this.autoUpdaterEvent,
-                    },
-                  });
-                  await modal.present();
+                  this.electronService.downloadUpdate();
+                  await this.updateModalComponent().updateModal().present();
                 },
               },
             ]
@@ -286,7 +249,7 @@ export class AppComponent {
         }
 
         if (autoUpdaterEvent.event === 'update-downloaded') {
-          this.presentAlert(
+          await this.presentAlert(
             'Update Ready to Install',
             `Version ${autoUpdaterEvent.updateDownloadedEvent.version} is ready to install.`,
             [
@@ -306,306 +269,44 @@ export class AppComponent {
         }
 
         if (autoUpdaterEvent.event === 'update-cancelled') {
-          this.presentErrorToast('Update Cancelled');
+          await this.toasterService.presentErrorToast('Update Cancelled');
         }
+
+        if (
+          autoUpdaterEvent.event === 'update-downloaded' ||
+          autoUpdaterEvent.event === 'update-cancelled' ||
+          autoUpdaterEvent.event === 'error'
+        ) {
+          await this.updateModalComponent().updateModal().dismiss();
+        }
+      }),
+      switchMap((autoUpdaterEvent) => {
+        if (
+          autoUpdaterEvent &&
+          autoUpdaterEvent.event === 'download-progress'
+        ) {
+          return of(autoUpdaterEvent.progressInfo);
+        }
+
+        return of({
+          total: 0,
+          delta: 0,
+          transferred: 0,
+          percent: 0,
+          bytesPerSecond: 0,
+        });
       })
-    )
+    ),
+    {
+      initialValue: {
+        total: 0,
+        delta: 0,
+        transferred: 0,
+        percent: 0,
+        bytesPerSecond: 0,
+      },
+    }
   );
-
-  async onClickSerialPort(event: MouseEvent): Promise<void> {
-    const pointerEvent = event as PointerEvent;
-    const isClickFromMouse =
-      pointerEvent.pointerId > 0 && pointerEvent.pointerType === 'mouse';
-    const isClickFromKeyboard =
-      pointerEvent.pointerId === -1 &&
-      pointerEvent.clientX === 0 &&
-      pointerEvent.clientY === 0;
-    const isCypressClick =
-      pointerEvent.pointerId === -1 && pointerEvent.pointerType === '';
-
-    if (isClickFromMouse || isClickFromKeyboard || isCypressClick) {
-      const loading = await this.loadingController.create();
-      await loading.present();
-
-      try {
-        const serialPorts = await this.electronService.serialPort.list();
-        this.serialPorts.set(serialPorts);
-      } catch (error) {
-        this.presentErrorToast(error);
-      }
-
-      await loading.dismiss();
-    }
-  }
-
-  onChangeSerialPort(event: SelectCustomEvent<string>): void {
-    const selectedOption = event.detail.value;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
-      path: selectedOption,
-    }));
-  }
-
-  onChangeBaudRate(event: SelectCustomEvent<string>): void {
-    const selectedOption = event.detail.value;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
-      baudRate: parseInt(selectedOption, 10),
-    }));
-
-    this.applyConnectAdvanced();
-  }
-
-  async onClickConnect(): Promise<void> {
-    const loading = await this.loadingController.create();
-    await loading.present();
-
-    try {
-      await this.electronService.serialPort.open(this.openOptions());
-    } catch (error) {
-      this.presentErrorToast(error);
-    }
-
-    await loading.dismiss();
-  }
-
-  async onClickDisconnect(): Promise<void> {
-    const loading = await this.loadingController.create();
-    await loading.present();
-
-    try {
-      await this.electronService.serialPort.close();
-    } catch (error) {
-      this.presentErrorToast(error);
-    }
-
-    await loading.dismiss();
-  }
-
-  onChangeDataBits(event: SelectCustomEvent<string>): void {
-    const selectedOption = event.detail.value;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
-      dataBits: parseInt(selectedOption, 10) as 5 | 6 | 7 | 8,
-    }));
-
-    this.applyConnectAdvanced();
-  }
-
-  onChangeStopBits(event: SelectCustomEvent<string>): void {
-    const selectedOption = event.detail.value;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
-      stopBits: parseFloat(selectedOption) as 1 | 1.5 | 2,
-    }));
-
-    this.applyConnectAdvanced();
-  }
-
-  onChangeParity(event: SelectCustomEvent<string>): void {
-    const selectedOption = event.detail.value;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
-      parity: selectedOption,
-    }));
-
-    this.applyConnectAdvanced();
-  }
-
-  onChangeRtscts(event: CheckboxCustomEvent<boolean>): void {
-    const selectedOption = event.detail.checked;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
-      rtscts: selectedOption,
-    }));
-
-    this.applyConnectAdvanced();
-  }
-
-  onChangeXon(event: CheckboxCustomEvent<boolean>): void {
-    const selectedOption = event.detail.checked;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
-      xon: selectedOption,
-    }));
-
-    this.applyConnectAdvanced();
-  }
-
-  onChangeXoff(event: CheckboxCustomEvent<boolean>): void {
-    const selectedOption = event.detail.checked;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
-      xoff: selectedOption,
-    }));
-
-    this.applyConnectAdvanced();
-  }
-
-  onChangeXany(event: CheckboxCustomEvent<boolean>): void {
-    const selectedOption = event.detail.checked;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
-      xany: selectedOption,
-    }));
-
-    this.applyConnectAdvanced();
-  }
-
-  onChangeHupcl(event: CheckboxCustomEvent<boolean>): void {
-    const selectedOption = event.detail.checked;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
-      hupcl: selectedOption,
-    }));
-
-    this.applyConnectAdvanced();
-  }
-
-  onClickClearTerminal(): void {
-    this.clearTerminalSubject.next({ event: 'data', data: '' });
-  }
-
-  onChangeTerminalEncoding(event: SelectCustomEvent<Encoding>): void {
-    const selectedOption = event.detail.value;
-    this.terminalEncoding.set(selectedOption);
-    this.electronService.serialPort.setReadEncoding(selectedOption);
-    this.onClickClearTerminal();
-  }
-
-  onChangeAutoScroll(event: CheckboxCustomEvent<boolean>): void {
-    const selectedOption = event.detail.checked;
-    this.isAutoScrollEnabled.set(selectedOption);
-  }
-
-  onChangeShowTimestamps(event: CheckboxCustomEvent<boolean>): void {
-    const selectedOption = event.detail.checked;
-    this.showTimestampsEnabled.set(selectedOption);
-  }
-
-  onScrollbackLength(event: RangeCustomEvent): void {
-    const selectedOption = event.detail.value as number;
-    this.scrollbackLength.set(selectedOption);
-  }
-
-  pinFormatter(value: number): string {
-    return `${value}0k`;
-  }
-
-  async onClickSend(): Promise<void> {
-    const rawData = this.sendInput()?.value as string;
-    if (rawData) {
-      const formatHexData = (data: string): string => data.replace(/\s+/g, '');
-      const formatDelimitedData = (data: string): string => {
-        const delimiterMap: Record<Delimiter, string> = {
-          none: '',
-          cr: '\r',
-          lf: '\n',
-          crlf: '\r\n',
-        };
-        return data.concat(delimiterMap[this.delimiter()]);
-      };
-
-      const data =
-        this.sendEncoding() === 'hex'
-          ? formatHexData(rawData)
-          : formatDelimitedData(rawData);
-
-      try {
-        const canDandleMoreData = await this.electronService.serialPort.write(
-          data,
-          this.sendEncoding()
-        );
-
-        if (!canDandleMoreData) {
-          this.presentWarningToast('Write buffer is full!');
-        }
-      } catch (error) {
-        this.presentErrorToast(error);
-      }
-    }
-  }
-
-  onChangeSendInput(event: IonInputCustomEvent): void {
-    const inputValue = event.detail.value;
-    if (!inputValue) {
-      this.isSendInputValid.set(false);
-      return;
-    }
-
-    if (this.sendEncoding() !== 'hex') {
-      this.isSendInputValid.set(true);
-      return;
-    }
-
-    const formattedHexValue =
-      inputValue
-        .replace(/[^a-fA-F0-9]/g, '')
-        .toUpperCase()
-        .match(/.{1,2}/g)
-        ?.join(' ') ?? '';
-    event.target.value = formattedHexValue;
-    const isEvenLength = formattedHexValue.replace(/\s+/g, '').length % 2 === 0;
-    this.isSendInputValid.set(isEvenLength);
-  }
-
-  onChangeSendEncoding(event: SelectCustomEvent<Encoding>): void {
-    const selectedOption = event.detail.value;
-    this.sendEncoding.set(selectedOption);
-    const input = this.sendInput();
-    if (input) {
-      input.value = '';
-    }
-  }
-
-  onChangeDelimiter(event: SelectCustomEvent<Delimiter>): void {
-    const selectedOption = event.detail.value;
-    this.delimiter.set(selectedOption);
-    this.applyConnectAdvanced();
-  }
-
-  private async applyConnectAdvanced(): Promise<void> {
-    if (this.isOpen()) {
-      const loading = await this.loadingController.create();
-      await loading.present();
-      try {
-        await this.electronService.serialPort.close();
-        await this.electronService.serialPort.open(this.openOptions());
-        this.onClickClearTerminal();
-      } catch (error) {
-        this.presentErrorToast(error);
-      }
-      await loading.dismiss();
-    }
-  }
-
-  private async presentToast(
-    header: string,
-    message?: string,
-    color?: string
-  ): Promise<void> {
-    const toast = await this.toastController.create({
-      header,
-      message,
-      duration: 3000,
-      position: 'bottom',
-      color,
-    });
-
-    await toast.present();
-  }
-
-  private async presentInfoToast(header: string): Promise<void> {
-    await this.presentToast(header, undefined);
-  }
-
-  private async presentWarningToast(message: string): Promise<void> {
-    await this.presentToast('Warning', message, 'warning');
-  }
-
-  private async presentErrorToast(error: unknown): Promise<void> {
-    await this.presentToast('Error', `${error}`, 'danger');
-  }
 
   private async presentAlert(
     header: string,
@@ -617,7 +318,7 @@ export class AppComponent {
       message,
       buttons,
     });
-    alert.present();
+    await alert.present();
   }
 
   private formatTimestamp(date: Date): string {
@@ -627,10 +328,13 @@ export class AppComponent {
     return `[${hours}:${minutes}:${seconds}]`;
   }
 
-  private async handleAutoScroll(): Promise<void> {
-    const terminalTextArea = this.terminalTextArea();
-    if (this.isAutoScrollEnabled() && terminalTextArea) {
+  async handleAutoScroll(): Promise<void> {
+    const isAutoScrollEnabled = this.terminalOptions().isAutoScrollEnabled;
+
+    if (isAutoScrollEnabled) {
+      const terminalTextArea = this.terminalComponent().terminalTextArea();
       const textarea = await terminalTextArea.getInputElement();
+
       textarea.scrollTo({
         top: textarea.scrollHeight,
         behavior: 'instant',

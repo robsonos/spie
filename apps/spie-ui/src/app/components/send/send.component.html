@@ -1,0 +1,41 @@
+<ion-card>
+  <ion-card-header>
+    <ion-text color="secondary">Send Data</ion-text>
+  </ion-card-header>
+
+  <ion-item lines="none">
+    <ion-input
+      #sendInput
+      placeholder="Type data to send..."
+      class="data-input"
+      [clearInput]="true"
+      (ionInput)="onChangeSendInput($event)"
+      (keyup.enter)="onClickSend()"
+    ></ion-input>
+  </ion-item>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-button
+          expand="block"
+          color="secondary"
+          [disabled]="!isOpen() || !sendOptions().isSendInputValid"
+          (click)="onClickSend()"
+          >Send</ion-button
+        >
+      </ion-col>
+      <ion-col size="auto">
+        <ion-button
+          fill="clear"
+          color="secondary"
+          (click)="onClickSendAdvancedModal()"
+        >
+          <ion-icon name="settings-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <app-send-advanced-modal [(sendOptions)]="sendOptions" />
+</ion-card>
