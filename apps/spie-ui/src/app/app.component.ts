@@ -15,7 +15,7 @@ import {
   LoadingController,
 } from '@ionic/angular/standalone';
 import { type OpenOptions } from '@serialport/bindings-interface';
-import type { SerialPortEvent } from '@spie/types';
+import { type SerialPortEvent } from '@spie/types';
 import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline,
@@ -100,6 +100,8 @@ export class AppComponent {
       .subscribe();
   }
 
+  private terminalComponent =
+    viewChild.required<TerminalComponent>(TerminalComponent);
   private updateModalComponent = viewChild.required(UpdateModalComponent);
 
   openOptions = signal<OpenOptions>({
@@ -115,7 +117,6 @@ export class AppComponent {
     xany: false,
     hupcl: true,
   });
-  reconnectSubject = new Subject<void>();
 
   terminalOptions = signal<TerminalOptions>({
     encoding: 'ascii',
@@ -123,14 +124,15 @@ export class AppComponent {
     showTimestampsEnabled: false,
     scrollbackLength: 1,
   });
-  clearTerminalSubject = new Subject<SerialPortEvent>();
-  terminalComponent = viewChild.required<TerminalComponent>(TerminalComponent);
 
   sendOptions = signal<SendOptions>({
     delimiter: 'lf',
     encoding: 'ascii',
     isSendInputValid: false,
-  }); // TODO: Move to SendComponent?
+  });
+
+  reconnectSubject = new Subject<void>();
+  clearTerminalSubject = new Subject<SerialPortEvent>();
   clearInputSubject = new Subject<void>();
 
   isOpen = toSignal(
@@ -171,7 +173,7 @@ export class AppComponent {
       filter((serialPortEvent) => serialPortEvent.event === 'data'),
       map((serialPortEvent) => {
         const data = serialPortEvent.data;
-        // If data it is clear terminal indication
+        // If data it a "clear terminal" signal
         if (data === '') {
           return '';
         }
@@ -281,10 +283,7 @@ export class AppComponent {
         }
       }),
       switchMap((autoUpdaterEvent) => {
-        if (
-          autoUpdaterEvent &&
-          autoUpdaterEvent.event === 'download-progress'
-        ) {
+        if (autoUpdaterEvent.event === 'download-progress') {
           return of(autoUpdaterEvent.progressInfo);
         }
 
