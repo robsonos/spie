@@ -42,7 +42,10 @@
   // Eslint settings
   "eslint.useFlatConfig": true,
 
-  // Code spell checker serrings
+  // Code spell checker settings
   "cSpell.language": "en,en-AU",
-  "cSpell.words": ["Oliveira", "Scrollback", "SPIE"]
+  "cSpell.words": ["Oliveira", "Scrollback", "SPIE"],
+
+  // Commitlint settings
+  "commitlint.preferBundledLibraries": true
 }
