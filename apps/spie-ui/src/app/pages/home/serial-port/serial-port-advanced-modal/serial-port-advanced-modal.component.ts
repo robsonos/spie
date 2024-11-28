@@ -19,7 +19,7 @@ import { type Subject } from 'rxjs';
 import {
   type CheckboxCustomEvent,
   type SelectCustomEvent,
-} from '../../interfaces/ionic.interface';
+} from '../../../../interfaces/ionic.interface';
 
 @Component({
   selector: 'app-serial-port-advanced-modal',

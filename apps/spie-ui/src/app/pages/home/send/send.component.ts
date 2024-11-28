@@ -15,11 +15,11 @@ import {
 import { type Delimiter } from '@spie/types';
 import { scan } from 'rxjs';
 
-import { type SendOptions } from '../../interfaces/app.interface';
-import { type IonInputCustomEvent } from '../../interfaces/ionic.interface';
-import { ElectronService } from '../../services/electron.service';
-import { ToasterService } from '../../services/toaster.service';
-import { SendAdvancedComponent } from '../send-advanced-modal/send-advanced-modal.component';
+import { SendAdvancedComponent } from './send-advanced-modal/send-advanced-modal.component';
+import { type SendOptions } from '../../../interfaces/app.interface';
+import { type IonInputCustomEvent } from '../../../interfaces/ionic.interface';
+import { ElectronService } from '../../../services/electron.service';
+import { ToasterService } from '../../../services/toaster.service';
 
 @Component({
   selector: 'app-send',

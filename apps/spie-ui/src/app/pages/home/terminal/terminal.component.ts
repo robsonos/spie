@@ -14,8 +14,8 @@ import {
 import { type SerialPortEvent } from '@spie/types';
 import { type Subject } from 'rxjs';
 
-import { type TerminalOptions } from '../../interfaces/app.interface';
-import { TerminalAdvancedComponent } from '../terminal-advanced-modal/terminal-advanced-modal.component';
+import { TerminalAdvancedComponent } from './terminal-advanced-modal/terminal-advanced-modal.component';
+import { type TerminalOptions } from '../../../interfaces/app.interface';
 
 @Component({
   selector: 'app-terminal',

@@ -26,10 +26,10 @@ import {
 } from '@serialport/bindings-interface';
 import { type Subject } from 'rxjs';
 
-import { type SelectCustomEvent } from '../../interfaces/ionic.interface';
-import { ElectronService } from '../../services/electron.service';
-import { ToasterService } from '../../services/toaster.service';
-import { SerialPortAdvancedComponent } from '../serial-port-advanced-modal/serial-port-advanced-modal.component';
+import { SerialPortAdvancedComponent } from './serial-port-advanced-modal/serial-port-advanced-modal.component';
+import { type SelectCustomEvent } from '../../../interfaces/ionic.interface';
+import { ElectronService } from '../../../services/electron.service';
+import { ToasterService } from '../../../services/toaster.service';
 
 @Component({
   selector: 'app-serial-port',

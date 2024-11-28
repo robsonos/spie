@@ -22,6 +22,7 @@ import { type ProgressInfo } from 'electron-updater';
   styleUrls: ['./update-modal.component.scss'],
   standalone: true,
   imports: [
+    DecimalPipe,
     IonContent,
     IonHeader,
     IonIcon,
@@ -34,8 +35,6 @@ import { type ProgressInfo } from 'electron-updater';
     IonSpinner,
     IonTitle,
     IonToolbar,
-    IonToolbar,
-    DecimalPipe,
   ],
 })
 export class UpdateModalComponent {
