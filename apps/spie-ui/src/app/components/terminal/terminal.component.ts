@@ -37,9 +37,9 @@ import { TerminalAdvancedComponent } from '../terminal-advanced-modal/terminal-a
   ],
 })
 export class TerminalComponent {
-  terminalOptions = model.required<TerminalOptions>();
   clearTerminalSubject = input.required<Subject<SerialPortEvent>>();
   data = input.required<string>();
+  terminalOptions = model.required<TerminalOptions>();
 
   terminalTextArea = viewChild.required<IonTextarea>('terminalTextArea');
   private terminalAdvancedComponent = viewChild.required(

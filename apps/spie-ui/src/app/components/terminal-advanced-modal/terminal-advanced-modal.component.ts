@@ -49,8 +49,8 @@ import { ElectronService } from '../../services/electron.service';
 export class TerminalAdvancedComponent {
   private readonly electronService = inject(ElectronService);
 
-  terminalOptions = model.required<TerminalOptions>();
   clearTerminalSubject = input.required<Subject<SerialPortEvent>>();
+  terminalOptions = model.required<TerminalOptions>();
 
   terminalAdvancedModal = viewChild.required<IonModal>('terminalAdvancedModal');
 

@@ -42,8 +42,8 @@ import {
   ],
 })
 export class SerialPortAdvancedComponent {
-  openOptions = model.required<OpenOptions>();
   reconnectSubject = input.required<Subject<void>>();
+  openOptions = model.required<OpenOptions>();
 
   serialPortAdvancedModal = viewChild.required<IonModal>(
     'serialPortAdvancedModal'

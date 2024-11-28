@@ -44,9 +44,6 @@ export class SendComponent {
   private readonly toasterService = inject(ToasterService);
   private readonly electronService = inject(ElectronService);
 
-  isOpen = input.required<boolean>();
-  sendOptions = model.required<SendOptions>();
-
   constructor() {
     toObservable(this.sendOptions)
       .pipe(
@@ -62,6 +59,9 @@ export class SendComponent {
       )
       .subscribe();
   }
+
+  isOpen = input.required<boolean>();
+  sendOptions = model.required<SendOptions>();
 
   private sendInput = viewChild.required<IonInput>('sendInput');
   private sendAdvancedComponent = viewChild.required(SendAdvancedComponent);

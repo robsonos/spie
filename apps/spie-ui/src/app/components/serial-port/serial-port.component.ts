@@ -56,9 +56,9 @@ export class SerialPortComponent {
   private readonly toasterService = inject(ToasterService);
   private readonly electronService = inject(ElectronService);
 
-  openOptions = model.required<OpenOptions>();
   reconnectSubject = input.required<Subject<void>>();
   isOpen = input.required<boolean>();
+  openOptions = model.required<OpenOptions>();
 
   private serialPortAdvancedComponent = viewChild.required(
     SerialPortAdvancedComponent
