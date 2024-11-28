@@ -17,13 +17,13 @@ import {
 import { type Encoding, type SerialPortEvent } from '@spie/types';
 import { type Subject } from 'rxjs';
 
-import { type TerminalOptions } from '../../interfaces/app.interface';
+import { type TerminalOptions } from '../../../../interfaces/app.interface';
 import {
   type CheckboxCustomEvent,
   type RangeCustomEvent,
   type SelectCustomEvent,
-} from '../../interfaces/ionic.interface';
-import { ElectronService } from '../../services/electron.service';
+} from '../../../../interfaces/ionic.interface';
+import { ElectronService } from '../../../../services/electron.service';
 
 @Component({
   selector: 'app-terminal-advanced-modal',

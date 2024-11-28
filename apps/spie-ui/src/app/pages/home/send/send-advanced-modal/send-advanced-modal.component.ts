@@ -14,8 +14,8 @@ import {
 } from '@ionic/angular/standalone';
 import { type Delimiter, type Encoding } from '@spie/types';
 
-import { type SendOptions } from '../../interfaces/app.interface';
-import { type SelectCustomEvent } from '../../interfaces/ionic.interface';
+import { type SendOptions } from '../../../../interfaces/app.interface';
+import { type SelectCustomEvent } from '../../../../interfaces/ionic.interface';
 
 @Component({
   selector: 'app-send-advanced-modal',
