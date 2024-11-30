@@ -9,11 +9,10 @@
         <ion-item>
           <ion-select
             label="Serial Port"
-            placeholder="Select Port"
+            placeholder="Select Serial Port"
             [disabled]="isOpen()"
             (click)="onClickSerialPort($event)"
             (ionChange)="onChangeSerialPort($event)"
-            data-cy="serial-port-select"
           >
             @for (serialPort of serialPorts(); track $index) {
             <ion-select-option [value]="serialPort.path">
@@ -31,7 +30,6 @@
             placeholder="Select Baud Rate"
             (ionChange)="onChangeBaudRate($event)"
             [value]="openOptions().baudRate"
-            data-cy="baud-rate-select"
           >
             @for (baudRate of baudRates; track $index) {
             <ion-select-option [value]="baudRate">{{
@@ -46,11 +44,7 @@
     <ion-row>
       <ion-col>
         @if (isOpen()) {
-        <ion-button
-          expand="block"
-          color="danger"
-          (click)="onClickDisconnect()"
-          data-cy="disconnect-button"
+        <ion-button expand="block" color="danger" (click)="onClickDisconnect()"
           >Disconnect</ion-button
         >
         } @else {
@@ -59,7 +53,6 @@
           color="secondary"
           [disabled]="openOptions().path === ''"
           (click)="onClickConnect()"
-          data-cy="connect-button"
           >Connect</ion-button
         >
         }
