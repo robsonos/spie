@@ -36,8 +36,8 @@ import {
   tap,
 } from 'rxjs';
 
+import { ConnectionComponent } from './connection/connection.component';
 import { SendComponent } from './send/send.component';
-import { SerialPortComponent } from './serial-port/serial-port.component';
 import { TerminalComponent } from './terminal/terminal.component';
 import { UpdateModalComponent } from './update-modal/update-modal.component';
 import {
@@ -58,7 +58,7 @@ import { ToasterService } from '../../services/toaster.service';
     IonTitle,
     IonToolbar,
     SendComponent,
-    SerialPortComponent,
+    ConnectionComponent,
     TerminalComponent,
     UpdateModalComponent,
   ],

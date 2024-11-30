@@ -3,7 +3,7 @@ import { type SerialPortEvent } from '@spie/types';
 
 import { mockElectronAPI } from '../fixtures/mocks/electron-api.mock';
 
-describe('Serial Port Configuration', () => {
+describe('Serial Port component', () => {
   const mockSerialPortList = [
     { path: '/dev/ttyUSB0', manufacturer: 'Manufacturer1' },
     { path: '/dev/ttyUSB1', manufacturer: 'Manufacturer2' },
@@ -40,7 +40,7 @@ describe('Serial Port Configuration', () => {
   });
 
   it('should display available serial ports in the dropdown', () => {
-    cy.get('app-serial-port [placeholder="Select Serial Port"]').click();
+    cy.get('app-connection [placeholder="Select Serial Port"]').click();
     cy.get('ion-alert .alert-radio-button').should(
       'have.length',
       mockSerialPortList.length
@@ -56,11 +56,11 @@ describe('Serial Port Configuration', () => {
   it('should allow selecting a serial port', () => {
     const expectedPath = mockSerialPortList[0].path;
 
-    cy.get('app-serial-port [placeholder="Select Serial Port"]').selectOption(
+    cy.get('app-connection [placeholder="Select Serial Port"]').selectOption(
       expectedPath
     );
 
-    cy.get('app-serial-port [placeholder="Select Serial Port"]')
+    cy.get('app-connection [placeholder="Select Serial Port"]')
       .shadow()
       .find('.select-text')
       .should('contain', expectedPath);
@@ -69,18 +69,18 @@ describe('Serial Port Configuration', () => {
   it('should allow selecting a baud rate', () => {
     const expectedBaudRate = 115200;
 
-    cy.get('app-serial-port [placeholder="Select Baud Rate"]').selectOption(
+    cy.get('app-connection [placeholder="Select Baud Rate"]').selectOption(
       expectedBaudRate
     );
 
-    cy.get('app-serial-port [placeholder="Select Baud Rate"]')
+    cy.get('app-connection [placeholder="Select Baud Rate"]')
       .shadow()
       .find('.select-text')
       .should('contain', expectedBaudRate);
   });
 
   it('should disable the Connect button when no serial port is selected', () => {
-    cy.get('app-serial-port ion-button')
+    cy.get('app-connection ion-button')
       .contains('Connect')
       .should('have.class', 'button-disabled');
   });
@@ -88,10 +88,10 @@ describe('Serial Port Configuration', () => {
   it('should enable the Connect button after selecting a port', () => {
     const expectedPath = mockSerialPortList[0].path;
 
-    cy.get('app-serial-port [placeholder="Select Serial Port"]').selectOption(
+    cy.get('app-connection [placeholder="Select Serial Port"]').selectOption(
       expectedPath
     );
-    cy.get('app-serial-port ion-button')
+    cy.get('app-connection ion-button')
       .contains('Connect')
       .should('not.have.class', 'button-disabled');
   });
@@ -102,14 +102,14 @@ describe('Serial Port Configuration', () => {
       baudRate: 9600,
     };
 
-    cy.get('app-serial-port [placeholder="Select Serial Port"]').selectOption(
+    cy.get('app-connection [placeholder="Select Serial Port"]').selectOption(
       openOptions.path
     );
-    cy.get('app-serial-port [placeholder="Select Baud Rate"]').selectOption(
+    cy.get('app-connection [placeholder="Select Baud Rate"]').selectOption(
       openOptions.baudRate
     );
 
-    cy.get('app-serial-port ion-button').contains('Connect').click();
+    cy.get('app-connection ion-button').contains('Connect').click();
     cy.wrap(null).then(() => {
       if (onEventTrigger) {
         onEventTrigger({ event: 'open' });
@@ -121,11 +121,11 @@ describe('Serial Port Configuration', () => {
         Cypress.sinon.match(openOptions)
       );
     });
-    cy.get('app-serial-port ion-button')
+    cy.get('app-connection ion-button')
       .contains('Disconnect')
       .should('be.visible');
 
-    cy.get('app-serial-port ion-button').contains('Disconnect').click();
+    cy.get('app-connection ion-button').contains('Disconnect').click();
     cy.wrap(null).then(() => {
       if (onEventTrigger) {
         onEventTrigger({ event: 'close' });
@@ -134,7 +134,7 @@ describe('Serial Port Configuration', () => {
     cy.window().then((win) => {
       cy.wrap(win.electron.serialPort.close).should('have.been.calledOnce');
     });
-    cy.get('app-serial-port ion-button')
+    cy.get('app-connection ion-button')
       .contains('Connect')
       .should('be.visible');
   });
@@ -146,7 +146,7 @@ describe('Serial Port Configuration', () => {
       }
     });
 
-    cy.get('app-serial-port [placeholder="Select Baud Rate"]').selectOption(
+    cy.get('app-connection [placeholder="Select Baud Rate"]').selectOption(
       115200
     );
 
@@ -157,13 +157,13 @@ describe('Serial Port Configuration', () => {
       );
     });
 
-    cy.get('app-serial-port ion-button')
+    cy.get('app-connection ion-button')
       .contains('Disconnect')
       .should('be.visible');
   });
 
   it('should open and close the advanced modal', () => {
-    cy.get('app-serial-port ion-button ion-icon').parent().click();
+    cy.get('app-connection ion-button ion-icon').parent().click();
     cy.get('ion-modal').should('be.visible');
     cy.get('ion-modal ion-toolbar ion-button').click();
     cy.get('ion-modal').should('not.be.visible');
@@ -176,15 +176,15 @@ describe('Serial Port Configuration', () => {
       }
     });
 
-    cy.get('app-serial-port ion-button ion-icon').parent().click();
+    cy.get('app-connection ion-button ion-icon').parent().click();
 
     cy.getAdvancedModalCheckboxElement(
-      'serial-port-advanced-modal',
+      'connection-advanced-modal',
       'HUPCL'
     ).click();
 
     cy.getAdvancedModalSelectElement(
-      'serial-port-advanced-modal',
+      'connection-advanced-modal',
       'Data Bits'
     ).selectOption('5');
 
@@ -198,7 +198,7 @@ describe('Serial Port Configuration', () => {
         );
         cy.wrap(win.electron.serialPort.close).should('have.been.calledOnce');
 
-        cy.get('app-serial-port ion-button')
+        cy.get('app-connection ion-button')
           .contains('Disconnect')
           .should('be.visible');
       }, 500);

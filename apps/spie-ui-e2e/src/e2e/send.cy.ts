@@ -2,7 +2,7 @@ import { type SerialPortEvent } from '@spie/types';
 
 import { mockElectronAPI } from '../fixtures/mocks/electron-api.mock';
 
-describe('Serial Port Advanced Modal', () => {
+describe('Send component', () => {
   const mockSerialPortList = [
     { path: '/dev/ttyUSB0', manufacturer: 'Manufacturer1' },
     { path: '/dev/ttyUSB1', manufacturer: 'Manufacturer2' },
