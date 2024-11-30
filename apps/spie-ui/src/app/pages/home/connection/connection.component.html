@@ -1,6 +1,6 @@
 <ion-card>
   <ion-card-header>
-    <ion-text color="secondary">Serial Port</ion-text>
+    <ion-text color="secondary">Connection</ion-text>
   </ion-card-header>
 
   <ion-grid>
@@ -61,7 +61,7 @@
         <ion-button
           fill="clear"
           color="secondary"
-          (click)="onClickSerialPortAdvancedModal()"
+          (click)="onClickConnectionAdvancedModal()"
         >
           <ion-icon name="settings-outline"></ion-icon>
         </ion-button>
@@ -69,7 +69,7 @@
     </ion-row>
   </ion-grid>
 
-  <app-serial-port-advanced-modal
+  <app-connection-advanced-modal
     [(openOptions)]="openOptions"
     [reconnectSubject]="reconnectSubject()"
   />

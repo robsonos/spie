@@ -26,15 +26,15 @@ import {
 } from '@serialport/bindings-interface';
 import { type Subject } from 'rxjs';
 
-import { SerialPortAdvancedComponent } from './serial-port-advanced-modal/serial-port-advanced-modal.component';
+import { ConnectionAdvancedComponent } from './connection-advanced-modal/connection-advanced-modal.component';
 import { type SelectCustomEvent } from '../../../interfaces/ionic.interface';
 import { ElectronService } from '../../../services/electron.service';
 import { ToasterService } from '../../../services/toaster.service';
 
 @Component({
-  selector: 'app-serial-port',
-  templateUrl: 'serial-port.component.html',
-  styleUrls: ['./serial-port.component.scss'],
+  selector: 'app-connection',
+  templateUrl: './connection.component.html',
+  styleUrls: ['./connection.component.scss'],
   standalone: true,
   imports: [
     IonButton,
@@ -48,10 +48,10 @@ import { ToasterService } from '../../../services/toaster.service';
     IonSelect,
     IonSelectOption,
     IonText,
-    SerialPortAdvancedComponent,
+    ConnectionAdvancedComponent,
   ],
 })
-export class SerialPortComponent {
+export class ConnectionComponent {
   private readonly loadingController = inject(LoadingController);
   private readonly toasterService = inject(ToasterService);
   private readonly electronService = inject(ElectronService);
@@ -60,8 +60,8 @@ export class SerialPortComponent {
   isOpen = input.required<boolean>();
   openOptions = model.required<OpenOptions>();
 
-  private serialPortAdvancedComponent = viewChild.required(
-    SerialPortAdvancedComponent
+  private connectionAdvancedComponent = viewChild.required(
+    ConnectionAdvancedComponent
   );
 
   baudRates = [
@@ -140,7 +140,7 @@ export class SerialPortComponent {
     await loading.dismiss();
   }
 
-  async onClickSerialPortAdvancedModal() {
-    this.serialPortAdvancedComponent().serialPortAdvancedModal().present();
+  async onClickConnectionAdvancedModal() {
+    this.connectionAdvancedComponent().connectionAdvancedModal().present();
   }
 }

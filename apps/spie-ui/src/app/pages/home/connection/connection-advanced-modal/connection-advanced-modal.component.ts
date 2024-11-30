@@ -22,9 +22,9 @@ import {
 } from '../../../../interfaces/ionic.interface';
 
 @Component({
-  selector: 'app-serial-port-advanced-modal',
-  templateUrl: 'serial-port-advanced-modal.component.html',
-  styleUrls: ['./serial-port-advanced-modal.component.scss'],
+  selector: 'app-connection-advanced-modal',
+  templateUrl: 'connection-advanced-modal.component.html',
+  styleUrls: ['./connection-advanced-modal.component.scss'],
   standalone: true,
   imports: [
     IonButton,
@@ -41,12 +41,12 @@ import {
     IonToolbar,
   ],
 })
-export class SerialPortAdvancedComponent {
+export class ConnectionAdvancedComponent {
   reconnectSubject = input.required<Subject<void>>();
   openOptions = model.required<OpenOptions>();
 
-  serialPortAdvancedModal = viewChild.required<IonModal>(
-    'serialPortAdvancedModal'
+  connectionAdvancedModal = viewChild.required<IonModal>(
+    'connectionAdvancedModal'
   );
 
   onChangeDataBits(event: SelectCustomEvent<string>): void {
