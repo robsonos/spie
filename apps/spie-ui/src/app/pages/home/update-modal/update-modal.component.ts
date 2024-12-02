@@ -38,9 +38,9 @@ import { type ProgressInfo } from 'electron-updater';
   ],
 })
 export class UpdateModalComponent {
-  updateModal = viewChild.required<IonModal>('updateModal');
-
   progressInfo = input.required<ProgressInfo>();
+
+  updateModal = viewChild.required<IonModal>('updateModal');
 
   formatBytes(bytes: number, decimals = 2): string {
     if (bytes === 0) return '0 Bytes';

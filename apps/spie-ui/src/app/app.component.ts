@@ -1,5 +1,14 @@
 import { Component } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import {
+  cloudUploadOutline,
+  documentOutline,
+  settingsOutline,
+  speedometerOutline,
+  statsChartOutline,
+  timeOutline,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-root',
@@ -8,4 +17,13 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
   standalone: true,
   imports: [IonApp, IonRouterOutlet],
 })
-export class AppComponent {}
+export class AppComponent {
+  constructor() {
+    addIcons({ settingsOutline });
+    addIcons({ documentOutline });
+    addIcons({ cloudUploadOutline });
+    addIcons({ speedometerOutline });
+    addIcons({ statsChartOutline });
+    addIcons({ timeOutline });
+  }
+}

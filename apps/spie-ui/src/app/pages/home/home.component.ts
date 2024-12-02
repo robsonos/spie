@@ -15,15 +15,6 @@ import {
 } from '@ionic/angular/standalone';
 import { type OpenOptions } from '@serialport/bindings-interface';
 import { type SerialPortEvent } from '@spie/types';
-import { addIcons } from 'ionicons';
-import {
-  cloudUploadOutline,
-  documentOutline,
-  settingsOutline,
-  speedometerOutline,
-  statsChartOutline,
-  timeOutline,
-} from 'ionicons/icons';
 import {
   Subject,
   filter,
@@ -70,13 +61,6 @@ export class HomeComponent {
   private readonly electronService = inject(ElectronService);
 
   constructor() {
-    addIcons({ settingsOutline });
-    addIcons({ documentOutline });
-    addIcons({ cloudUploadOutline });
-    addIcons({ speedometerOutline });
-    addIcons({ statsChartOutline });
-    addIcons({ timeOutline });
-
     this.reconnectSubject
       .pipe(
         takeUntilDestroyed(),
