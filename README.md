@@ -1,8 +1,8 @@
-<p align=center>
+<p align="center">
   <img src="./docs/logo.png" width="500">
-<h3 align=center> SPIE</h3>
+<h3 align="center"> SPIE</h3>
 </p>
-<p align=center>
+<p align="center">
   <img src="https://img.shields.io/maintenance/yes/2024?style=flat-square"/>
   <a href="https://github.com/robsonos/spie/actions/workflows/ci.yaml">
     <img
@@ -140,7 +140,7 @@ void loop() {
 
 Here are the most commonly used NX tasks:
 
-- Serve the application
+- Serve the applications:
 
 ```sh
 nx run-many -t serve
@@ -158,18 +158,37 @@ nx run-many -t lint
 nx run-many -t test
 ```
 
-- Build and generate unpacked executables:
+- Build the applications (development):
 
 ```sh
-nx run-many -t build; nx run spie:package
+nx run-many -t build
+
+```
+
+- Build the applications (production):
+
+```sh
+nx run-many -t build --prod
+```
+
+- Build and generate unpacked executables:
+
+> [!WARNING]
+> Build the applications first
+
+```sh
+nx run spie:package
 ```
 
 Output files are located in `dist\packages`
 
 - Build and generate the executables:
 
+> [!WARNING]
+> Build the applications first
+
 ```sh
-nx run-many -t build; nx run spie:make
+ nx run spie:make
 ```
 
 Output files are located in `dist\executables`

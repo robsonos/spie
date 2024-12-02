@@ -1,35 +1,46 @@
-/// <reference types="cypress" />
+export {};
 
-// ***********************************************
-// This example commands.ts shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-
-// eslint-disable-next-line @typescript-eslint/no-namespace
-declare namespace Cypress {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface Chainable<Subject> {
-    login(email: string, password: string): void;
+declare global {
+  namespace Cypress {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    interface Chainable<Subject> {
+      getAdvancedModalSelectElement(
+        modal: string,
+        label: string
+      ): Cypress.Chainable;
+      getAdvancedModalCheckboxElement(
+        modal: string,
+        label: string
+      ): Cypress.Chainable;
+      selectOption(option: string | number): Cypress.Chainable;
+    }
   }
 }
 
-// -- This is a parent command --
-Cypress.Commands.add('login', (email, password) => {
-  console.log('Custom command example: Login', email, password);
-});
-//
-// -- This is a child command --
-// Cypress.Commands.add("drag", { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add("dismiss", { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+Cypress.Commands.add(
+  'getAdvancedModalSelectElement',
+  (modal: string, label: string) => {
+    return cy
+      .get(`ion-modal#${modal} ion-content ion-list`)
+      .get(`[label="${label}"]`);
+  }
+);
+
+Cypress.Commands.add(
+  'getAdvancedModalCheckboxElement',
+  (modal: string, label: string) => {
+    return cy
+      .get(`ion-modal#${modal} ion-content ion-list ion-checkbox`)
+      .contains(label);
+  }
+);
+
+Cypress.Commands.add(
+  'selectOption',
+  { prevSubject: 'element' },
+  (subject, option: string | number) => {
+    cy.wrap(subject).click();
+    cy.get('ion-alert .alert-radio-button').contains(option).click();
+    cy.get('ion-alert button.alert-button').contains('OK').click();
+  }
+);

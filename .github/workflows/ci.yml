@@ -5,12 +5,8 @@ on:
     branches:
       - dev
 
-# permissions:
-#   actions: read
-#   contents: read
-
 jobs:
-  ci-renderer:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
@@ -29,10 +25,15 @@ jobs:
           node-version-file: '.nvmrc'
           cache: npm
 
+      - name: Add missing dependencies on act
+        if: ${{ env.ACT }}
+        run: apt-get update && apt-get install xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb -y
+
       - name: Install dependencies
         run: npm ci
 
       - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        if: ${{ !env.ACT }}
         uses: nrwl/nx-set-shas@v4
 
       - name: Run CI on affected projects
@@ -55,36 +56,3 @@ jobs:
         if: ${{ steps.nx-release.outputs.new_release_version != '' }}
         run: |
           echo "Version ${{ steps.nx-release.outputs.new_release_version }} will be released" >> $GITHUB_STEP_SUMMARY
-
-  ci-electron:
-    needs: [ci-renderer]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup NodeJS
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: npm
-
-      - name: Install setuptools on macOS
-        if: matrix.os == 'macos-latest'
-        run: python3 -m pip install setuptools --break-system-packages
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npx nx run-many -t build
-
-      - name: Build unpacked executable
-        run: npx nx run spie:package

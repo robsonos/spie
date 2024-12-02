@@ -1,6 +1,11 @@
 {
   // General editor settings
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.removeUnusedImports": "always",
+    "source.fixAll": "always",
+    "source.addMissingImports.ts": "always"
+  },
   "editor.wordWrap": "wordWrapColumn",
   "editor.wordWrapColumn": 120,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -36,15 +41,11 @@
 
   // Eslint settings
   "eslint.useFlatConfig": true,
-  "eslint.workingDirectories": [{ "mode": "auto" }],
-  "eslint.options": {
-    "overrideConfigFile": "./eslint.config.js"
-  },
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "always"
-  },
 
-  // Code spell checker serrings
+  // Code spell checker settings
   "cSpell.language": "en,en-AU",
-  "cSpell.words": ["Oliveira", "Scrollback", "SPIE"]
+  "cSpell.words": ["Oliveira", "Scrollback", "SPIE"],
+
+  // Commitlint settings
+  "commitlint.preferBundledLibraries": true
 }

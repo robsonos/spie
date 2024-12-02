@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Serial Monitor</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <app-connection
+    [(openOptions)]="openOptions"
+    [isOpen]="isOpen()"
+    [reconnectSubject]="reconnectSubject"
+  />
+
+  <app-terminal
+    [(terminalOptions)]="terminalOptions"
+    [clearTerminalSubject]="clearTerminalSubject"
+    [data]="data()"
+  />
+
+  <app-send [(sendOptions)]="sendOptions" [isOpen]="isOpen()" />
+
+  <app-update-modal [progressInfo]="progressInfo()" />
+
+  <!-- For debug purposes -->
+  <!-- <pre>{{ openOptions() | json }}</pre>
+    <pre>{{ terminalOptions() | json }}</pre>
+    <pre>{{ sendOptions() | json }}</pre> -->
+</ion-content>
