@@ -33,8 +33,8 @@ jobs:
       - name: Build
         run: npx nx run-many -t build --prod
 
-      # Temporary fix for https://github.com/bennymeg/nx-electron/issues/270
       - name: Update version in package.json
+        # Temporary fix for https://github.com/bennymeg/nx-electron/issues/270
         run: |
           node -e "const fs = require('fs');
                   const tag = process.env.TAG || '';
@@ -49,9 +49,33 @@ jobs:
       - name: Build executable
         run: npx nx run spie:make
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.os }}
+          path: |
+            dist/executables/latest*.yml
+            dist/executables/*.xz
+            dist/executables/*.rpm
+            dist/executables/*.zip
+            dist/executables/*.dmg
+            dist/executables/*.exe
+            dist/executables/*.deb
+            dist/executables/*.blockmap
+
+  upload-assets:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/executables
+
       - name: Upload Assets to Release
+        if: ${{ !env.ACT }}
         uses: alexellis/upload-assets@0.4.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_paths: '["dist/executables/latest*.yml","dist/executables/*.xz","dist/executables/*.rpm","dist/executables/*.zip","dist/executables/*.dmg","dist/executables/*.exe","dist/executables/*.deb, dist/executables/*.blockmap"]'
+          asset_paths: '["dist/executables/*"]'
