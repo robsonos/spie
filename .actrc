@@ -3,5 +3,5 @@
 --var-file .act.variables
 --secret-file .act.secrets
 --input-file .act.input
---artifact-server-path .tmp
+--artifact-server-path ./dist/gh-upload-artifact
 # --action-offline-mode
