@@ -1,4 +1,4 @@
-import { Component, inject, input, model, viewChild } from '@angular/core';
+import { Component, inject, viewChild } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -14,16 +14,15 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { type Encoding, type SerialPortEvent } from '@spie/types';
-import { type Subject } from 'rxjs';
+import { type Encoding } from '@spie/types';
 
-import { type TerminalOptions } from '../../../../interfaces/app.interface';
 import {
   type CheckboxCustomEvent,
   type RangeCustomEvent,
   type SelectCustomEvent,
 } from '../../../../interfaces/ionic.interface';
 import { ElectronService } from '../../../../services/electron.service';
+import { SerialPortService } from '../../../../services/serial-port.service';
 
 @Component({
   selector: 'app-terminal-advanced-modal',
@@ -48,9 +47,10 @@ import { ElectronService } from '../../../../services/electron.service';
 })
 export class TerminalAdvancedComponent {
   private readonly electronService = inject(ElectronService);
+  private readonly serialPortService = inject(SerialPortService);
 
-  clearTerminalSubject = input.required<Subject<SerialPortEvent>>();
-  terminalOptions = model.required<TerminalOptions>();
+  clearDataSubject = this.serialPortService.clearDataSubject;
+  terminalOptions = this.serialPortService.terminalOptions;
 
   terminalAdvancedModal = viewChild.required<IonModal>('terminalAdvancedModal');
 
@@ -62,7 +62,7 @@ export class TerminalAdvancedComponent {
     }));
 
     this.electronService.serialPort.setReadEncoding(selectedOption);
-    this.clearTerminalSubject().next({ event: 'data', data: '' });
+    this.clearDataSubject.next({ event: 'data', data: '' });
   }
 
   onChangeShowTimestamps(event: CheckboxCustomEvent<boolean>): void {
@@ -72,7 +72,7 @@ export class TerminalAdvancedComponent {
       showTimestampsEnabled: selectedOption,
     }));
 
-    this.clearTerminalSubject().next({ event: 'data', data: '' });
+    this.clearDataSubject.next({ event: 'data', data: '' });
   }
 
   onChangeAutoScroll(event: CheckboxCustomEvent<boolean>): void {
@@ -82,7 +82,7 @@ export class TerminalAdvancedComponent {
       isAutoScrollEnabled: selectedOption,
     }));
 
-    // this.clearTerminalSubject().next({ event: 'data', data: '' });
+    // this.clearDataSubject.next({ event: 'data', data: '' });
   }
   onScrollbackLength(event: RangeCustomEvent): void {
     const selectedOption = event.detail.value as number;
@@ -91,7 +91,7 @@ export class TerminalAdvancedComponent {
       scrollbackLength: selectedOption,
     }));
 
-    // this.clearTerminalSubject().next({ event: 'data', data: '' });
+    // this.clearDataSubject.next({ event: 'data', data: '' });
   }
 
   pinFormatter(value: number): string {

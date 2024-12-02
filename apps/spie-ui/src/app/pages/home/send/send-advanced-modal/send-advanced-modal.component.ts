@@ -1,4 +1,4 @@
-import { Component, model, viewChild } from '@angular/core';
+import { Component, inject, viewChild } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -14,8 +14,8 @@ import {
 } from '@ionic/angular/standalone';
 import { type Delimiter, type Encoding } from '@spie/types';
 
-import { type SendOptions } from '../../../../interfaces/app.interface';
 import { type SelectCustomEvent } from '../../../../interfaces/ionic.interface';
+import { SerialPortService } from '../../../../services/serial-port.service';
 
 @Component({
   selector: 'app-send-advanced-modal',
@@ -37,7 +37,9 @@ import { type SelectCustomEvent } from '../../../../interfaces/ionic.interface';
   ],
 })
 export class SendAdvancedComponent {
-  sendOptions = model.required<SendOptions>();
+  private readonly serialPortService = inject(SerialPortService);
+
+  sendOptions = this.serialPortService.sendOptions;
 
   sendAdvancedModal = viewChild.required<IonModal>('sendAdvancedModal');
 

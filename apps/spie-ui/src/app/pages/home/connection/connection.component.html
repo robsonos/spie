@@ -69,8 +69,5 @@
     </ion-row>
   </ion-grid>
 
-  <app-connection-advanced-modal
-    [(openOptions)]="openOptions"
-    [reconnectSubject]="reconnectSubject()"
-  />
+  <app-connection-advanced-modal [reconnectSubject]="reconnectSubject" />
 </ion-card>

@@ -1,6 +1,9 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, input, viewChild } from '@angular/core';
+import { Component, inject, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
+  type AlertButton,
+  AlertController,
   IonContent,
   IonHeader,
   IonIcon,
@@ -14,7 +17,10 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { type ProgressInfo } from 'electron-updater';
+import { of, switchMap, tap } from 'rxjs';
+
+import { ElectronService } from '../../../services/electron.service';
+import { ToasterService } from '../../../services/toaster.service';
 
 @Component({
   selector: 'app-update-modal',
@@ -38,7 +44,98 @@ import { type ProgressInfo } from 'electron-updater';
   ],
 })
 export class UpdateModalComponent {
-  progressInfo = input.required<ProgressInfo>();
+  private readonly electronService = inject(ElectronService);
+  private readonly toasterService = inject(ToasterService);
+  private readonly alertController = inject(AlertController);
+
+  progressInfo = toSignal(
+    this.electronService.onUpdateEvent().pipe(
+      tap(async (autoUpdaterEvent) => {
+        if (autoUpdaterEvent.event === 'checking-for-update') {
+          await this.toasterService.presentInfoToast('Checking for Updates');
+        }
+
+        if (autoUpdaterEvent.event === 'update-not-available') {
+          await this.toasterService.presentInfoToast('No Updates Available');
+        }
+
+        if (autoUpdaterEvent.event === 'update-available') {
+          await this.presentAlert(
+            'Update Available for Download',
+            `Version ${autoUpdaterEvent.updateInfo.version} is ready for download.`,
+            [
+              {
+                text: 'Cancel',
+                role: 'cancel',
+              },
+              {
+                text: 'Download',
+                role: 'confirm',
+                handler: async () => {
+                  this.electronService.downloadUpdate();
+                  await this.updateModal().present();
+                },
+              },
+            ]
+          );
+        }
+
+        if (autoUpdaterEvent.event === 'update-downloaded') {
+          await this.presentAlert(
+            'Update Ready to Install',
+            `Version ${autoUpdaterEvent.updateDownloadedEvent.version} is ready to install.`,
+            [
+              {
+                text: 'Cancel',
+                role: 'cancel',
+              },
+              {
+                text: 'Install',
+                role: 'confirm',
+                handler: () => {
+                  this.electronService.installUpdate();
+                },
+              },
+            ]
+          );
+        }
+
+        if (autoUpdaterEvent.event === 'update-cancelled') {
+          await this.toasterService.presentErrorToast('Update Cancelled');
+        }
+
+        if (
+          autoUpdaterEvent.event === 'update-downloaded' ||
+          autoUpdaterEvent.event === 'update-cancelled' ||
+          autoUpdaterEvent.event === 'error'
+        ) {
+          await this.updateModal().dismiss();
+        }
+      }),
+      switchMap((autoUpdaterEvent) => {
+        if (autoUpdaterEvent.event === 'download-progress') {
+          return of(autoUpdaterEvent.progressInfo);
+        }
+
+        return of({
+          total: 0,
+          delta: 0,
+          transferred: 0,
+          percent: 0,
+          bytesPerSecond: 0,
+        });
+      })
+    ),
+    {
+      initialValue: {
+        total: 0,
+        delta: 0,
+        transferred: 0,
+        percent: 0,
+        bytesPerSecond: 0,
+      },
+    }
+  );
 
   updateModal = viewChild.required<IonModal>('updateModal');
 
@@ -69,5 +166,18 @@ export class UpdateModalComponent {
       const seconds = Math.round(remainingSeconds % 60);
       return `${minutes}m ${seconds}s`;
     }
+  }
+
+  private async presentAlert(
+    header: string,
+    message?: string,
+    buttons?: (AlertButton | string)[]
+  ): Promise<void> {
+    const alert = await this.alertController.create({
+      header,
+      message,
+      buttons,
+    });
+    await alert.present();
   }
 }

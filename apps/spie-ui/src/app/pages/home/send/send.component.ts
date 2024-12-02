@@ -1,4 +1,4 @@
-import { Component, inject, input, model, viewChild } from '@angular/core';
+import { Component, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   IonButton,
@@ -16,9 +16,9 @@ import { type Delimiter } from '@spie/types';
 import { scan } from 'rxjs';
 
 import { SendAdvancedComponent } from './send-advanced-modal/send-advanced-modal.component';
-import { type SendOptions } from '../../../interfaces/app.interface';
 import { type IonInputCustomEvent } from '../../../interfaces/ionic.interface';
 import { ElectronService } from '../../../services/electron.service';
+import { SerialPortService } from '../../../services/serial-port.service';
 import { ToasterService } from '../../../services/toaster.service';
 
 @Component({
@@ -43,6 +43,7 @@ import { ToasterService } from '../../../services/toaster.service';
 export class SendComponent {
   private readonly toasterService = inject(ToasterService);
   private readonly electronService = inject(ElectronService);
+  private readonly serialPortService = inject(SerialPortService);
 
   constructor() {
     toObservable(this.sendOptions)
@@ -60,8 +61,8 @@ export class SendComponent {
       .subscribe();
   }
 
-  isOpen = input.required<boolean>();
-  sendOptions = model.required<SendOptions>();
+  isOpen = this.serialPortService.isOpen;
+  sendOptions = this.serialPortService.sendOptions;
 
   private sendInput = viewChild.required<IonInput>('sendInput');
   private sendAdvancedComponent = viewChild.required(SendAdvancedComponent);

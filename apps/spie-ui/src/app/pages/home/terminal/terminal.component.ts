@@ -1,4 +1,4 @@
-import { Component, input, model, viewChild } from '@angular/core';
+import { Component, effect, inject, viewChild } from '@angular/core';
 import {
   IonButton,
   IonCard,
@@ -11,11 +11,9 @@ import {
   IonText,
   IonTextarea,
 } from '@ionic/angular/standalone';
-import { type SerialPortEvent } from '@spie/types';
-import { type Subject } from 'rxjs';
 
 import { TerminalAdvancedComponent } from './terminal-advanced-modal/terminal-advanced-modal.component';
-import { type TerminalOptions } from '../../../interfaces/app.interface';
+import { SerialPortService } from '../../../services/serial-port.service';
 
 @Component({
   selector: 'app-terminal',
@@ -37,9 +35,28 @@ import { type TerminalOptions } from '../../../interfaces/app.interface';
   ],
 })
 export class TerminalComponent {
-  clearTerminalSubject = input.required<Subject<SerialPortEvent>>();
-  data = input.required<string>();
-  terminalOptions = model.required<TerminalOptions>();
+  private readonly serialPortService = inject(SerialPortService);
+
+  constructor() {
+    effect(async () => {
+      if (this.data() !== '') {
+        // Apply auto scroll
+        const isAutoScrollEnabled = this.terminalOptions().isAutoScrollEnabled;
+        if (isAutoScrollEnabled) {
+          const terminalTextArea = this.terminalTextArea();
+          const textarea = await terminalTextArea.getInputElement();
+          textarea.scrollTo({
+            top: textarea.scrollHeight,
+            behavior: 'instant',
+          });
+        }
+      }
+    });
+  }
+
+  clearDataSubject = this.serialPortService.clearDataSubject;
+  data = this.serialPortService.data;
+  terminalOptions = this.serialPortService.terminalOptions;
 
   terminalTextArea = viewChild.required<IonTextarea>('terminalTextArea');
   private terminalAdvancedComponent = viewChild.required(
@@ -47,7 +64,7 @@ export class TerminalComponent {
   );
 
   onClickClearTerminal(): void {
-    this.clearTerminalSubject().next({ event: 'data', data: '' });
+    this.clearDataSubject.next({ event: 'data', data: '' });
   }
 
   async onClickTerminalAdvancedModal() {

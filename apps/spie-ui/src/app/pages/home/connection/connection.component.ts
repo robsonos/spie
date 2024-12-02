@@ -1,11 +1,5 @@
-import {
-  Component,
-  inject,
-  input,
-  model,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   IonButton,
   IonCard,
@@ -20,15 +14,13 @@ import {
   IonText,
   LoadingController,
 } from '@ionic/angular/standalone';
-import {
-  type OpenOptions,
-  type PortInfo,
-} from '@serialport/bindings-interface';
-import { type Subject } from 'rxjs';
+import { type PortInfo } from '@serialport/bindings-interface';
+import { Subject, tap } from 'rxjs';
 
 import { ConnectionAdvancedComponent } from './connection-advanced-modal/connection-advanced-modal.component';
 import { type SelectCustomEvent } from '../../../interfaces/ionic.interface';
 import { ElectronService } from '../../../services/electron.service';
+import { SerialPortService } from '../../../services/serial-port.service';
 import { ToasterService } from '../../../services/toaster.service';
 
 @Component({
@@ -55,10 +47,37 @@ export class ConnectionComponent {
   private readonly loadingController = inject(LoadingController);
   private readonly toasterService = inject(ToasterService);
   private readonly electronService = inject(ElectronService);
+  private readonly serialPortService = inject(SerialPortService);
 
-  reconnectSubject = input.required<Subject<void>>();
-  isOpen = input.required<boolean>();
-  openOptions = model.required<OpenOptions>();
+  constructor() {
+    this.reconnectSubject
+      .pipe(
+        takeUntilDestroyed(),
+
+        tap(async () => {
+          if (this.isOpen()) {
+            const loading = await this.loadingController.create();
+            await loading.present();
+            try {
+              await this.electronService.serialPort.close();
+              await this.electronService.serialPort.open(this.openOptions());
+              this.serialPortService.clearDataSubject.next({
+                event: 'data',
+                data: '',
+              });
+            } catch (error) {
+              await this.toasterService.presentErrorToast(error);
+            }
+            await loading.dismiss();
+          }
+        })
+      )
+      .subscribe();
+  }
+
+  isOpen = this.serialPortService.isOpen;
+  openOptions = this.serialPortService.openOptions;
+  reconnectSubject = new Subject<void>();
 
   private connectionAdvancedComponent = viewChild.required(
     ConnectionAdvancedComponent
@@ -111,7 +130,7 @@ export class ConnectionComponent {
       baudRate: parseInt(selectedOption, 10),
     }));
 
-    this.reconnectSubject().next();
+    this.reconnectSubject.next();
   }
 
   async onClickDisconnect(): Promise<void> {

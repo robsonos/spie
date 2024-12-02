@@ -1,4 +1,4 @@
-import { Component, input, model, viewChild } from '@angular/core';
+import { Component, inject, input, viewChild } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -13,13 +13,13 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { type OpenOptions } from '@serialport/bindings-interface';
 import { type Subject } from 'rxjs';
 
 import {
   type CheckboxCustomEvent,
   type SelectCustomEvent,
 } from '../../../../interfaces/ionic.interface';
+import { SerialPortService } from '../../../../services/serial-port.service';
 
 @Component({
   selector: 'app-connection-advanced-modal',
@@ -42,8 +42,10 @@ import {
   ],
 })
 export class ConnectionAdvancedComponent {
+  private readonly serialPortService = inject(SerialPortService);
+
   reconnectSubject = input.required<Subject<void>>();
-  openOptions = model.required<OpenOptions>();
+  openOptions = this.serialPortService.openOptions;
 
   connectionAdvancedModal = viewChild.required<IonModal>(
     'connectionAdvancedModal'

@@ -19,9 +19,9 @@ import {
 })
 export class AppComponent {
   constructor() {
-    addIcons({ settingsOutline });
-    addIcons({ documentOutline });
     addIcons({ cloudUploadOutline });
+    addIcons({ documentOutline });
+    addIcons({ settingsOutline });
     addIcons({ speedometerOutline });
     addIcons({ statsChartOutline });
     addIcons({ timeOutline });

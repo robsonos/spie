@@ -5,22 +5,10 @@
 </ion-header>
 
 <ion-content>
-  <app-connection
-    [(openOptions)]="openOptions"
-    [isOpen]="isOpen()"
-    [reconnectSubject]="reconnectSubject"
-  />
-
-  <app-terminal
-    [(terminalOptions)]="terminalOptions"
-    [clearTerminalSubject]="clearTerminalSubject"
-    [data]="data()"
-  />
-
-  <app-send [(sendOptions)]="sendOptions" [isOpen]="isOpen()" />
-
-  <app-update-modal [progressInfo]="progressInfo()" />
-
+  <app-connection />
+  <app-terminal />
+  <app-send />
+  <app-update-modal />
   <!-- For debug purposes -->
   <!-- <pre>{{ openOptions() | json }}</pre>
     <pre>{{ terminalOptions() | json }}</pre>
