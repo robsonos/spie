@@ -14,9 +14,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ElectronService {
-  getPlatform(): string {
-    return window.electron.platform;
-  }
+  platform = window.electron.platform;
 
   quit(code = 0): void {
     window.electron.quit(code);
@@ -77,6 +75,14 @@ export class ElectronService {
 
     setReadEncoding(encoding: Encoding): Promise<void> {
       return window.electron.serialPort.setReadEncoding(encoding);
+    }
+
+    getReadEncoding(): Promise<Encoding> {
+      return window.electron.serialPort.getReadEncoding();
+    }
+
+    getOpenOptions(): Promise<OpenOptions | null> {
+      return window.electron.serialPort.getOpenOptions();
     }
 
     onEvent(): Observable<SerialPortEvent> {

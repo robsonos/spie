@@ -37,6 +37,8 @@ export const electronAPI: ElectronAPI = {
     isOpen: () => ipcRenderer.invoke('serial-port-is-open'),
     setReadEncoding: (encoding: Encoding) =>
       ipcRenderer.invoke('serial-port-set-read-encoding', encoding),
+    getReadEncoding: () => ipcRenderer.invoke('serial-port-get-read-encoding'),
+    getOpenOptions: () => ipcRenderer.invoke('serial-port-get-open-options'),
     onEvent: (callback: (serialPortEvent: SerialPortEvent) => void) => {
       const eventName = 'serial-port-notification';
       const dataListener = (

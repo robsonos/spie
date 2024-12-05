@@ -14,11 +14,11 @@ import {
 } from '@ionic/angular/standalone';
 import { type Delimiter, type Encoding } from '@spie/types';
 
-import { type SelectCustomEvent } from '../../../../interfaces/ionic.interface';
-import { SerialPortService } from '../../../../services/serial-port.service';
+import { type SelectCustomEvent } from '../../interfaces/ionic.interface';
+import { SerialPortService } from '../../services/serial-port.service';
 
 @Component({
-  selector: 'app-send-advanced-modal',
+  selector: 'app-send-advanced-modal-component',
   templateUrl: 'send-advanced-modal.component.html',
   styleUrls: ['./send-advanced-modal.component.scss'],
   standalone: true,
@@ -45,16 +45,16 @@ export class SendAdvancedComponent {
 
   onChangeSendEncoding(event: SelectCustomEvent<Encoding>): void {
     const selectedOption = event.detail.value;
-    this.sendOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.sendOptions.update((sendOptions) => ({
+      ...sendOptions,
       encoding: selectedOption,
     }));
   }
 
   onChangeDelimiter(event: SelectCustomEvent<Delimiter>): void {
     const selectedOption = event.detail.value;
-    this.sendOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.sendOptions.update((sendOptions) => ({
+      ...sendOptions,
       delimiter: selectedOption,
     }));
   }

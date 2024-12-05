@@ -3,6 +3,7 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   IonButton,
   IonCard,
+  IonCardContent,
   IonCardHeader,
   IonCol,
   IonGrid,
@@ -15,20 +16,21 @@ import {
 import { type Delimiter } from '@spie/types';
 import { scan } from 'rxjs';
 
-import { SendAdvancedComponent } from './send-advanced-modal/send-advanced-modal.component';
-import { type IonInputCustomEvent } from '../../../interfaces/ionic.interface';
-import { ElectronService } from '../../../services/electron.service';
-import { SerialPortService } from '../../../services/serial-port.service';
-import { ToasterService } from '../../../services/toaster.service';
+import { type IonInputCustomEvent } from '../../interfaces/ionic.interface';
+import { ElectronService } from '../../services/electron.service';
+import { SerialPortService } from '../../services/serial-port.service';
+import { ToasterService } from '../../services/toaster.service';
+import { SendAdvancedComponent } from '../send-advanced-modal/send-advanced-modal.component';
 
 @Component({
-  selector: 'app-send',
+  selector: 'app-send-component',
   templateUrl: 'send.component.html',
   styleUrls: ['./send.component.scss'],
   standalone: true,
   imports: [
     IonButton,
     IonCard,
+    IonCardContent,
     IonCardHeader,
     IonCol,
     IonGrid,
@@ -106,16 +108,16 @@ export class SendComponent {
   onChangeSendInput(event: IonInputCustomEvent): void {
     const inputValue = event.detail.value;
     if (!inputValue) {
-      this.sendOptions.update((currentOpenOptions) => ({
-        ...currentOpenOptions,
+      this.sendOptions.update((sendOptions) => ({
+        ...sendOptions,
         isSendInputValid: false,
       }));
       return;
     }
 
     if (this.sendOptions().encoding !== 'hex') {
-      this.sendOptions.update((currentOpenOptions) => ({
-        ...currentOpenOptions,
+      this.sendOptions.update((sendOptions) => ({
+        ...sendOptions,
         isSendInputValid: true,
       }));
       return;
@@ -129,8 +131,8 @@ export class SendComponent {
         ?.join(' ') ?? '';
     event.target.value = formattedHexValue;
     const isEvenLength = formattedHexValue.replace(/\s+/g, '').length % 2 === 0;
-    this.sendOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.sendOptions.update((sendOptions) => ({
+      ...sendOptions,
       isSendInputValid: isEvenLength,
     }));
   }

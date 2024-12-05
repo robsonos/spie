@@ -1,0 +1,17 @@
+<ion-tabs>
+  <app-connection-component />
+
+  <ion-tab-bar slot="bottom">
+    <ion-tab-button tab="terminal" href="/terminal">
+      <ion-icon name="terminal-outline"></ion-icon>
+      <ion-label>Terminal</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="plotter" href="/plotter">
+      <ion-icon name="pulse-outline"></ion-icon>
+      <ion-label>Plotter</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>
+
+<app-update-modal />

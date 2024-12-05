@@ -1,0 +1,72 @@
+<ion-card>
+  <ion-card-header>
+    <ion-text color="secondary">Plotter</ion-text>
+  </ion-card-header>
+
+  <ion-card-content>
+    <apx-chart
+      #chartObj
+      [series]="series()"
+      [chart]="chart()"
+      [tooltip]="tooltip()"
+      [xaxis]="chartOptions.xaxis"
+      [yaxis]="chartOptions.yaxis"
+      [grid]="chartOptions.grid"
+      [stroke]="chartOptions.stroke"
+      [dataLabels]="chartOptions.dataLabels"
+    />
+
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-button
+            expand="block"
+            [color]="
+              isDataEventPausedSubject.getValue() && isOpen()
+                ? 'danger'
+                : 'secondary'
+            "
+            [disabled]="!isOpen()"
+            (click)="onClickPauseTerminal()"
+          >
+            <ion-icon
+              slot="start"
+              [name]="
+                isDataEventPausedSubject.getValue() && isOpen()
+                  ? 'pause-outline'
+                  : 'play-outline'
+              "
+            ></ion-icon>
+            {{
+              isDataEventPausedSubject.getValue() && isOpen()
+                ? 'Continue'
+                : 'Pause'
+            }}
+          </ion-button>
+        </ion-col>
+
+        <ion-col>
+          <ion-button
+            expand="block"
+            color="secondary"
+            (click)="onClickClearTerminal()"
+          >
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            Clear
+          </ion-button>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-button
+            fill="clear"
+            color="secondary"
+            (click)="onClickTerminalAdvancedModal()"
+          >
+            <ion-icon name="settings-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+</ion-card>
+
+<!-- <pre>{{ series()[0].data.length }}</pre> -->

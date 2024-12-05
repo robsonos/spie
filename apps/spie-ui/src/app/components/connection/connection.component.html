@@ -1,0 +1,81 @@
+<ion-accordion-group value="connection">
+  <ion-accordion value="connection" toggleIconSlot="start">
+    <ion-item slot="header" color="primary">
+      <ion-label>Connection</ion-label>
+    </ion-item>
+
+    <ion-card slot="content">
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <ion-item>
+                <ion-select
+                  label="Serial Port"
+                  placeholder="Select Serial Port"
+                  [disabled]="isOpen()"
+                  [value]="openOptions().path"
+                  (click)="onClickSerialPort($event)"
+                  (ionChange)="onChangeSerialPort($event)"
+                >
+                  @for (serialPort of serialPorts(); track $index) {
+                  <ion-select-option [value]="serialPort.path">
+                    {{ serialPort.path }} - {{ serialPort.manufacturer }}
+                  </ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="6">
+              <ion-item>
+                <ion-select
+                  label="Baud Rate"
+                  placeholder="Select Baud Rate"
+                  [value]="openOptions().baudRate"
+                  (ionChange)="onChangeBaudRate($event)"
+                >
+                  @for (baudRate of baudRates; track $index) {
+                  <ion-select-option [value]="baudRate">{{
+                    baudRate
+                  }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+
+          <ion-row>
+            <ion-col>
+              <ion-button
+                expand="block"
+                [color]="isOpen() ? 'danger' : 'secondary'"
+                [disabled]="!isOpen() && openOptions().path === ''"
+                (click)="onClickConnect()"
+              >
+                <ion-icon
+                  slot="start"
+                  [name]="isOpen() ? 'log-out-outline' : 'log-in-outline'"
+                ></ion-icon>
+                {{ isOpen() ? 'Disconnect' : 'Connect' }}
+              </ion-button>
+            </ion-col>
+            <ion-col size="auto">
+              <ion-button
+                fill="clear"
+                color="secondary"
+                (click)="onClickConnectionAdvancedModal()"
+              >
+                <ion-icon name="settings-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <app-connection-advanced-modal-component
+          [reconnectSubject]="reconnectSubject"
+        />
+      </ion-card-content>
+    </ion-card>
+  </ion-accordion>
+</ion-accordion-group>

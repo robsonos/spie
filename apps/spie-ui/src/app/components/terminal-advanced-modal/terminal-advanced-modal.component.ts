@@ -1,4 +1,4 @@
-import { Component, inject, viewChild } from '@angular/core';
+import { Component, inject, input, viewChild } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -15,17 +15,18 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { type Encoding } from '@spie/types';
+import { type Subject } from 'rxjs';
 
 import {
   type CheckboxCustomEvent,
   type RangeCustomEvent,
   type SelectCustomEvent,
-} from '../../../../interfaces/ionic.interface';
-import { ElectronService } from '../../../../services/electron.service';
-import { SerialPortService } from '../../../../services/serial-port.service';
+} from '../../interfaces/ionic.interface';
+import { ElectronService } from '../../services/electron.service';
+import { SerialPortService } from '../../services/serial-port.service';
 
 @Component({
-  selector: 'app-terminal-advanced-modal',
+  selector: 'app-terminal-advanced-modal-component',
   templateUrl: 'terminal-advanced-modal.component.html',
   styleUrls: ['./terminal-advanced-modal.component.scss'],
   standalone: true,
@@ -49,49 +50,49 @@ export class TerminalAdvancedComponent {
   private readonly electronService = inject(ElectronService);
   private readonly serialPortService = inject(SerialPortService);
 
-  clearDataSubject = this.serialPortService.clearDataSubject;
+  clearTerminalSubject = input.required<Subject<void>>();
   terminalOptions = this.serialPortService.terminalOptions;
 
   terminalAdvancedModal = viewChild.required<IonModal>('terminalAdvancedModal');
 
   onChangeTerminalEncoding(event: SelectCustomEvent<Encoding>): void {
     const selectedOption = event.detail.value;
-    this.terminalOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.terminalOptions.update((terminalOptions) => ({
+      ...terminalOptions,
       encoding: selectedOption,
     }));
 
     this.electronService.serialPort.setReadEncoding(selectedOption);
-    this.clearDataSubject.next({ event: 'data', data: '' });
+    this.clearTerminalSubject().next();
   }
 
   onChangeShowTimestamps(event: CheckboxCustomEvent<boolean>): void {
     const selectedOption = event.detail.checked;
-    this.terminalOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.terminalOptions.update((terminalOptions) => ({
+      ...terminalOptions,
       showTimestampsEnabled: selectedOption,
     }));
 
-    this.clearDataSubject.next({ event: 'data', data: '' });
+    this.clearTerminalSubject().next();
   }
 
   onChangeAutoScroll(event: CheckboxCustomEvent<boolean>): void {
     const selectedOption = event.detail.checked;
-    this.terminalOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.terminalOptions.update((terminalOptions) => ({
+      ...terminalOptions,
       isAutoScrollEnabled: selectedOption,
     }));
 
-    // this.clearDataSubject.next({ event: 'data', data: '' });
+    // this.clearTerminalSubject().next();
   }
   onScrollbackLength(event: RangeCustomEvent): void {
     const selectedOption = event.detail.value as number;
-    this.terminalOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.terminalOptions.update((terminalOptions) => ({
+      ...terminalOptions,
       scrollbackLength: selectedOption,
     }));
 
-    // this.clearDataSubject.next({ event: 'data', data: '' });
+    // this.clearTerminalSubject().next();
   }
 
   pinFormatter(value: number): string {

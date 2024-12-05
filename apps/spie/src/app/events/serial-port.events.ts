@@ -20,10 +20,13 @@ export default class SerialPortEvents {
   >();
   private static encoding: Encoding = 'ascii';
   private static areListenersRegistered = false;
+  private static openOptions: OpenOptions | null = null;
 
-  private static addEventListeners(event: Electron.IpcMainEvent) {
+  private static addEventListeners(
+    event: Electron.IpcMainEvent
+  ): Promise<void> {
     if (SerialPortEvents.areListenersRegistered) {
-      return;
+      return Promise.resolve();
     }
 
     const addEventListener = (
@@ -36,7 +39,7 @@ export default class SerialPortEvents {
         !SerialPortEvents.serialPort.isOpen
       ) {
         if (!SerialPortEvents.listenerQueue.has(event)) {
-          // console.log('addEventListener queue', event, callback);
+          // console.log('SerialPortEvents.addEventListener queue', event, callback);
           // Port is not open, queue the callback
           SerialPortEvents.listenerQueue.set(event, callback);
         }
@@ -44,7 +47,7 @@ export default class SerialPortEvents {
       }
 
       if (!SerialPortEvents.eventListeners.has(event)) {
-        // console.log('addEventListener attach', event, callback);
+        // console.log('SerialPortEvents.addEventListener attach', event, callback);
         // Port is open, attach callback immediately
         if (event === 'data') {
           SerialPortEvents.parser.on(event, callback);
@@ -56,17 +59,17 @@ export default class SerialPortEvents {
     };
 
     addEventListener('error', (error: Error) => {
-      const notification: SerialPortEvent = { event: 'error', error };
+      const notification: SerialPortEvent = { type: 'error', error };
       event.sender.send('serial-port-notification', notification);
     });
 
     addEventListener('open', () => {
-      const notification: SerialPortEvent = { event: 'open' };
+      const notification: SerialPortEvent = { type: 'open' };
       event.sender.send('serial-port-notification', notification);
     });
 
     addEventListener('close', () => {
-      const notification: SerialPortEvent = { event: 'close' };
+      const notification: SerialPortEvent = { type: 'close' };
       event.sender.send('serial-port-notification', notification);
     });
 
@@ -76,25 +79,27 @@ export default class SerialPortEvents {
           ? chunk.toString('hex').toUpperCase().match(/.{2}/g).join(' ')
           : chunk.toString('ascii');
 
-      const notification: SerialPortEvent = { event: 'data', data };
+      const notification: SerialPortEvent = { type: 'data', data };
       event.sender.send('serial-port-notification', notification);
     });
 
     addEventListener('drain', () => {
-      const notification: SerialPortEvent = { event: 'drain' };
+      const notification: SerialPortEvent = { type: 'drain' };
       event.sender.send('serial-port-notification', notification);
     });
 
     SerialPortEvents.areListenersRegistered = true;
+
+    return Promise.resolve();
   }
 
-  private static removeEventListeners() {
+  private static removeEventListeners(): Promise<void> {
     if (!SerialPortEvents.areListenersRegistered) {
-      return;
+      return Promise.resolve();
     }
 
     SerialPortEvents.eventListeners.forEach((callback, event) => {
-      // console.log('removeEventListener', event, callback);
+      // console.log('SerialPortEvents.removeEventListener', event, callback);
       if (event === 'data') {
         SerialPortEvents.parser.off(event, callback);
       } else {
@@ -104,6 +109,8 @@ export default class SerialPortEvents {
 
     SerialPortEvents.eventListeners.clear();
     SerialPortEvents.areListenersRegistered = false;
+
+    return Promise.resolve();
   }
 
   static bootstrapEvents(): void {
@@ -153,6 +160,8 @@ export default class SerialPortEvents {
           if (error) {
             return reject(error);
           }
+
+          SerialPortEvents.openOptions = openOptions;
 
           resolve();
         });
@@ -216,26 +225,38 @@ export default class SerialPortEvents {
     ipcMain.handle('serial-port-is-open', () => {
       // console.warn('serial-port-is-open');
       if (SerialPortEvents.serialPort && SerialPortEvents.serialPort.isOpen) {
-        return true;
+        return Promise.resolve(true);
       }
 
-      return false;
+      return Promise.resolve(false);
     });
 
     ipcMain.handle('serial-port-set-read-encoding', (_, encoding: Encoding) => {
       // console.warn('serial-port-set-read-encoding');
       SerialPortEvents.encoding = encoding;
+
+      return Promise.resolve();
+    });
+
+    ipcMain.handle('serial-port-get-read-encoding', () => {
+      // console.warn('serial-port-get-read-encoding');
+
+      return Promise.resolve(SerialPortEvents.encoding);
+    });
+
+    ipcMain.handle('serial-port-get-open-options', () => {
+      // console.warn('serial-port-get-open-options');
+      return Promise.resolve(SerialPortEvents.openOptions);
     });
 
     ipcMain.on('serial-port-add-notification-event-listener', (event) => {
       // console.warn('serial-port-add-notification-event-listener');
-
-      SerialPortEvents.addEventListeners(event);
+      return SerialPortEvents.addEventListeners(event);
     });
 
     ipcMain.on('serial-port-remove-notification-event-listener', () => {
       // console.warn('serial-port-remove-notification-event-listener');
-      SerialPortEvents.removeEventListeners();
+      return SerialPortEvents.removeEventListeners();
     });
   }
 }

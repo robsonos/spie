@@ -17,14 +17,15 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
+import { type ProgressInfo } from 'electron-updater';
 import { of, switchMap, tap } from 'rxjs';
 
-import { ElectronService } from '../../../services/electron.service';
-import { ToasterService } from '../../../services/toaster.service';
+import { ElectronService } from '../../services/electron.service';
+import { ToasterService } from '../../services/toaster.service';
 
 @Component({
   selector: 'app-update-modal',
-  templateUrl: './update-modal.component.html',
+  templateUrl: 'update-modal.component.html',
   styleUrls: ['./update-modal.component.scss'],
   standalone: true,
   imports: [
@@ -133,7 +134,7 @@ export class UpdateModalComponent {
         transferred: 0,
         percent: 0,
         bytesPerSecond: 0,
-      },
+      } as ProgressInfo,
     }
   );
 

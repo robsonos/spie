@@ -24,11 +24,11 @@ export type Encoding = 'ascii' | 'hex';
 export type SerialPortEventType = 'error' | 'open' | 'close' | 'data' | 'drain';
 
 export type SerialPortEvent =
-  | { event: 'error'; error: Error }
-  | { event: 'open' }
-  | { event: 'close' }
-  | { event: 'data'; data: string }
-  | { event: 'drain' };
+  | { type: 'error'; error: Error }
+  | { type: 'open' }
+  | { type: 'close' }
+  | { type: 'data'; data: string }
+  | { type: 'drain' };
 
 export interface SerialPortAPI {
   list: () => Promise<PortInfo[]>;
@@ -37,6 +37,8 @@ export interface SerialPortAPI {
   write: (data: string, encoding: Encoding) => Promise<boolean>;
   isOpen: () => Promise<boolean>;
   setReadEncoding: (encoding: Encoding) => Promise<void>;
+  getReadEncoding: () => Promise<Encoding>;
+  getOpenOptions: () => Promise<OpenOptions | null>;
   onEvent: (callback: (serialPortEvent: SerialPortEvent) => void) => () => void;
 }
 

@@ -18,11 +18,11 @@ import { type Subject } from 'rxjs';
 import {
   type CheckboxCustomEvent,
   type SelectCustomEvent,
-} from '../../../../interfaces/ionic.interface';
-import { SerialPortService } from '../../../../services/serial-port.service';
+} from '../../interfaces/ionic.interface';
+import { SerialPortService } from '../../services/serial-port.service';
 
 @Component({
-  selector: 'app-connection-advanced-modal',
+  selector: 'app-connection-advanced-modal-component',
   templateUrl: 'connection-advanced-modal.component.html',
   styleUrls: ['./connection-advanced-modal.component.scss'],
   standalone: true,
@@ -53,8 +53,8 @@ export class ConnectionAdvancedComponent {
 
   onChangeDataBits(event: SelectCustomEvent<string>): void {
     const selectedOption = event.detail.value;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.openOptions.update((openOptions) => ({
+      ...openOptions,
       dataBits: parseInt(selectedOption, 10) as 5 | 6 | 7 | 8,
     }));
 
@@ -63,8 +63,8 @@ export class ConnectionAdvancedComponent {
 
   onChangeStopBits(event: SelectCustomEvent<string>): void {
     const selectedOption = event.detail.value;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.openOptions.update((openOptions) => ({
+      ...openOptions,
       stopBits: parseFloat(selectedOption) as 1 | 1.5 | 2,
     }));
 
@@ -73,8 +73,8 @@ export class ConnectionAdvancedComponent {
 
   onChangeParity(event: SelectCustomEvent<string>): void {
     const selectedOption = event.detail.value;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.openOptions.update((openOptions) => ({
+      ...openOptions,
       parity: selectedOption,
     }));
 
@@ -83,8 +83,8 @@ export class ConnectionAdvancedComponent {
 
   onChangeRtscts(event: CheckboxCustomEvent<boolean>): void {
     const selectedOption = event.detail.checked;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.openOptions.update((openOptions) => ({
+      ...openOptions,
       rtscts: selectedOption,
     }));
 
@@ -93,8 +93,8 @@ export class ConnectionAdvancedComponent {
 
   onChangeXon(event: CheckboxCustomEvent<boolean>): void {
     const selectedOption = event.detail.checked;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.openOptions.update((openOptions) => ({
+      ...openOptions,
       xon: selectedOption,
     }));
 
@@ -103,8 +103,8 @@ export class ConnectionAdvancedComponent {
 
   onChangeXoff(event: CheckboxCustomEvent<boolean>): void {
     const selectedOption = event.detail.checked;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.openOptions.update((openOptions) => ({
+      ...openOptions,
       xoff: selectedOption,
     }));
 
@@ -113,8 +113,8 @@ export class ConnectionAdvancedComponent {
 
   onChangeXany(event: CheckboxCustomEvent<boolean>): void {
     const selectedOption = event.detail.checked;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.openOptions.update((openOptions) => ({
+      ...openOptions,
       xany: selectedOption,
     }));
 
@@ -123,8 +123,8 @@ export class ConnectionAdvancedComponent {
 
   onChangeHupcl(event: CheckboxCustomEvent<boolean>): void {
     const selectedOption = event.detail.checked;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.openOptions.update((openOptions) => ({
+      ...openOptions,
       hupcl: selectedOption,
     }));
 

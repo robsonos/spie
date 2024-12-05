@@ -1,45 +1,49 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
+  IonAccordion,
+  IonAccordionGroup,
   IonButton,
   IonCard,
-  IonCardHeader,
+  IonCardContent,
   IonCol,
   IonGrid,
   IonIcon,
   IonItem,
+  IonLabel,
   IonRow,
   IonSelect,
   IonSelectOption,
-  IonText,
   LoadingController,
 } from '@ionic/angular/standalone';
 import { type PortInfo } from '@serialport/bindings-interface';
 import { Subject, tap } from 'rxjs';
 
-import { ConnectionAdvancedComponent } from './connection-advanced-modal/connection-advanced-modal.component';
-import { type SelectCustomEvent } from '../../../interfaces/ionic.interface';
-import { ElectronService } from '../../../services/electron.service';
-import { SerialPortService } from '../../../services/serial-port.service';
-import { ToasterService } from '../../../services/toaster.service';
+import { type SelectCustomEvent } from '../../interfaces/ionic.interface';
+import { ElectronService } from '../../services/electron.service';
+import { SerialPortService } from '../../services/serial-port.service';
+import { ToasterService } from '../../services/toaster.service';
+import { ConnectionAdvancedComponent } from '../connection-advanced-modal/connection-advanced-modal.component';
 
 @Component({
-  selector: 'app-connection',
-  templateUrl: './connection.component.html',
+  selector: 'app-connection-component',
+  templateUrl: 'connection.component.html',
   styleUrls: ['./connection.component.scss'],
   standalone: true,
   imports: [
+    IonAccordion,
+    IonAccordionGroup,
     IonButton,
     IonCard,
-    IonCardHeader,
+    IonCardContent,
     IonCol,
     IonGrid,
     IonIcon,
     IonItem,
+    IonLabel,
     IonRow,
     IonSelect,
     IonSelectOption,
-    IonText,
     ConnectionAdvancedComponent,
   ],
 })
@@ -53,7 +57,6 @@ export class ConnectionComponent {
     this.reconnectSubject
       .pipe(
         takeUntilDestroyed(),
-
         tap(async () => {
           if (this.isOpen()) {
             const loading = await this.loadingController.create();
@@ -61,10 +64,7 @@ export class ConnectionComponent {
             try {
               await this.electronService.serialPort.close();
               await this.electronService.serialPort.open(this.openOptions());
-              this.serialPortService.clearDataSubject.next({
-                event: 'data',
-                data: '',
-              });
+              this.serialPortService.clearDataSubject.next();
             } catch (error) {
               await this.toasterService.presentErrorToast(error);
             }
@@ -73,6 +73,32 @@ export class ConnectionComponent {
         })
       )
       .subscribe();
+
+    // Retrieve previously connected serial port (useful for development)
+    this.electronService.serialPort
+      .getOpenOptions()
+      .then((openOptions) => {
+        const connectedSerialPortPath = openOptions?.path;
+        if (!connectedSerialPortPath) {
+          return;
+        }
+
+        return this.electronService.serialPort.list().then((serialPorts) => {
+          const isSerialPortInList = serialPorts?.some(
+            (serialPort) => serialPort.path === openOptions.path
+          );
+
+          if (!isSerialPortInList) {
+            return;
+          }
+
+          this.openOptions.set(openOptions);
+          this.serialPorts.set(serialPorts);
+        });
+      })
+      .catch((error) => {
+        console.error('Error initializing serial ports:', error); // TODO: Toaster?
+      });
   }
 
   isOpen = this.serialPortService.isOpen;
@@ -117,33 +143,20 @@ export class ConnectionComponent {
 
   onChangeSerialPort(event: SelectCustomEvent<string>): void {
     const selectedOption = event.detail.value;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.openOptions.update((openOptions) => ({
+      ...openOptions,
       path: selectedOption,
     }));
   }
 
   onChangeBaudRate(event: SelectCustomEvent<string>): void {
     const selectedOption = event.detail.value;
-    this.openOptions.update((currentOpenOptions) => ({
-      ...currentOpenOptions,
+    this.openOptions.update((openOptions) => ({
+      ...openOptions,
       baudRate: parseInt(selectedOption, 10),
     }));
 
     this.reconnectSubject.next();
-  }
-
-  async onClickDisconnect(): Promise<void> {
-    const loading = await this.loadingController.create();
-    await loading.present();
-
-    try {
-      await this.electronService.serialPort.close();
-    } catch (error) {
-      await this.toasterService.presentErrorToast(error);
-    }
-
-    await loading.dismiss();
   }
 
   async onClickConnect(): Promise<void> {
@@ -151,7 +164,11 @@ export class ConnectionComponent {
     await loading.present();
 
     try {
-      await this.electronService.serialPort.open(this.openOptions());
+      if (this.isOpen()) {
+        await this.electronService.serialPort.close();
+      } else {
+        await this.electronService.serialPort.open(this.openOptions());
+      }
     } catch (error) {
       await this.toasterService.presentErrorToast(error);
     }
