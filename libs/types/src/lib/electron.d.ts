@@ -9,13 +9,13 @@ import {
 } from 'electron-updater';
 
 export type AutoUpdaterEvent =
-  | { event: 'error'; error: Error; message?: string }
-  | { event: 'checking-for-update' }
-  | { event: 'update-not-available'; updateInfo: UpdateInfo }
-  | { event: 'update-available'; updateInfo: UpdateInfo }
-  | { event: 'update-downloaded'; updateDownloadedEvent: UpdateDownloadedEvent }
-  | { event: 'download-progress'; progressInfo: ProgressInfo }
-  | { event: 'update-cancelled'; updateInfo: UpdateInfo };
+  | { type: 'error'; error: Error; message?: string }
+  | { type: 'checking-for-update' }
+  | { type: 'update-not-available'; updateInfo: UpdateInfo }
+  | { type: 'update-available'; updateInfo: UpdateInfo }
+  | { type: 'update-downloaded'; updateDownloadedEvent: UpdateDownloadedEvent }
+  | { type: 'download-progress'; progressInfo: ProgressInfo }
+  | { type: 'update-cancelled'; updateInfo: UpdateInfo };
 
 export type Delimiter = 'none' | 'cr' | 'lf' | 'crlf';
 

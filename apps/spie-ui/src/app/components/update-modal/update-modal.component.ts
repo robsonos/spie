@@ -52,15 +52,15 @@ export class UpdateModalComponent {
   progressInfo = toSignal(
     this.electronService.onUpdateEvent().pipe(
       tap(async (autoUpdaterEvent) => {
-        if (autoUpdaterEvent.event === 'checking-for-update') {
+        if (autoUpdaterEvent.type === 'checking-for-update') {
           await this.toasterService.presentInfoToast('Checking for Updates');
         }
 
-        if (autoUpdaterEvent.event === 'update-not-available') {
+        if (autoUpdaterEvent.type === 'update-not-available') {
           await this.toasterService.presentInfoToast('No Updates Available');
         }
 
-        if (autoUpdaterEvent.event === 'update-available') {
+        if (autoUpdaterEvent.type === 'update-available') {
           await this.presentAlert(
             'Update Available for Download',
             `Version ${autoUpdaterEvent.updateInfo.version} is ready for download.`,
@@ -81,7 +81,7 @@ export class UpdateModalComponent {
           );
         }
 
-        if (autoUpdaterEvent.event === 'update-downloaded') {
+        if (autoUpdaterEvent.type === 'update-downloaded') {
           await this.presentAlert(
             'Update Ready to Install',
             `Version ${autoUpdaterEvent.updateDownloadedEvent.version} is ready to install.`,
@@ -101,20 +101,20 @@ export class UpdateModalComponent {
           );
         }
 
-        if (autoUpdaterEvent.event === 'update-cancelled') {
+        if (autoUpdaterEvent.type === 'update-cancelled') {
           await this.toasterService.presentErrorToast('Update Cancelled');
         }
 
         if (
-          autoUpdaterEvent.event === 'update-downloaded' ||
-          autoUpdaterEvent.event === 'update-cancelled' ||
-          autoUpdaterEvent.event === 'error'
+          autoUpdaterEvent.type === 'update-downloaded' ||
+          autoUpdaterEvent.type === 'update-cancelled' ||
+          autoUpdaterEvent.type === 'error'
         ) {
           await this.updateModal().dismiss();
         }
       }),
       switchMap((autoUpdaterEvent) => {
-        if (autoUpdaterEvent.event === 'download-progress') {
+        if (autoUpdaterEvent.type === 'download-progress') {
           return of(autoUpdaterEvent.progressInfo);
         }
 

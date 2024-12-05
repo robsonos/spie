@@ -29,19 +29,19 @@ export default class UpdateEvents {
     UpdateEvents.areListenersRegistered = true;
 
     const addEventListener = (
-      event: UpdaterEvents,
+      updaterEventType: UpdaterEvents,
       callback: (...args: any[]) => void
     ) => {
-      if (!UpdateEvents.eventListeners.has(event)) {
-        // console.log('UpdateEvents.addEventListener attach', event, callback);
-        autoUpdater.on(event, callback);
-        UpdateEvents.eventListeners.set(event, callback);
+      if (!UpdateEvents.eventListeners.has(updaterEventType)) {
+        // console.log('UpdateEvents.addEventListener attach', updaterEventType, callback);
+        autoUpdater.on(updaterEventType, callback);
+        UpdateEvents.eventListeners.set(updaterEventType, callback);
       }
     };
 
     addEventListener('error', (error: Error, message: string) => {
       const updateNotification: AutoUpdaterEvent = {
-        event: 'error',
+        type: 'error',
         error,
         message,
       };
@@ -50,14 +50,14 @@ export default class UpdateEvents {
 
     addEventListener('checking-for-update', () => {
       const updateNotification: AutoUpdaterEvent = {
-        event: 'checking-for-update',
+        type: 'checking-for-update',
       };
       event.sender.send('app-update-notification', updateNotification);
     });
 
     addEventListener('update-not-available', (updateInfo: UpdateInfo) => {
       const updateNotification: AutoUpdaterEvent = {
-        event: 'update-not-available',
+        type: 'update-not-available',
         updateInfo,
       };
       event.sender.send('app-update-notification', updateNotification);
@@ -71,7 +71,7 @@ export default class UpdateEvents {
       }).show();
 
       const updateNotification: AutoUpdaterEvent = {
-        event: 'update-available',
+        type: 'update-available',
         updateInfo,
       };
 
@@ -82,7 +82,7 @@ export default class UpdateEvents {
       'update-downloaded',
       (updateDownloadedEvent: UpdateDownloadedEvent) => {
         const updateNotification: AutoUpdaterEvent = {
-          event: 'update-downloaded',
+          type: 'update-downloaded',
           updateDownloadedEvent,
         };
         event.sender.send('app-update-notification', updateNotification);
@@ -91,7 +91,7 @@ export default class UpdateEvents {
 
     addEventListener('download-progress', (progressInfo: ProgressInfo) => {
       const updateNotification: AutoUpdaterEvent = {
-        event: 'download-progress',
+        type: 'download-progress',
         progressInfo,
       };
       event.sender.send('app-update-notification', updateNotification);
@@ -99,7 +99,7 @@ export default class UpdateEvents {
 
     addEventListener('update-cancelled', (updateInfo: UpdateInfo) => {
       const updateNotification: AutoUpdaterEvent = {
-        event: 'update-cancelled',
+        type: 'update-cancelled',
         updateInfo,
       };
       event.sender.send('app-update-notification', updateNotification);
@@ -113,9 +113,9 @@ export default class UpdateEvents {
       return Promise.resolve();
     }
 
-    UpdateEvents.eventListeners.forEach((listener, event) => {
-      // console.log('UpdateEvents.removeEventListener', event, callback);
-      autoUpdater.off(event, listener);
+    UpdateEvents.eventListeners.forEach((listener, updaterEventType) => {
+      // console.log('UpdateEvents.removeEventListener', updaterEventType, callback);
+      autoUpdater.off(updaterEventType, listener);
     });
     UpdateEvents.eventListeners.clear();
 
