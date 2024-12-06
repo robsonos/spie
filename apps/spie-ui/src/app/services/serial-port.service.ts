@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { type OpenOptions } from '@serialport/bindings-interface';
+import { type DataEvent } from '@spie/types';
 import {
   type Observable,
   Subject,
@@ -89,10 +90,3 @@ export class SerialPortService {
     )
   );
 }
-
-export type DataEvent =
-  | {
-      type: 'data';
-      data: string;
-    }
-  | { type: 'clear' };

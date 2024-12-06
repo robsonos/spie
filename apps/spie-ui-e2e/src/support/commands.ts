@@ -1,7 +1,15 @@
-export {};
+import {
+  type DataEvent,
+  type ElectronAPI,
+  type SerialPortEvent,
+} from '@spie/types';
 
 declare global {
   namespace Cypress {
+    interface Window {
+      electron: ElectronAPI;
+      onEventTrigger: (serialPortEvent: SerialPortEvent | DataEvent) => void;
+    }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     interface Chainable<Subject> {
       getAdvancedModalSelectElement(
@@ -12,7 +20,9 @@ declare global {
         modal: string,
         label: string
       ): Cypress.Chainable;
-      selectOption(option: string | number): Cypress.Chainable;
+      selectDropdownOption(option: string | number): Cypress.Chainable;
+      connect(path: string, baudRate: number): void;
+      disconnect(): void;
     }
   }
 }
@@ -36,7 +46,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add(
-  'selectOption',
+  'selectDropdownOption',
   { prevSubject: 'element' },
   (subject, option: string | number) => {
     cy.wrap(subject).click();
@@ -44,3 +54,26 @@ Cypress.Commands.add(
     cy.get('ion-alert button.alert-button').contains('OK').click();
   }
 );
+
+Cypress.Commands.add('connect', (path: string, baudRate: number) => {
+  cy.get(
+    'app-connection-component [placeholder="Select Serial Port"]'
+  ).selectDropdownOption(path);
+  cy.get(
+    'app-connection-component [placeholder="Select Baud Rate"]'
+  ).selectDropdownOption(baudRate);
+
+  cy.get('app-connection-component ion-button').contains('Connect').click();
+
+  cy.window().then((win) => {
+    win.onEventTrigger({ type: 'open' });
+  });
+});
+
+Cypress.Commands.add('disconnect', () => {
+  cy.get('app-connection-component ion-button').contains('Disconnect').click();
+
+  cy.window().then((win) => {
+    win.onEventTrigger({ type: 'close' });
+  });
+});

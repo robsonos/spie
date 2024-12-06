@@ -30,6 +30,8 @@ export type SerialPortEvent =
   | { type: 'data'; data: string }
   | { type: 'drain' };
 
+export type DataEvent = { type: 'data'; data: string } | { type: 'clear' };
+
 export interface SerialPortAPI {
   list: () => Promise<PortInfo[]>;
   open: (openOptions: OpenOptions) => Promise<void>;

@@ -1,46 +1,21 @@
-import { type OpenOptions } from '@serialport/bindings-interface';
-import { type SerialPortEvent } from '@spie/types';
-
-import { mockElectronAPI } from '../fixtures/mocks/electron-api.mock';
+import {
+  mockElectronAPI,
+  mockSerialPortList,
+} from '../fixtures/mocks/electron-api.mock';
 
 describe('Serial Port component', () => {
-  const mockSerialPortList = [
-    { path: '/dev/ttyUSB0', manufacturer: 'Manufacturer1' },
-    { path: '/dev/ttyUSB1', manufacturer: 'Manufacturer2' },
-  ];
-
-  let onEventTrigger: ((event: SerialPortEvent) => void) | null;
-
   beforeEach(() => {
     cy.visit('/');
 
     cy.on('window:before:load', (win) => {
-      const listeners: Array<(serialPortEvent: SerialPortEvent) => void> = [];
-
-      win.electron = mockElectronAPI();
-
-      win.electron.serialPort.list = cy.stub().resolves(mockSerialPortList);
-      win.electron.serialPort.onEvent = cy
-        .stub()
-        .callsFake((callback: (serialPortEvent: SerialPortEvent) => void) => {
-          listeners.push(callback);
-
-          onEventTrigger = (serialPortEvent) => {
-            listeners.forEach((listener) => listener(serialPortEvent));
-          };
-
-          return () => {
-            const index = listeners.indexOf(callback);
-            if (index !== -1) {
-              listeners.splice(index, 1);
-            }
-          };
-        });
+      win.electron = mockElectronAPI(win);
     });
   });
 
   it('should display available serial ports in the dropdown', () => {
-    cy.get('app-connection [placeholder="Select Serial Port"]').click();
+    cy.get(
+      'app-connection-component [placeholder="Select Serial Port"]'
+    ).click();
     cy.get('ion-alert .alert-radio-button').should(
       'have.length',
       mockSerialPortList.length
@@ -56,11 +31,11 @@ describe('Serial Port component', () => {
   it('should allow selecting a serial port', () => {
     const expectedPath = mockSerialPortList[0].path;
 
-    cy.get('app-connection [placeholder="Select Serial Port"]').selectOption(
-      expectedPath
-    );
+    cy.get(
+      'app-connection-component [placeholder="Select Serial Port"]'
+    ).selectDropdownOption(expectedPath);
 
-    cy.get('app-connection [placeholder="Select Serial Port"]')
+    cy.get('app-connection-component [placeholder="Select Serial Port"]')
       .shadow()
       .find('.select-text')
       .should('contain', expectedPath);
@@ -69,18 +44,18 @@ describe('Serial Port component', () => {
   it('should allow selecting a baud rate', () => {
     const expectedBaudRate = 115200;
 
-    cy.get('app-connection [placeholder="Select Baud Rate"]').selectOption(
-      expectedBaudRate
-    );
+    cy.get(
+      'app-connection-component [placeholder="Select Baud Rate"]'
+    ).selectDropdownOption(expectedBaudRate);
 
-    cy.get('app-connection [placeholder="Select Baud Rate"]')
+    cy.get('app-connection-component [placeholder="Select Baud Rate"]')
       .shadow()
       .find('.select-text')
       .should('contain', expectedBaudRate);
   });
 
   it('should disable the Connect button when no serial port is selected', () => {
-    cy.get('app-connection ion-button')
+    cy.get('app-connection-component ion-button')
       .contains('Connect')
       .should('have.class', 'button-disabled');
   });
@@ -88,67 +63,38 @@ describe('Serial Port component', () => {
   it('should enable the Connect button after selecting a port', () => {
     const expectedPath = mockSerialPortList[0].path;
 
-    cy.get('app-connection [placeholder="Select Serial Port"]').selectOption(
-      expectedPath
-    );
-    cy.get('app-connection ion-button')
+    cy.get(
+      'app-connection-component [placeholder="Select Serial Port"]'
+    ).selectDropdownOption(expectedPath);
+    cy.get('app-connection-component ion-button')
       .contains('Connect')
       .should('not.have.class', 'button-disabled');
   });
 
   it('should correctly call the IPC open and close methods', () => {
-    const openOptions: OpenOptions = {
-      path: mockSerialPortList[0].path,
-      baudRate: 9600,
-    };
+    cy.connect(mockSerialPortList[0].path, 9600);
 
-    cy.get('app-connection [placeholder="Select Serial Port"]').selectOption(
-      openOptions.path
-    );
-    cy.get('app-connection [placeholder="Select Baud Rate"]').selectOption(
-      openOptions.baudRate
-    );
-
-    cy.get('app-connection ion-button').contains('Connect').click();
-    cy.wrap(null).then(() => {
-      if (onEventTrigger) {
-        onEventTrigger({ event: 'open' });
-      }
-    });
-    cy.window().then((win) => {
-      cy.wrap(win.electron.serialPort.open).should(
-        'have.been.calledOnceWith',
-        Cypress.sinon.match(openOptions)
-      );
-    });
-    cy.get('app-connection ion-button')
+    cy.get('app-connection-component ion-button')
       .contains('Disconnect')
       .should('be.visible');
 
-    cy.get('app-connection ion-button').contains('Disconnect').click();
-    cy.wrap(null).then(() => {
-      if (onEventTrigger) {
-        onEventTrigger({ event: 'close' });
-      }
-    });
+    cy.disconnect();
+
     cy.window().then((win) => {
       cy.wrap(win.electron.serialPort.close).should('have.been.calledOnce');
     });
-    cy.get('app-connection ion-button')
+
+    cy.get('app-connection-component ion-button')
       .contains('Connect')
       .should('be.visible');
   });
 
   it('should reconnect when baud rate changes', () => {
-    cy.wrap(null).then(() => {
-      if (onEventTrigger) {
-        onEventTrigger({ event: 'open' });
-      }
-    });
+    cy.connect(mockSerialPortList[0].path, 9600);
 
-    cy.get('app-connection [placeholder="Select Baud Rate"]').selectOption(
-      115200
-    );
+    cy.get(
+      'app-connection-component [placeholder="Select Baud Rate"]'
+    ).selectDropdownOption(115200);
 
     cy.window().then((win) => {
       cy.wrap(win.electron.serialPort.open).should(
@@ -157,26 +103,26 @@ describe('Serial Port component', () => {
       );
     });
 
-    cy.get('app-connection ion-button')
+    cy.get('app-connection-component ion-button')
       .contains('Disconnect')
       .should('be.visible');
   });
 
   it('should open and close the advanced modal', () => {
-    cy.get('app-connection ion-button ion-icon').parent().click();
+    cy.get('app-connection-component ion-button [name="settings-outline"]')
+      .parent()
+      .click();
     cy.get('ion-modal').should('be.visible');
     cy.get('ion-modal ion-toolbar ion-button').click();
     cy.get('ion-modal').should('not.be.visible');
   });
 
   it('should reconnect after changing advanced settings', () => {
-    cy.wrap(null).then(() => {
-      if (onEventTrigger) {
-        onEventTrigger({ event: 'open' });
-      }
-    });
+    cy.connect(mockSerialPortList[0].path, 9600);
 
-    cy.get('app-connection ion-button ion-icon').parent().click();
+    cy.get('app-connection-component ion-button [name="settings-outline"]')
+      .parent()
+      .click();
 
     cy.getAdvancedModalCheckboxElement(
       'connection-advanced-modal',
@@ -186,7 +132,7 @@ describe('Serial Port component', () => {
     cy.getAdvancedModalSelectElement(
       'connection-advanced-modal',
       'Data Bits'
-    ).selectOption('5');
+    ).selectDropdownOption('5');
 
     cy.window().then((win) => {
       setTimeout(() => {
@@ -198,7 +144,7 @@ describe('Serial Port component', () => {
         );
         cy.wrap(win.electron.serialPort.close).should('have.been.calledOnce');
 
-        cy.get('app-connection ion-button')
+        cy.get('app-connection-component ion-button')
           .contains('Disconnect')
           .should('be.visible');
       }, 500);

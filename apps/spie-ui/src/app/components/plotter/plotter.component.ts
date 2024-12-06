@@ -11,6 +11,7 @@ import {
   IonRow,
   IonText,
 } from '@ionic/angular/standalone';
+import { type DataEvent } from '@spie/types';
 import {
   type ApexChart,
   type ApexDataLabels,
@@ -24,10 +25,7 @@ import {
 } from 'ng-apexcharts';
 import { BehaviorSubject, Subject, filter, map, merge, tap } from 'rxjs';
 
-import {
-  type DataEvent,
-  SerialPortService,
-} from '../../services/serial-port.service';
+import { SerialPortService } from '../../services/serial-port.service';
 
 interface ChartOptions {
   dataLabels: ApexDataLabels;
@@ -91,12 +89,14 @@ export class PlotterComponent {
 
       // Split values
       const values = detectedSeparator
-        ? data.split(detectedSeparator).map((v) => parseFloat(v))
+        ? data
+            .split(detectedSeparator)
+            .map((value: string) => parseFloat(value))
         : [parseFloat(data)];
 
       // Update series with the correct amount of variables
       if (this.series().length !== values.length) {
-        const newSeries = values.map((value, index) => ({
+        const newSeries = values.map((value: number, index: number) => ({
           name: `Variable ${index + 1}`,
           data: [{ x: Date.now(), y: value }],
         }));
@@ -113,8 +113,8 @@ export class PlotterComponent {
       }
 
       // Populate data points for each variable
-      values.forEach((value, variableIndex) => {
-        variableData[variableIndex].push({
+      values.forEach((value: number, index: number) => {
+        variableData[index].push({
           x: Date.now(),
           y: value,
         });

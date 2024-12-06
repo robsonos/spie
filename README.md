@@ -4,7 +4,7 @@
 </p>
 <p align="center">
   <img src="https://img.shields.io/maintenance/yes/2024?style=flat-square"/>
-  <a href="https://github.com/robsonos/spie/actions/workflows/ci.yaml">
+  <a href="https://github.com/robsonos/spie/actions/workflows/ci.yml">
     <img
       alt="GitHub Workflow Status (with event)"
       src="https://img.shields.io/github/actions/workflow/status/robsonos/spie/ci.yml"/>
@@ -199,7 +199,7 @@ Output files are located in `dist\executables`
 
 ### Known issues
 
-- Serial data may be delivered in more than one .on('data') event. This means data received by the serialport library might arrive in multiple packets. For details, see [node-serialport/issues/659](https://github.com/serialport/node-serialport/issues/659) for more information. This is not a problem in most cases, but things may start looking strange if you are trying to monitor data at a fast rate. A good way to demonstrate the issues is to send data every `5ms`, `115200` baud rate and with `show timestamps`. You will notice that every so often there is a "broken" message. If you are developing your own application, I would recommend having a specific line terminator and use one of the [parsers](https://serialport.io/docs/api-parsers-overview) available.
+- Serial data may be delivered in more than one `.on('data')` event. This means data received by the serialport library might arrive in multiple packets. For details, see [node-serialport/issues/659](https://github.com/serialport/node-serialport/issues/659) for more information. This is not a problem in most cases, but things may start looking strange if you are trying to monitor data at a fast rate. A good way to demonstrate the issues is to send data every `5ms`, `115200` baud rate and with `show timestamps`. You will notice that every so often there is a "broken" message. If you are developing your own application, I would recommend having a specific line terminator and use one of the [parsers](https://serialport.io/docs/api-parsers-overview) available.
 
 ### Limitations
 

@@ -13,13 +13,11 @@ import {
   IonText,
   IonTextarea,
 } from '@ionic/angular/standalone';
+import { type DataEvent } from '@spie/types';
 import { BehaviorSubject, Subject, filter, map, merge, tap } from 'rxjs';
 
 import { ElectronService } from '../../services/electron.service';
-import {
-  type DataEvent,
-  SerialPortService,
-} from '../../services/serial-port.service';
+import { SerialPortService } from '../../services/serial-port.service';
 import { TerminalAdvancedComponent } from '../terminal-advanced-modal/terminal-advanced-modal.component';
 
 @Component({
