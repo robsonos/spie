@@ -52,6 +52,10 @@ export class UpdateModalComponent {
   progressInfo = toSignal(
     this.electronService.onUpdateEvent().pipe(
       tap(async (autoUpdaterEvent) => {
+        if (autoUpdaterEvent.type === 'error') {
+          await this.toasterService.presentErrorToast(autoUpdaterEvent.error);
+        }
+
         if (autoUpdaterEvent.type === 'checking-for-update') {
           await this.toasterService.presentInfoToast('Checking for Updates');
         }

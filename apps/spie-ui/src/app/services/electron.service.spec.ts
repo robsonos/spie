@@ -6,11 +6,6 @@ import type {
   ElectronAPI,
   SerialPortEvent,
 } from '@spie/types';
-import {
-  type ProgressInfo,
-  type UpdateDownloadedEvent,
-  type UpdateInfo,
-} from 'electron-updater';
 
 import { ElectronService } from './electron.service';
 
@@ -118,8 +113,10 @@ describe('ElectronService', () => {
 
   describe('onUpdateEvent', () => {
     it('should handle error event', (done) => {
-      const error = new Error('Test error');
-      const mockEvent: AutoUpdaterEvent = { type: 'error', error };
+      const mockEvent: AutoUpdaterEvent = {
+        type: 'error',
+        error: new Error('Test error'),
+      };
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
           callback(mockEvent);
@@ -153,17 +150,17 @@ describe('ElectronService', () => {
       const subscription = service.onUpdateEvent().subscribe(observer);
       subscription.unsubscribe();
     });
+
     it('should handle update-not-available event', (done) => {
-      const updateInfo: UpdateInfo = {
-        version: '1.0.0',
-        files: [],
-        path: '/test',
-        sha512: 'test',
-        releaseDate: new Date().toISOString(),
-      };
       const mockEvent: AutoUpdaterEvent = {
         type: 'update-not-available',
-        updateInfo,
+        updateInfo: {
+          version: '1.0.0',
+          files: [],
+          path: '/test',
+          sha512: 'test',
+          releaseDate: new Date().toISOString(),
+        },
       };
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
@@ -180,17 +177,17 @@ describe('ElectronService', () => {
       const subscription = service.onUpdateEvent().subscribe(observer);
       subscription.unsubscribe();
     });
+
     it('should handle update-available event', (done) => {
-      const updateInfo: UpdateInfo = {
-        version: '1.0.0',
-        files: [],
-        path: '/test',
-        sha512: 'test',
-        releaseDate: new Date().toISOString(),
-      };
       const mockEvent: AutoUpdaterEvent = {
         type: 'update-available',
-        updateInfo,
+        updateInfo: {
+          version: '1.0.0',
+          files: [],
+          path: '/test',
+          sha512: 'test',
+          releaseDate: new Date().toISOString(),
+        },
       };
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
@@ -207,18 +204,18 @@ describe('ElectronService', () => {
       const subscription = service.onUpdateEvent().subscribe(observer);
       subscription.unsubscribe();
     });
+
     it('should handle update-downloaded event', (done) => {
-      const updateDownloadedEvent: UpdateDownloadedEvent = {
-        downloadedFile: '/test/test.exe',
-        version: '1.0.0',
-        files: [],
-        path: '/test',
-        sha512: 'test',
-        releaseDate: new Date().toISOString(),
-      };
       const mockEvent: AutoUpdaterEvent = {
         type: 'update-downloaded',
-        updateDownloadedEvent,
+        updateDownloadedEvent: {
+          downloadedFile: '/test/test.exe',
+          version: '1.0.0',
+          files: [],
+          path: '/test',
+          sha512: 'test',
+          releaseDate: new Date().toISOString(),
+        },
       };
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
@@ -235,17 +232,17 @@ describe('ElectronService', () => {
       const subscription = service.onUpdateEvent().subscribe(observer);
       subscription.unsubscribe();
     });
+
     it('should handle download-progress event', (done) => {
-      const progressInfo: ProgressInfo = {
-        total: 100,
-        delta: 1,
-        transferred: 75.5,
-        percent: 75.5,
-        bytesPerSecond: 1115.55,
-      };
       const mockEvent: AutoUpdaterEvent = {
         type: 'download-progress',
-        progressInfo,
+        progressInfo: {
+          total: 100,
+          delta: 1,
+          transferred: 75.5,
+          percent: 75.5,
+          bytesPerSecond: 1115.55,
+        },
       };
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
@@ -262,17 +259,17 @@ describe('ElectronService', () => {
       const subscription = service.onUpdateEvent().subscribe(observer);
       subscription.unsubscribe();
     });
+
     it('should handle update-cancelled event', (done) => {
-      const updateInfo: UpdateInfo = {
-        version: '1.0.0',
-        files: [],
-        path: '/test',
-        sha512: 'test',
-        releaseDate: new Date().toISOString(),
-      };
       const mockEvent: AutoUpdaterEvent = {
         type: 'update-cancelled',
-        updateInfo,
+        updateInfo: {
+          version: '1.0.0',
+          files: [],
+          path: '/test',
+          sha512: 'test',
+          releaseDate: new Date().toISOString(),
+        },
       };
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
@@ -289,6 +286,7 @@ describe('ElectronService', () => {
       const subscription = service.onUpdateEvent().subscribe(observer);
       subscription.unsubscribe();
     });
+
     it('should clean up the listener when unsubscribed', () => {
       const callback = jest.fn();
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockReturnValue(callback);
