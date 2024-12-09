@@ -1,4 +1,5 @@
 import {
+  type AutoUpdaterEvent,
   type DataEvent,
   type ElectronAPI,
   type SerialPortEvent,
@@ -8,7 +9,10 @@ declare global {
   namespace Cypress {
     interface Window {
       electron: ElectronAPI;
-      onEventTrigger: (serialPortEvent: SerialPortEvent | DataEvent) => void;
+      onAutoUpdaterEventTrigger: (autoUpdaterEvent: AutoUpdaterEvent) => void;
+      onSerialPortEventTrigger: (
+        serialPortEvent: SerialPortEvent | DataEvent
+      ) => void;
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     interface Chainable<Subject> {
@@ -66,7 +70,7 @@ Cypress.Commands.add('connect', (path: string, baudRate: number) => {
   cy.get('app-connection-component ion-button').contains('Connect').click();
 
   cy.window().then((win) => {
-    win.onEventTrigger({ type: 'open' });
+    win.onSerialPortEventTrigger({ type: 'open' });
   });
 });
 
@@ -74,6 +78,6 @@ Cypress.Commands.add('disconnect', () => {
   cy.get('app-connection-component ion-button').contains('Disconnect').click();
 
   cy.window().then((win) => {
-    win.onEventTrigger({ type: 'close' });
+    win.onSerialPortEventTrigger({ type: 'close' });
   });
 });

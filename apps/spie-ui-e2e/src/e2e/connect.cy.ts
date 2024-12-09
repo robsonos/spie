@@ -3,16 +3,20 @@ import {
   mockSerialPortList,
 } from '../fixtures/mocks/electron-api.mock';
 
-describe('Serial Port component', () => {
+describe('Connect routine', () => {
   beforeEach(() => {
     cy.visit('/');
 
     cy.on('window:before:load', (win) => {
       win.electron = mockElectronAPI(win);
     });
+
+    cy.window().should((win) => {
+      expect(win.onSerialPortEventTrigger).to.be.a('function');
+    });
   });
 
-  it('should display available serial ports in the dropdown', () => {
+  it('should show available serial ports in the dropdown', () => {
     cy.get(
       'app-connection-component [placeholder="Select Serial Port"]'
     ).click();
@@ -112,7 +116,10 @@ describe('Serial Port component', () => {
     cy.get('app-connection-component ion-button [name="settings-outline"]')
       .parent()
       .click();
-    cy.get('ion-modal').should('be.visible');
+    cy.get('ion-modal ion-toolbar ion-title').should(
+      'contain',
+      'Advanced Connection Settings'
+    );
     cy.get('ion-modal ion-toolbar ion-button').click();
     cy.get('ion-modal').should('not.be.visible');
   });
