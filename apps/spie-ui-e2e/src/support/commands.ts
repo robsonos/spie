@@ -6,6 +6,7 @@ import {
 } from '@spie/types';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Window {
       electron: ElectronAPI;

@@ -24,7 +24,6 @@ import { TerminalAdvancedComponent } from '../terminal-advanced-modal/terminal-a
   selector: 'app-terminal-component',
   templateUrl: 'terminal.component.html',
   styleUrls: ['./terminal.component.scss'],
-  standalone: true,
   imports: [
     IonButton,
     IonCard,

@@ -29,6 +29,7 @@ module.exports = [
         'error',
         { suffixes: ['Page', 'Component'] },
       ],
+      '@angular-eslint/prefer-standalone': ['error'],
     },
   },
   {

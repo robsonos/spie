@@ -12,7 +12,6 @@ import { PlotterComponent } from '../../../components/plotter/plotter.component'
   selector: 'app-plotter',
   templateUrl: 'plotter.page.html',
   styleUrls: ['./plotter.page.scss'],
-  standalone: true,
   imports: [IonContent, IonHeader, IonTitle, IonToolbar, PlotterComponent],
 })
 export class PlotterPage {}

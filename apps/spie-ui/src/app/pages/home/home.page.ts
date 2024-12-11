@@ -14,7 +14,6 @@ import { UpdateModalComponent } from '../../components/update-modal/update-modal
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['./home.page.scss'],
-  standalone: true,
   imports: [
     IonIcon,
     IonLabel,

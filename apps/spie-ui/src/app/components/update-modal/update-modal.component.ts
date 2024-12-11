@@ -27,7 +27,6 @@ import { ToasterService } from '../../services/toaster.service';
   selector: 'app-update-modal',
   templateUrl: 'update-modal.component.html',
   styleUrls: ['./update-modal.component.scss'],
-  standalone: true,
   imports: [
     DecimalPipe,
     IonContent,
