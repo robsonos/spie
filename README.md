@@ -35,10 +35,10 @@ The repository provides:
 | Package  | version |
 | -------- | ------- |
 | nodejs   | 22.x.x  |
-| angular  | 18.2.x  |
+| angular  | 19.x.x  |
 | ionic    | 8.x.x   |
-| electron | 31.x.x  |
-| nx       | 19.8.10 |
+| electron | 33.3.x  |
+| nx       | 20.2.2  |
 
 ## Index
 

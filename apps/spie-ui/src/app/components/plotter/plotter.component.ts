@@ -39,7 +39,6 @@ interface ChartOptions {
   selector: 'app-plotter-component',
   templateUrl: 'plotter.component.html',
   styleUrls: ['./plotter.component.scss'],
-  standalone: true,
   imports: [
     IonButton,
     IonCard,

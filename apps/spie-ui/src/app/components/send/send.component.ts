@@ -26,7 +26,6 @@ import { SendAdvancedComponent } from '../send-advanced-modal/send-advanced-moda
   selector: 'app-send-component',
   templateUrl: 'send.component.html',
   styleUrls: ['./send.component.scss'],
-  standalone: true,
   imports: [
     IonButton,
     IonCard,

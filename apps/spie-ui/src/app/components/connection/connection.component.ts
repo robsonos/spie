@@ -29,7 +29,6 @@ import { ConnectionAdvancedComponent } from '../connection-advanced-modal/connec
   selector: 'app-connection-component',
   templateUrl: 'connection.component.html',
   styleUrls: ['./connection.component.scss'],
-  standalone: true,
   imports: [
     IonAccordion,
     IonAccordionGroup,

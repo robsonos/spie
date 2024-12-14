@@ -29,7 +29,6 @@ import { SerialPortService } from '../../services/serial-port.service';
   selector: 'app-terminal-advanced-modal-component',
   templateUrl: 'terminal-advanced-modal.component.html',
   styleUrls: ['./terminal-advanced-modal.component.scss'],
-  standalone: true,
   imports: [
     IonButton,
     IonButtons,

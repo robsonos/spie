@@ -13,7 +13,6 @@ import { TerminalComponent } from '../../../components/terminal/terminal.compone
   selector: 'app-terminal',
   templateUrl: 'terminal.page.html',
   styleUrls: ['./terminal.page.scss'],
-  standalone: true,
   imports: [
     IonContent,
     IonHeader,

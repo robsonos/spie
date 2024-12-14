@@ -21,7 +21,6 @@ import { SerialPortService } from '../../services/serial-port.service';
   selector: 'app-send-advanced-modal-component',
   templateUrl: 'send-advanced-modal.component.html',
   styleUrls: ['./send-advanced-modal.component.scss'],
-  standalone: true,
   imports: [
     IonButton,
     IonButtons,
