@@ -161,6 +161,8 @@ describe('Plotter routine', () => {
   it('should render multiple variables and large series', () => {
     const mockEventData = plotThreeVariables.eventData;
     const mockSeries = plotThreeVariables.series;
+    const chartStartOffset = 89; // Estimated offset to the first tooltip
+    const chartEndOffset = 9; // Estimated offset to the last tooltip
 
     cy.window()
       .then((win) => {
@@ -185,13 +187,16 @@ describe('Plotter routine', () => {
         cy.get('app-plotter-component ion-button').contains('Pause').click();
 
         // INFO: hacky way to wait until the canvas has finished updating from stream pause
-        cy.get('.apexcharts-canvas').invoke('width').should('be.below', 940);
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.get('.apexcharts-canvas')
+          .invoke('width')
+          .should('be.below', 940)
+          .wait(500);
 
         // Select the first path element and extract X coordinates
         cy.get('g.apexcharts-series path.apexcharts-line')
           .first()
           .then(($path) => {
-            const pageOffset = 85;
             const pathData = $path.attr('d');
 
             const xCoordinates = (pathData as string)
@@ -205,11 +210,11 @@ describe('Plotter routine', () => {
 
                 // If it's the last element in the array, adjust the X coordinate
                 if (index === array.length - 1) {
-                  return x + pageOffset - 1;
+                  return x + chartStartOffset - chartEndOffset;
                 }
 
                 // Otherwise, add the pageOffset to the X value
-                return x + pageOffset;
+                return x + chartStartOffset;
               })
               .filter((x) => !isNaN(x)); // Filter out NaN values
 
