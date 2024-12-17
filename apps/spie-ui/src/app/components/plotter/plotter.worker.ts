@@ -1,12 +1,9 @@
 /// <reference lib="webworker" />
 
-interface Series {
-  name: string;
-  data: { x: any; y: any }[];
-}
+import { type ChartDataset } from 'chart.js';
 
 export interface WorkerResult {
-  series: Series[];
+  chartDatasets: ChartDataset<'line'>[];
 }
 
 export interface WorkerMessage {
@@ -53,12 +50,14 @@ export const parseSerialMessages = (messages: string[]): WorkerResult => {
   );
 
   // Convert parsed data into series
-  const series: Series[] = Array.from(datasetNames).map((varName) => ({
-    name: varName,
-    data: parsedLines[varName] || [],
-  }));
+  const chartDatasets: ChartDataset<'line'>[] = Array.from(datasetNames).map(
+    (varName) => ({
+      label: varName,
+      data: parsedLines[varName] || [],
+    })
+  );
 
-  return { series };
+  return { chartDatasets };
 };
 
 // Process a single message to extract tokens and add to parsed data

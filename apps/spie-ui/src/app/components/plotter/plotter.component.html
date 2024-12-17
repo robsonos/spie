@@ -4,16 +4,12 @@
   </ion-card-header>
 
   <ion-card-content>
-    <apx-chart
-      [series]="series()"
-      [chart]="chartOptions().chart"
-      [tooltip]="chartOptions().tooltip"
-      [xaxis]="chartOptions().xaxis"
-      [yaxis]="chartOptions().yaxis"
-      [grid]="chartOptions().grid"
-      [stroke]="chartOptions().stroke"
-      [dataLabels]="chartOptions().dataLabels"
-    />
+    <canvas
+      baseChart
+      [type]="'line'"
+      [datasets]="chartDatasets()"
+      [options]="chartOptions()"
+    ></canvas>
 
     <ion-grid>
       <ion-row>
@@ -61,5 +57,3 @@
     </ion-grid>
   </ion-card-content>
 </ion-card>
-
-<!-- <pre>{{ series()[0].data.length }}</pre> -->

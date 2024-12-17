@@ -35,9 +35,9 @@ describe('Plotter web worker', () => {
           ];
 
           const assertion = {
-            series: [
+            chartDatasets: [
               {
-                name: 'Variable 1',
+                label: 'Variable 1',
                 data: [
                   { x: fixedTimestamp, y: 1 },
                   { x: fixedTimestamp, y: 2 },
@@ -60,16 +60,16 @@ describe('Plotter web worker', () => {
           ];
 
           const assertion = {
-            series: [
+            chartDatasets: [
               {
-                name: 'Variable 1',
+                label: 'Variable 1',
                 data: [
                   { x: fixedTimestamp, y: 1 },
                   { x: fixedTimestamp, y: 3 },
                 ],
               },
               {
-                name: 'Variable 2',
+                label: 'Variable 2',
                 data: [
                   { x: fixedTimestamp, y: 2 },
                   { x: fixedTimestamp, y: 4 },
@@ -89,16 +89,16 @@ describe('Plotter web worker', () => {
           ];
 
           const assertion = {
-            series: [
+            chartDatasets: [
               {
-                name: 'temperature_1',
+                label: 'temperature_1',
                 data: [
                   { x: fixedTimestamp, y: 1 },
                   { x: fixedTimestamp, y: 3 },
                 ],
               },
               {
-                name: 'temperature_2',
+                label: 'temperature_2',
                 data: [
                   { x: fixedTimestamp, y: 2 },
                   { x: fixedTimestamp, y: 4 },
@@ -114,20 +114,20 @@ describe('Plotter web worker', () => {
         it('should handle incomplete message buffering', () => {
           const messages1 = [`1${delimiter}`];
           const assertion1 = {
-            series: [],
+            chartDatasets: [],
           };
           const parsedMessage1 = parseSerialMessages(messages1);
           expect(parsedMessage1).toEqual(assertion1);
 
           const messages2 = [`2${trailingDelimiter}${terminator}`];
           const assertion2 = {
-            series: [
+            chartDatasets: [
               {
-                name: 'Variable 1',
+                label: 'Variable 1',
                 data: [{ x: fixedTimestamp, y: 1 }],
               },
               {
-                name: 'Variable 2',
+                label: 'Variable 2',
                 data: [{ x: fixedTimestamp, y: 2 }],
               },
             ],
@@ -140,7 +140,7 @@ describe('Plotter web worker', () => {
           const messages = ['invalid_data'];
 
           const assertion = {
-            series: [],
+            chartDatasets: [],
           };
 
           const parsedMessage = parseSerialMessages(messages);

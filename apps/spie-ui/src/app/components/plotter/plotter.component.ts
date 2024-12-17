@@ -16,17 +16,8 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { type DataEvent } from '@spie/types';
-import {
-  type ApexAxisChartSeries,
-  type ApexChart,
-  type ApexDataLabels,
-  type ApexGrid,
-  type ApexStroke,
-  type ApexTooltip,
-  type ApexXAxis,
-  type ApexYAxis,
-  NgApexchartsModule,
-} from 'ng-apexcharts';
+import { type ChartDataset, type ChartOptions } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
 import {
   BehaviorSubject,
   Observable,
@@ -42,16 +33,6 @@ import {
 import { type WorkerMessage, type WorkerResult } from './plotter.worker';
 import { SerialPortService } from '../../services/serial-port.service';
 
-interface ChartOptions {
-  dataLabels: ApexDataLabels;
-  yaxis: ApexYAxis;
-  xaxis: ApexXAxis;
-  grid: ApexGrid;
-  stroke: ApexStroke;
-  chart: ApexChart;
-  tooltip: ApexTooltip;
-}
-
 @Component({
   selector: 'app-plotter-component',
   templateUrl: 'plotter.component.html',
@@ -66,7 +47,7 @@ interface ChartOptions {
     IonIcon,
     IonRow,
     IonText,
-    NgApexchartsModule,
+    BaseChartDirective,
   ],
 })
 export class PlotterComponent {
@@ -91,7 +72,7 @@ export class PlotterComponent {
     tap((dataEvent) => {
       if (dataEvent.type === 'clear') {
         // Clear series
-        this.series.set([]);
+        this.chartDatasets.set([]);
         return;
       }
 
@@ -116,31 +97,31 @@ export class PlotterComponent {
       this.worker?.removeEventListener('message', listener);
     };
   }).pipe(
-    bufferTime(50),
+    bufferTime(10),
     tap((workerResults: WorkerResult[]) => {
       workerResults.forEach((workerResult) => {
-        const newSeries = workerResult.series;
+        const newChartDatasets = workerResult.chartDatasets;
 
         // TODO: Check if this is needed on tests
-        if (newSeries.length === 0) {
+        if (newChartDatasets.length === 0) {
           return;
         }
 
         // Update series with the correct amount of variables
-        if (this.series().length !== newSeries.length) {
+        if (this.chartDatasets().length !== newChartDatasets.length) {
           console.warn('Number of variables has changed');
 
-          this.series.set(newSeries);
+          this.chartDatasets.set(newChartDatasets);
 
           return;
         }
 
-        const scrollbackLength = 500; // TODO: add to advanced settings
+        const scrollbackLength = 1000; // TODO: add to advanced settings
 
-        this.series.update((series) => {
-          return series.map((dataset, index) => {
+        this.chartDatasets.update((datasets) => {
+          return datasets.map((dataset, index) => {
             const data = dataset.data as { x: any; y: any }[];
-            const newDataPoint = newSeries[index];
+            const newDataPoint = newChartDatasets[index];
 
             if (newDataPoint && newDataPoint.data.length > 0) {
               if (data.length >= scrollbackLength) {
@@ -166,61 +147,107 @@ export class PlotterComponent {
     { initialValue: false }
   );
 
-  series = signal<ApexAxisChartSeries>([]);
+  chartDatasets = signal<ChartDataset<'line'>[]>([]);
+  chartOptions = computed<ChartOptions<'line'>>(() => ({
+    animation: false,
+    parsing: false,
+    datasets: {
+      line: {
+        pointRadius: 0,
+        borderWidth: 1,
+        pointHoverRadius: this.isPaused() ? 3 : 0,
+      },
+    },
+    interaction: {
+      intersect: false,
+    },
+    plugins: {
+      tooltip: {
+        enabled: this.isPaused(),
+        callbacks: {
+          title: (context) => {
+            const timestamp = context[0].parsed.x;
+            const date = new Date(timestamp);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear()).slice(-2);
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const milliseconds = String(date.getMilliseconds()).padStart(
+              3,
+              '0'
+            );
 
-  chartOptions = computed<ChartOptions>(() => ({
-    chart: {
-      type: 'line',
-      animations: {
-        enabled: false,
+            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}:${milliseconds}`;
+          },
+        },
+      },
+      decimation: {
+        enabled: true,
+        algorithm: 'min-max',
+      },
+      legend: {
+        display: this.isPaused(),
       },
       zoom: {
-        enabled: this.isPaused(),
-      },
-      toolbar: {
-        show: this.isPaused(),
+        // TODO: context menu to reset zoom
+        zoom: {
+          wheel: {
+            enabled: this.isPaused(),
+          },
+          pinch: {
+            enabled: this.isPaused(),
+          },
+          drag: {
+            enabled: this.isPaused(),
+          },
+          mode: 'x',
+          animation: {
+            duration: 0,
+          },
+        },
       },
     },
-    tooltip: {
-      enabled: this.isPaused(),
+    elements: {
+      line: {
+        tension: 0,
+      },
+    },
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: 'Amplitude',
+        },
+        grid: {
+          color: '#2C353A',
+        },
+        ticks: {
+          color: '#DAE3E3',
+        },
+      },
       x: {
-        show: true,
-        // format: 'dd/MM/yy HH:mm:ss:fff', // milliseconds is not working here
-        formatter: (timestamp: number) => {
-          const date = new Date(timestamp);
-
-          const day = String(date.getDate()).padStart(2, '0');
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const year = String(date.getFullYear()).slice(-2);
-          const hours = String(date.getHours()).padStart(2, '0');
-          const minutes = String(date.getMinutes()).padStart(2, '0');
-          const seconds = String(date.getSeconds()).padStart(2, '0');
-          const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
-
-          return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}:${milliseconds}`;
+        type: 'time',
+        time: {
+          unit: 'second',
+          displayFormats: {
+            second: 'dd/MM/yy HH:mm:ss',
+          },
         },
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    yaxis: {},
-    xaxis: {
-      type: 'datetime', // TODO: toggle between time and linear (sample count)
-    },
-    grid: {
-      show: true,
-      strokeDashArray: 2,
-      xaxis: {
-        lines: {
-          show: true,
+        title: {
+          display: true,
+          text: 'Time (ms)',
         },
+        grid: {
+          color: '#2C353A',
+        },
+        ticks: {
+          display: this.isPaused(),
+          color: '#DAE3E3',
+        },
+        bounds: 'data',
       },
-    },
-    stroke: {
-      show: true,
-      curve: 'straight', // TODO: toggle between  straight and stepline?
-      width: 1,
     },
   }));
 

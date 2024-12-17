@@ -27,7 +27,6 @@
           "apps/spie-ui/src/global.scss",
           "apps/spie-ui/src/theme/variables.scss"
         ],
-        "scripts": ["node_modules/apexcharts/dist/apexcharts.min.js"],
         "webWorkerTsConfig": "apps/spie-ui/tsconfig.worker.json"
       },
       "configurations": {
