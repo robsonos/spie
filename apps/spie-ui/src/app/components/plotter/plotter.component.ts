@@ -21,6 +21,8 @@ import {
   type ApexChart,
   type ApexDataLabels,
   type ApexGrid,
+  type ApexLegend,
+  type ApexMarkers,
   type ApexStroke,
   type ApexTooltip,
   type ApexXAxis,
@@ -50,6 +52,8 @@ interface ChartOptions {
   stroke: ApexStroke;
   chart: ApexChart;
   tooltip: ApexTooltip;
+  legend: ApexLegend;
+  markers: ApexMarkers;
 }
 
 @Component({
@@ -135,7 +139,7 @@ export class PlotterComponent {
           return;
         }
 
-        const scrollbackLength = 500; // TODO: add to advanced settings
+        const scrollbackLength = 1000; // TODO: add to advanced settings
 
         this.series.update((series) => {
           return series.map((dataset, index) => {
@@ -204,8 +208,11 @@ export class PlotterComponent {
     dataLabels: {
       enabled: false,
     },
-    yaxis: {},
+    yaxis: {
+      title: { text: 'Amplitude' },
+    },
     xaxis: {
+      title: { text: 'Time (ms)' },
       type: 'datetime', // TODO: toggle between time and linear (sample count)
     },
     grid: {
@@ -221,6 +228,13 @@ export class PlotterComponent {
       show: true,
       curve: 'straight', // TODO: toggle between  straight and stepline?
       width: 1,
+    },
+    legend: {
+      position: 'top',
+      show: this.isPaused(),
+    },
+    markers: {
+      size: 0,
     },
   }));
 
