@@ -60,7 +60,7 @@ export class TerminalComponent {
   terminalOptions = this.serialPortService.terminalOptions;
   private dataEvent$ = merge(
     this.serialPortService.dataEvent$.pipe(
-      filter(() => !this.isDataEventPausedSubject.getValue())
+      filter(() => !this.isPausedSubject.getValue())
     ),
     this.clearTerminalSubject.pipe(map(() => ({ type: 'clear' } as DataEvent)))
   ).pipe(
@@ -121,7 +121,7 @@ export class TerminalComponent {
     takeUntilDestroyed()
   );
   data = signal('');
-  isDataEventPausedSubject = new BehaviorSubject<boolean>(false);
+  isPausedSubject = new BehaviorSubject<boolean>(false);
 
   terminalTextArea = viewChild.required<IonTextarea>('terminalTextArea');
   private terminalAdvancedComponent = viewChild.required(
@@ -133,8 +133,8 @@ export class TerminalComponent {
   }
 
   onClickPauseTerminal(): void {
-    const currentValue = this.isDataEventPausedSubject.getValue();
-    this.isDataEventPausedSubject.next(!currentValue);
+    const currentValue = this.isPausedSubject.getValue();
+    this.isPausedSubject.next(!currentValue);
   }
 
   async onClickTerminalAdvancedModal() {

@@ -8,7 +8,7 @@
       <ion-textarea
         #terminalTextArea
         readonly
-        rows="10"
+        rows="25"
         placeholder="Incoming data will appear here"
         class="terminal-textarea"
         [value]="data()"
@@ -21,9 +21,7 @@
           <ion-button
             expand="block"
             [color]="
-              isDataEventPausedSubject.getValue() && isOpen()
-                ? 'danger'
-                : 'secondary'
+              isPausedSubject.getValue() && isOpen() ? 'danger' : 'secondary'
             "
             [disabled]="!isOpen()"
             (click)="onClickPauseTerminal()"
@@ -31,16 +29,12 @@
             <ion-icon
               slot="start"
               [name]="
-                isDataEventPausedSubject.getValue() && isOpen()
+                isPausedSubject.getValue() && isOpen()
                   ? 'pause-outline'
                   : 'play-outline'
               "
             ></ion-icon>
-            {{
-              isDataEventPausedSubject.getValue() && isOpen()
-                ? 'Continue'
-                : 'Pause'
-            }}
+            {{ isPausedSubject.getValue() && isOpen() ? 'Continue' : 'Pause' }}
           </ion-button>
         </ion-col>
 

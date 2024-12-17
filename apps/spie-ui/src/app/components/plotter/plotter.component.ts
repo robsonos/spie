@@ -1,5 +1,9 @@
-import { Component, computed, inject, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, inject, signal } from '@angular/core';
+import {
+  takeUntilDestroyed,
+  toObservable,
+  toSignal,
+} from '@angular/core/rxjs-interop';
 import {
   IonButton,
   IonCard,
@@ -13,6 +17,7 @@ import {
 } from '@ionic/angular/standalone';
 import { type DataEvent } from '@spie/types';
 import {
+  type ApexAxisChartSeries,
   type ApexChart,
   type ApexDataLabels,
   type ApexGrid,
@@ -20,11 +25,21 @@ import {
   type ApexTooltip,
   type ApexXAxis,
   type ApexYAxis,
-  type ChartComponent,
   NgApexchartsModule,
 } from 'ng-apexcharts';
-import { BehaviorSubject, Subject, filter, map, merge, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  bufferTime,
+  combineLatest,
+  filter,
+  map,
+  merge,
+  tap,
+} from 'rxjs';
 
+import { type WorkerMessage, type WorkerResult } from './plotter.worker';
 import { SerialPortService } from '../../services/serial-port.service';
 
 interface ChartOptions {
@@ -33,6 +48,8 @@ interface ChartOptions {
   xaxis: ApexXAxis;
   grid: ApexGrid;
   stroke: ApexStroke;
+  chart: ApexChart;
+  tooltip: ApexTooltip;
 }
 
 @Component({
@@ -57,18 +74,20 @@ export class PlotterComponent {
 
   constructor() {
     this.dataEvent$.subscribe();
+    this.parsedPlotterData$.subscribe();
   }
-
-  chartArea = viewChild.required<ChartComponent>('chartObj');
 
   clearSeriesSubject = new Subject<void>();
   isOpen = this.serialPortService.isOpen;
+
+  worker: Worker | undefined;
   private dataEvent$ = merge(
     this.serialPortService.dataEvent$.pipe(
-      filter(() => !this.isDataEventPausedSubject.getValue())
+      filter(() => !this.isPausedSubject.getValue())
     ),
     this.clearSeriesSubject.pipe(map(() => ({ type: 'clear' } as DataEvent)))
   ).pipe(
+    // throttleTime(10),
     tap((dataEvent) => {
       if (dataEvent.type === 'clear') {
         // Clear series
@@ -76,105 +95,94 @@ export class PlotterComponent {
         return;
       }
 
-      const data = dataEvent.data;
-      const isDataTruncated = data.split('\n').length - 1 > 1;
-      if (isDataTruncated) {
-        console.warn('data truncated:');
-        return;
-      }
+      const message: WorkerMessage = {
+        message: [dataEvent.data],
+      };
 
-      // Detect separator
-      const detectedSeparator = this.detectSeparator(data);
+      this.worker?.postMessage(message);
+    }),
+    takeUntilDestroyed()
+  );
+  private parsedPlotterData$ = new Observable<WorkerResult>((observer) => {
+    this.worker = new Worker(new URL('./plotter.worker', import.meta.url));
 
-      // Split values
-      const values = detectedSeparator
-        ? data
-            .split(detectedSeparator)
-            .map((value: string) => parseFloat(value))
-        : [parseFloat(data)];
+    const listener = (messageEvent: MessageEvent<WorkerResult>) => {
+      observer.next(messageEvent.data);
+    };
 
-      // Update series with the correct amount of variables
-      if (this.series().length !== values.length) {
-        const newSeries = values.map((value: number, index: number) => ({
-          name: `Variable ${index + 1}`,
-          data: [{ x: Date.now(), y: value }],
-        }));
+    this.worker?.addEventListener('message', listener);
 
-        this.series.set(newSeries);
-        return;
-      }
+    return () => {
+      this.worker?.removeEventListener('message', listener);
+    };
+  }).pipe(
+    bufferTime(50),
+    tap((workerResults: WorkerResult[]) => {
+      workerResults.forEach((workerResult) => {
+        const newSeries = workerResult.series;
 
-      let variableData: { x: number; y: number }[][] = [];
+        // TODO: Check if this is needed on tests
+        if (newSeries.length === 0) {
+          return;
+        }
 
-      // Initialize variableData for the first time based on the number of variables
-      if (variableData.length === 0) {
-        variableData = Array.from({ length: values.length }, () => []);
-      }
+        // Update series with the correct amount of variables
+        if (this.series().length !== newSeries.length) {
+          console.warn('Number of variables has changed');
 
-      // Populate data points for each variable
-      values.forEach((value: number, index: number) => {
-        variableData[index].push({
-          x: Date.now(),
-          y: value,
-        });
-      });
+          this.series.set(newSeries);
 
-      // TODO: plotter options scrollbackLength
-      const scrollbackLength = 1000;
+          return;
+        }
 
-      // Slice series based on scrollbackLength
-      if (this.series()[0].data.length > scrollbackLength) {
+        const scrollbackLength = 500; // TODO: add to advanced settings
+
         this.series.update((series) => {
-          return series.map((variable) => {
-            const data = variable.data as { x: any; y: any }[];
-            const truncatedData = data.slice(1);
+          return series.map((dataset, index) => {
+            const data = dataset.data as { x: any; y: any }[];
+            const newDataPoint = newSeries[index];
 
-            return { ...variable, data: truncatedData };
+            if (newDataPoint && newDataPoint.data.length > 0) {
+              if (data.length >= scrollbackLength) {
+                data.shift();
+              }
+
+              data.push(newDataPoint.data[0] as { x: any; y: any });
+            }
+
+            return { ...dataset, data };
           });
-        });
-      }
-
-      // Update series
-      this.series.update((series) => {
-        return series.map((variable, index) => {
-          const data = variable.data as { x: any; y: any }[];
-          const updatedData = [...data, variableData[index][0]];
-
-          return { ...variable, data: updatedData };
         });
       });
     }),
     takeUntilDestroyed()
   );
+
+  isPausedSubject = new BehaviorSubject<boolean>(false);
+  private isPaused = toSignal(
+    combineLatest([this.isPausedSubject, toObservable(this.isOpen)]).pipe(
+      map(([isPaused, isOpen]) => isPaused || !isOpen)
+    ),
+    { initialValue: false }
+  );
+
   series = signal<ApexAxisChartSeries>([]);
 
-  isDataEventPausedSubject = new BehaviorSubject<boolean>(false);
-  private isDataEventPaused = toSignal(this.isDataEventPausedSubject, {
-    initialValue: false,
-  });
-
-  private detectSeparator(line: string): string {
-    if (line.includes('\t')) return '\t';
-    if (line.includes(',')) return ',';
-    if (line.includes(' ')) return ' ';
-    return '';
-  }
-
-  chart = computed<ApexChart>(() => {
-    return {
+  chartOptions = computed<ChartOptions>(() => ({
+    chart: {
       type: 'line',
       animations: {
         enabled: false,
       },
       zoom: {
-        enabled: this.isDataEventPaused(),
+        enabled: this.isPaused(),
       },
-    };
-  });
-
-  tooltip = computed<ApexTooltip>(() => {
-    return {
-      enabled: this.isDataEventPaused(),
+      toolbar: {
+        show: this.isPaused(),
+      },
+    },
+    tooltip: {
+      enabled: this.isPaused(),
       x: {
         show: true,
         // format: 'dd/MM/yy HH:mm:ss:fff', // milliseconds is not working here
@@ -192,23 +200,13 @@ export class PlotterComponent {
           return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}:${milliseconds}`;
         },
       },
-    };
-  });
-
-  chartOptions: ChartOptions = {
+    },
     dataLabels: {
       enabled: false,
     },
-    yaxis: {
-      // axisTicks: {
-      //   show: false,
-      // },
-    },
+    yaxis: {},
     xaxis: {
-      type: 'datetime',
-      // axisTicks: {
-      //   show: false,
-      // },
+      type: 'datetime', // TODO: toggle between time and linear (sample count)
     },
     grid: {
       show: true,
@@ -218,26 +216,21 @@ export class PlotterComponent {
           show: true,
         },
       },
-      yaxis: {
-        lines: {
-          show: true,
-        },
-      },
     },
     stroke: {
       show: true,
-      curve: 'straight',
-      width: 2,
+      curve: 'straight', // TODO: toggle between  straight and stepline?
+      width: 1,
     },
-  };
+  }));
 
   onClickClearTerminal(): void {
     this.clearSeriesSubject.next();
   }
 
   onClickPauseTerminal(): void {
-    const currentValue = this.isDataEventPausedSubject.getValue();
-    this.isDataEventPausedSubject.next(!currentValue);
+    const currentValue = this.isPausedSubject.getValue();
+    this.isPausedSubject.next(!currentValue);
   }
 
   async onClickTerminalAdvancedModal() {

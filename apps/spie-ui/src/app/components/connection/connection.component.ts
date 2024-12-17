@@ -96,7 +96,7 @@ export class ConnectionComponent {
         });
       })
       .catch((error) => {
-        console.error('Error initializing serial ports:', error); // TODO: Toaster?
+        console.warn('Error initializing serial ports:', error);
       });
   }
 
