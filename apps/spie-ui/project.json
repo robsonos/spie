@@ -24,11 +24,11 @@
           }
         ],
         "styles": [
+          "@angular/material/prebuilt-themes/azure-blue.css",
           "apps/spie-ui/src/global.scss",
           "apps/spie-ui/src/theme/variables.scss"
         ],
-        "scripts": ["node_modules/apexcharts/dist/apexcharts.min.js"],
-        "webWorkerTsConfig": "apps/spie-ui/tsconfig.worker.json"
+        "scripts": ["node_modules/apexcharts/dist/apexcharts.min.js"]
       },
       "configurations": {
         "production": {
@@ -55,7 +55,8 @@
         "ci": {
           "progress": false
         }
-      }
+      },
+      "defaultConfiguration": "production"
     },
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",
@@ -82,8 +83,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/spie-ui/jest.config.ts",
-        "webWorkerTsConfig": "apps/spie-ui/tsconfig.worker.json"
+        "jestConfig": "apps/spie-ui/jest.config.ts"
       }
     },
     "serve-static": {
