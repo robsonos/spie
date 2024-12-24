@@ -14,17 +14,17 @@ export const electronAPI: ElectronAPI = {
   downloadUpdate: () => ipcRenderer.invoke('app-download-update'),
   installUpdate: () => ipcRenderer.invoke('app-install-update'),
   onUpdateEvent: (callback: (autoUpdaterEvent: AutoUpdaterEvent) => void) => {
-    const eventName = 'app-update-notification';
+    const eventName = 'app-update-event';
     const dataListener = (
       _: IpcRendererEvent,
       autoUpdaterEvent: AutoUpdaterEvent
     ) => callback(autoUpdaterEvent);
-    ipcRenderer.send('app-update-add-notification-event-listener');
+    ipcRenderer.send('app-update-event-add-listener');
     ipcRenderer.on(eventName, dataListener);
 
     return () => {
       ipcRenderer.removeListener(eventName, dataListener);
-      ipcRenderer.send('app-update-remove-notification-event-listener');
+      ipcRenderer.send('app-update-event-remove-listener');
     };
   },
   serialPort: {
@@ -40,17 +40,17 @@ export const electronAPI: ElectronAPI = {
     getReadEncoding: () => ipcRenderer.invoke('serial-port-get-read-encoding'),
     getOpenOptions: () => ipcRenderer.invoke('serial-port-get-open-options'),
     onEvent: (callback: (serialPortEvent: SerialPortEvent) => void) => {
-      const eventName = 'serial-port-notification';
+      const eventName = 'serial-port-event';
       const dataListener = (
         _: IpcRendererEvent,
         serialPortEvent: SerialPortEvent
       ) => callback(serialPortEvent);
-      ipcRenderer.send('serial-port-add-notification-event-listener');
+      ipcRenderer.send('serial-port-event-add-listener');
       ipcRenderer.on(eventName, dataListener);
 
       return () => {
         ipcRenderer.removeListener(eventName, dataListener);
-        ipcRenderer.send('serial-port-remove-notification-event-listener');
+        ipcRenderer.send('serial-port-event-remove-listener');
       };
     },
   },

@@ -95,10 +95,10 @@ describe('Update Events', () => {
       const cleanup = window.electron.onUpdateEvent(callback);
 
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'app-update-add-notification-event-listener'
+        'app-update-event-add-listener'
       );
       expect(ipcRenderer.on).toHaveBeenCalledWith(
-        'app-update-notification',
+        'app-update-event',
         expect.any(Function)
       );
 
@@ -106,11 +106,11 @@ describe('Update Events', () => {
 
       cleanup();
       expect(ipcRenderer.removeListener).toHaveBeenCalledWith(
-        'app-update-notification',
+        'app-update-event',
         expect.any(Function)
       );
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'app-update-remove-notification-event-listener'
+        'app-update-event-remove-listener'
       );
     });
   });
@@ -123,10 +123,10 @@ describe('onUpdateEvent', () => {
     const cleanup = window.electron.onUpdateEvent(callback);
 
     expect(ipcRenderer.send).toHaveBeenCalledWith(
-      'app-update-add-notification-event-listener'
+      'app-update-event-add-listener'
     );
     expect(ipcRenderer.on).toHaveBeenCalledWith(
-      'app-update-notification',
+      'app-update-event',
       expect.any(Function)
     );
 
@@ -283,11 +283,11 @@ describe('onUpdateEvent', () => {
     cleanup();
 
     expect(ipcRenderer.removeListener).toHaveBeenCalledWith(
-      'app-update-notification',
+      'app-update-event',
       expect.any(Function)
     );
     expect(ipcRenderer.send).toHaveBeenCalledWith(
-      'app-update-remove-notification-event-listener'
+      'app-update-event-remove-listener'
     );
   });
 });

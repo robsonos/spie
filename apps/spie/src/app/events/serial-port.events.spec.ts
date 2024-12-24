@@ -183,10 +183,10 @@ describe('Serial Port events', () => {
       const cleanup = window.electron.serialPort.onEvent(callback);
 
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'serial-port-add-notification-event-listener'
+        'serial-port-event-add-listener'
       );
       expect(ipcRenderer.on).toHaveBeenCalledWith(
-        'serial-port-notification',
+        'serial-port-event',
         expect.any(Function)
       );
 
@@ -294,11 +294,11 @@ describe('Serial Port events', () => {
       cleanup();
 
       expect(ipcRenderer.removeListener).toHaveBeenCalledWith(
-        'serial-port-notification',
+        'serial-port-event',
         expect.any(Function)
       );
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'serial-port-remove-notification-event-listener'
+        'serial-port-event-remove-listener'
       );
     });
   });

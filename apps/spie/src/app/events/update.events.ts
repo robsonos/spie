@@ -45,14 +45,14 @@ export default class UpdateEvents {
         error,
         message,
       };
-      event.sender.send('app-update-notification', updateNotification);
+      event.sender.send('app-update-event', updateNotification);
     });
 
     addEventListener('checking-for-update', () => {
       const updateNotification: AutoUpdaterEvent = {
         type: 'checking-for-update',
       };
-      event.sender.send('app-update-notification', updateNotification);
+      event.sender.send('app-update-event', updateNotification);
     });
 
     addEventListener('update-not-available', (updateInfo: UpdateInfo) => {
@@ -60,7 +60,7 @@ export default class UpdateEvents {
         type: 'update-not-available',
         updateInfo,
       };
-      event.sender.send('app-update-notification', updateNotification);
+      event.sender.send('app-update-event', updateNotification);
     });
 
     addEventListener('update-available', (updateInfo: UpdateInfo) => {
@@ -75,7 +75,7 @@ export default class UpdateEvents {
         updateInfo,
       };
 
-      event.sender.send('app-update-notification', updateNotification);
+      event.sender.send('app-update-event', updateNotification);
     });
 
     addEventListener(
@@ -85,7 +85,7 @@ export default class UpdateEvents {
           type: 'update-downloaded',
           updateDownloadedEvent,
         };
-        event.sender.send('app-update-notification', updateNotification);
+        event.sender.send('app-update-event', updateNotification);
       }
     );
 
@@ -94,7 +94,7 @@ export default class UpdateEvents {
         type: 'download-progress',
         progressInfo,
       };
-      event.sender.send('app-update-notification', updateNotification);
+      event.sender.send('app-update-event', updateNotification);
     });
 
     addEventListener('update-cancelled', (updateInfo: UpdateInfo) => {
@@ -102,7 +102,7 @@ export default class UpdateEvents {
         type: 'update-cancelled',
         updateInfo,
       };
-      event.sender.send('app-update-notification', updateNotification);
+      event.sender.send('app-update-event', updateNotification);
     });
 
     return Promise.resolve();
@@ -154,14 +154,14 @@ export default class UpdateEvents {
     const delayAfterAppReady = App.isDevelopmentMode() ? 3000 : 10000;
     setTimeout(checkForUpdates, delayAfterAppReady);
 
-    ipcMain.on('app-update-add-notification-event-listener', (event) => {
-      // console.warn('app-update-add-notification-event-listener');
+    ipcMain.on('app-update-event-add-listener', (event) => {
+      // console.warn('app-update-event-add-listener');
 
       return UpdateEvents.addEventListeners(event);
     });
 
-    ipcMain.on('app-update-remove-notification-event-listener', () => {
-      // console.warn('app-update-remove-notification-event-listener');
+    ipcMain.on('app-update-event-remove-listener', () => {
+      // console.warn('app-update-event-remove-listener');
       return UpdateEvents.removeEventListeners();
     });
 

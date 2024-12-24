@@ -60,17 +60,17 @@ export default class SerialPortEvents {
 
     addEventListener('error', (error: Error) => {
       const notification: SerialPortEvent = { type: 'error', error };
-      event.sender.send('serial-port-notification', notification);
+      event.sender.send('serial-port-event', notification);
     });
 
     addEventListener('open', () => {
       const notification: SerialPortEvent = { type: 'open' };
-      event.sender.send('serial-port-notification', notification);
+      event.sender.send('serial-port-event', notification);
     });
 
     addEventListener('close', () => {
       const notification: SerialPortEvent = { type: 'close' };
-      event.sender.send('serial-port-notification', notification);
+      event.sender.send('serial-port-event', notification);
     });
 
     addEventListener('data', (chunk: any) => {
@@ -80,12 +80,12 @@ export default class SerialPortEvents {
           : chunk.toString('ascii');
 
       const notification: SerialPortEvent = { type: 'data', data };
-      event.sender.send('serial-port-notification', notification);
+      event.sender.send('serial-port-event', notification);
     });
 
     addEventListener('drain', () => {
       const notification: SerialPortEvent = { type: 'drain' };
-      event.sender.send('serial-port-notification', notification);
+      event.sender.send('serial-port-event', notification);
     });
 
     SerialPortEvents.areListenersRegistered = true;
@@ -242,7 +242,6 @@ export default class SerialPortEvents {
 
     ipcMain.handle('serial-port-get-read-encoding', () => {
       // console.warn('serial-port-get-read-encoding');
-
       return Promise.resolve(SerialPortEvents.encoding);
     });
 
@@ -251,13 +250,13 @@ export default class SerialPortEvents {
       return Promise.resolve(SerialPortEvents.openOptions);
     });
 
-    ipcMain.on('serial-port-add-notification-event-listener', (event) => {
-      // console.warn('serial-port-add-notification-event-listener');
+    ipcMain.on('serial-port-event-add-listener', (event) => {
+      // console.warn('serial-port-event-add-listener');
       return SerialPortEvents.addEventListeners(event);
     });
 
-    ipcMain.on('serial-port-remove-notification-event-listener', () => {
-      // console.warn('serial-port-remove-notification-event-listener');
+    ipcMain.on('serial-port-event-remove-listener', () => {
+      // console.warn('serial-port-event-remove-listener');
       return SerialPortEvents.removeEventListeners();
     });
   }
