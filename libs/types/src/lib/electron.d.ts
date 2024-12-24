@@ -28,9 +28,13 @@ export type SerialPortEvent =
   | { type: 'open' }
   | { type: 'close' }
   | { type: 'data'; data: string }
+  | { type: 'data-delimited'; data: string }
   | { type: 'drain' };
 
-export type DataEvent = { type: 'data'; data: string } | { type: 'clear' };
+export type DataEvent =
+  | { type: 'data'; data: string }
+  | { type: 'data-delimited'; data: string }
+  | { type: 'clear' };
 
 export interface SerialPortAPI {
   list: () => Promise<PortInfo[]>;

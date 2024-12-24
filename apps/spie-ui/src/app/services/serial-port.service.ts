@@ -89,4 +89,18 @@ export class SerialPortService {
         serialPortEvent.type === 'data' || serialPortEvent.type === 'clear'
     )
   );
+
+  dataDelimitedEvent$: Observable<DataEvent> = toObservable(this.isOpen).pipe(
+    switchMap(() =>
+      merge(
+        this.electronService.serialPort.onEvent(),
+        this.clearDataSubject.pipe(map(() => ({ type: 'clear' } as DataEvent)))
+      )
+    ),
+    filter(
+      (serialPortEvent) =>
+        serialPortEvent.type === 'data-delimited' ||
+        serialPortEvent.type === 'clear'
+    )
+  );
 }

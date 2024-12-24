@@ -5,11 +5,9 @@ import type {
   SerialPortEventType,
 } from '@spie/types';
 import { ipcMain } from 'electron';
-import { InterByteTimeoutParser, SerialPort } from 'serialport';
+import { ReadlineParser, SerialPort } from 'serialport';
 
 export default class SerialPortEvents {
-  private static serialPort: SerialPort | null = null;
-  private static parser: InterByteTimeoutParser | null = null;
   private static eventListeners = new Map<
     SerialPortEventType,
     (...args: any[]) => void
@@ -18,6 +16,9 @@ export default class SerialPortEvents {
     SerialPortEventType,
     (...args: any[]) => void
   >();
+  private static serialPort: SerialPort | null = null;
+  private static parser: ReadlineParser | null = null;
+  private static parserCallback: (data: string) => void | null = null;
   private static encoding: Encoding = 'ascii';
   private static areListenersRegistered = false;
   private static openOptions: OpenOptions | null = null;
@@ -33,11 +34,7 @@ export default class SerialPortEvents {
       serialPortEventType: SerialPortEventType,
       callback: (...args: any[]) => void
     ) => {
-      if (
-        !SerialPortEvents.serialPort ||
-        !SerialPortEvents.parser ||
-        !SerialPortEvents.serialPort.isOpen
-      ) {
+      if (!SerialPortEvents.serialPort || !SerialPortEvents.serialPort.isOpen) {
         if (!SerialPortEvents.listenerQueue.has(serialPortEventType)) {
           // console.log('SerialPortEvents.addEventListener queue', serialPortEventType, callback);
           // Port is not open, queue the callback
@@ -49,12 +46,16 @@ export default class SerialPortEvents {
       if (!SerialPortEvents.eventListeners.has(serialPortEventType)) {
         // console.log('SerialPortEvents.addEventListener attach', serialPortEventType, callback);
         // Port is open, attach callback immediately
-        if (serialPortEventType === 'data') {
-          SerialPortEvents.parser.on(serialPortEventType, callback);
-        } else {
-          SerialPortEvents.serialPort.on(serialPortEventType, callback);
-        }
+        SerialPortEvents.serialPort.on(serialPortEventType, callback);
         SerialPortEvents.eventListeners.set(serialPortEventType, callback);
+      }
+
+      if (
+        SerialPortEvents.parser &&
+        SerialPortEvents.parser.listenerCount('data') === 0 &&
+        SerialPortEvents.parserCallback
+      ) {
+        SerialPortEvents.parser.on('data', SerialPortEvents.parserCallback);
       }
     };
 
@@ -73,7 +74,7 @@ export default class SerialPortEvents {
       event.sender.send('serial-port-event', notification);
     });
 
-    addEventListener('data', (chunk: any) => {
+    addEventListener('data', (chunk: Buffer) => {
       const data: string =
         SerialPortEvents.encoding === 'hex'
           ? chunk.toString('hex').toUpperCase().match(/.{2}/g).join(' ')
@@ -88,6 +89,11 @@ export default class SerialPortEvents {
       event.sender.send('serial-port-event', notification);
     });
 
+    SerialPortEvents.parserCallback = (data: string) => {
+      const notification: SerialPortEvent = { type: 'data-delimited', data };
+      event.sender.send('serial-port-event', notification);
+    };
+
     SerialPortEvents.areListenersRegistered = true;
 
     return Promise.resolve();
@@ -99,13 +105,14 @@ export default class SerialPortEvents {
     }
 
     SerialPortEvents.eventListeners.forEach((callback, serialPortEventType) => {
-      // console.log('SerialPortEvents.removeEventListener', serialPortEventType, callback);
-      if (serialPortEventType === 'data') {
-        SerialPortEvents.parser.off(serialPortEventType, callback);
-      } else {
-        SerialPortEvents.serialPort.off(serialPortEventType, callback);
-      }
+      // console.log('SerialPortEvents.serialPort.off', serialPortEventType, callback);
+      SerialPortEvents.serialPort.off(serialPortEventType, callback);
     });
+
+    if (SerialPortEvents.parser) {
+      // console.log('SerialPortEvents.parser.off', serialPortEventType, callback);
+      SerialPortEvents.parser.off('data', SerialPortEvents.parserCallback);
+    }
 
     SerialPortEvents.eventListeners.clear();
     SerialPortEvents.areListenersRegistered = false;
@@ -139,24 +146,27 @@ export default class SerialPortEvents {
           }
         );
 
-        // INFO: InterByteTimeoutParser should become a toggleable parameter if the added "delay" becomes a problem.
         SerialPortEvents.parser = SerialPortEvents.serialPort.pipe(
-          new InterByteTimeoutParser({ interval: 5 })
+          new ReadlineParser({ includeDelimiter: true }) // TODO: remove includeDelimiter
         );
 
         // Process queued listeners after opening
         SerialPortEvents.listenerQueue.forEach(
           (callback, serialPortEventType) => {
             // console.log(`Processing queued listener for serialPortEventType: ${serialPortEventType}`);
-            if (serialPortEventType === 'data') {
-              SerialPortEvents.parser.on(serialPortEventType, callback);
-            } else {
-              SerialPortEvents.serialPort.on(serialPortEventType, callback);
-            }
+            SerialPortEvents.serialPort.on(serialPortEventType, callback);
             SerialPortEvents.eventListeners.set(serialPortEventType, callback);
           }
         );
         SerialPortEvents.listenerQueue.clear();
+
+        if (
+          SerialPortEvents.parser &&
+          SerialPortEvents.parser.listenerCount('data') === 0 &&
+          SerialPortEvents.parserCallback
+        ) {
+          SerialPortEvents.parser.on('data', SerialPortEvents.parserCallback);
+        }
 
         SerialPortEvents.serialPort.open((error) => {
           if (error) {
