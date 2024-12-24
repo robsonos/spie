@@ -1,40 +1,15 @@
 import { describe } from 'node:test';
 
 import { TestBed } from '@angular/core/testing';
-import type {
-  AutoUpdaterEvent,
-  ElectronAPI,
-  SerialPortEvent,
-} from '@spie/types';
+import type { AutoUpdaterEvent, SerialPortEvent } from '@spie/types';
 
 import { ElectronService } from './electron.service';
+import { mockElectronAPI } from '../../test-setup';
 
 describe('ElectronService', () => {
   let service: ElectronService;
 
-  const mockElectronAPI: ElectronAPI = {
-    platform: '',
-    quit: jest.fn(),
-    getVersion: jest.fn(),
-    downloadUpdate: jest.fn(),
-    installUpdate: jest.fn(),
-    onUpdateEvent: jest.fn(),
-    serialPort: {
-      list: jest.fn(),
-      open: jest.fn(),
-      close: jest.fn(),
-      write: jest.fn(),
-      isOpen: jest.fn(),
-      setReadEncoding: jest.fn(),
-      getReadEncoding: jest.fn(),
-      getOpenOptions: jest.fn(),
-      onEvent: jest.fn(),
-    },
-  };
-
   beforeEach(() => {
-    (window as Window).electron = mockElectronAPI;
-
     TestBed.configureTestingModule({
       providers: [ElectronService],
     });
