@@ -44,7 +44,7 @@ export class SerialPortService {
     encoding: 'ascii',
     isAutoScrollEnabled: true,
     showTimestampsEnabled: false,
-    scrollbackLength: 1,
+    scrollbackLength: 10000,
   });
 
   sendOptions = signal<SendOptions>({

@@ -17,6 +17,7 @@ import {
 import { type Encoding } from '@spie/types';
 import { type Subject } from 'rxjs';
 
+import { SCROLLBACK_LENGTH_VALUES } from '../../interfaces/app.interface';
 import {
   type CheckboxCustomEvent,
   type RangeCustomEvent,
@@ -54,6 +55,8 @@ export class TerminalAdvancedComponent {
 
   terminalAdvancedModal = viewChild.required<IonModal>('terminalAdvancedModal');
 
+  SCROLLBACK_LENGTH_VALUES = SCROLLBACK_LENGTH_VALUES;
+
   onChangeTerminalEncoding(event: SelectCustomEvent<Encoding>): void {
     const selectedOption = event.detail.value;
     this.terminalOptions.update((terminalOptions) => ({
@@ -84,8 +87,10 @@ export class TerminalAdvancedComponent {
 
     // this.clearTerminalSubject().next();
   }
+
   onScrollbackLength(event: RangeCustomEvent): void {
-    const selectedOption = event.detail.value as number;
+    const index = event.detail.value as number;
+    const selectedOption = SCROLLBACK_LENGTH_VALUES[index];
     this.terminalOptions.update((terminalOptions) => ({
       ...terminalOptions,
       scrollbackLength: selectedOption,
@@ -94,7 +99,17 @@ export class TerminalAdvancedComponent {
     // this.clearTerminalSubject().next();
   }
 
+  onChangeUseReadlineParser(event: CheckboxCustomEvent<boolean>): void {
+    const selectedOption = event.detail.checked;
+    this.terminalOptions.update((terminalOptions) => ({
+      ...terminalOptions,
+      useReadlineParser: selectedOption,
+    }));
+
+    this.clearTerminalSubject().next();
+  }
+
   pinFormatter(value: number): string {
-    return `${value}0k`;
+    return `${value + 1}0k`;
   }
 }

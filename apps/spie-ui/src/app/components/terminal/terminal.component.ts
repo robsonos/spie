@@ -98,7 +98,7 @@ export class TerminalComponent {
         }
 
         const excess =
-          prevData.length - this.terminalOptions().scrollbackLength * 10000;
+          prevData.length - this.terminalOptions().scrollbackLength;
 
         if (excess > 0) {
           return prevData.slice(excess);

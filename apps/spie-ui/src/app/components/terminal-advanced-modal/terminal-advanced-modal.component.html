@@ -47,13 +47,18 @@
         <ion-item>
           <ion-range
             labelPlacement="start"
-            label="Scrollback size"
+            label="Scrollback length"
             [pin]="true"
             [snaps]="true"
-            [min]="1"
-            [max]="10"
+            [min]="0"
+            [max]="4"
+            [step]="1"
             [pinFormatter]="pinFormatter"
-            [value]="terminalOptions().scrollbackLength"
+            [value]="
+              SCROLLBACK_LENGTH_VALUES.indexOf(
+                terminalOptions().scrollbackLength
+              )
+            "
             (ionKnobMoveEnd)="onScrollbackLength($event)"
           >
           </ion-range>
