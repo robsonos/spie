@@ -26,7 +26,7 @@
               isPausedSubject.getValue() && isOpen() ? 'danger' : 'secondary'
             "
             [disabled]="!isOpen()"
-            (click)="onClickPauseTerminal()"
+            (click)="onClickPauseSeries()"
           >
             <ion-icon
               slot="start"
@@ -44,7 +44,7 @@
           <ion-button
             expand="block"
             color="secondary"
-            (click)="onClickClearTerminal()"
+            (click)="onClickClearSeries()"
           >
             <ion-icon slot="start" name="trash-outline"></ion-icon>
             Clear
@@ -54,7 +54,7 @@
           <ion-button
             fill="clear"
             color="secondary"
-            (click)="onClickTerminalAdvancedModal()"
+            (click)="onClickPlotterAdvancedModal()"
           >
             <ion-icon name="settings-outline"></ion-icon>
           </ion-button>
@@ -64,4 +64,7 @@
   </ion-card-content>
 </ion-card>
 
-<!-- <pre>{{ series()[0].data.length }}</pre> -->
+<app-plotter-advanced-modal-component
+  [(plotterOptions)]="plotterOptions"
+  (clearChart)="onClickClearSeries()"
+/>

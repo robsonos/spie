@@ -238,16 +238,16 @@ export class PlotterComponent {
     },
   }));
 
-  onClickClearTerminal(): void {
+  onClickClearSeries(): void {
     this.clearSeriesSubject.next();
   }
 
-  onClickPauseTerminal(): void {
+  onClickPauseSeries(): void {
     const currentValue = this.isPausedSubject.getValue();
     this.isPausedSubject.next(!currentValue);
   }
 
-  async onClickTerminalAdvancedModal() {
+  async onClickPlotterAdvancedModal(): Promise<void> {
     // this.terminalAdvancedComponent().terminalAdvancedModal().present(); // TODO
   }
 }
