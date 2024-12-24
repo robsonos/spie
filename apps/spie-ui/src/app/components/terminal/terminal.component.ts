@@ -1,5 +1,5 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   IonButton,
   IonCard,
@@ -14,7 +14,15 @@ import {
   IonTextarea,
 } from '@ionic/angular/standalone';
 import { type DataEvent } from '@spie/types';
-import { BehaviorSubject, Subject, filter, map, merge, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  Subject,
+  filter,
+  map,
+  merge,
+  switchMap,
+  tap,
+} from 'rxjs';
 
 import { ElectronService } from '../../services/electron.service';
 import { SerialPortService } from '../../services/serial-port.service';
@@ -59,7 +67,13 @@ export class TerminalComponent {
   isOpen = this.serialPortService.isOpen;
   terminalOptions = this.serialPortService.terminalOptions;
   private dataEvent$ = merge(
-    this.serialPortService.dataEvent$.pipe(
+    toObservable(this.terminalOptions).pipe(
+      map((terminalOptions) => terminalOptions.useReadlineParser),
+      switchMap((useReadlineParser) =>
+        useReadlineParser
+          ? this.serialPortService.dataDelimitedEvent$
+          : this.serialPortService.dataEvent$
+      ),
       filter(() => !this.isPausedSubject.getValue())
     ),
     this.clearTerminalSubject.pipe(map(() => ({ type: 'clear' } as DataEvent)))
@@ -71,11 +85,6 @@ export class TerminalComponent {
       }
 
       const data = dataEvent.data;
-      const isDataTruncated = data.split('\n').length - 1 > 1;
-      if (isDataTruncated) {
-        console.warn('data truncated:');
-        return;
-      }
 
       this.data.update((prevData) => {
         // Append timestamp if it is enabled
@@ -91,7 +100,6 @@ export class TerminalComponent {
         // Append data
         prevData += `${data}`;
 
-        // TODO: evaluate if this should also be done for ascii
         // Append new line if hex encoding
         if (this.terminalOptions().encoding === 'hex') {
           prevData += '\n';

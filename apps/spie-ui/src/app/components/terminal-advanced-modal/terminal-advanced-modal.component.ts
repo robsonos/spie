@@ -1,10 +1,12 @@
 import { Component, inject, input, viewChild } from '@angular/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   IonButton,
   IonButtons,
   IonCheckbox,
   IonContent,
   IonHeader,
+  IonIcon,
   IonItem,
   IonList,
   IonModal,
@@ -36,6 +38,7 @@ import { SerialPortService } from '../../services/serial-port.service';
     IonCheckbox,
     IonContent,
     IonHeader,
+    IonIcon,
     IonItem,
     IonList,
     IonModal,
@@ -44,6 +47,7 @@ import { SerialPortService } from '../../services/serial-port.service';
     IonSelectOption,
     IonTitle,
     IonToolbar,
+    MatTooltipModule,
   ],
 })
 export class TerminalAdvancedComponent {

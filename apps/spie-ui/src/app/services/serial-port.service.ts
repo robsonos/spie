@@ -45,6 +45,7 @@ export class SerialPortService {
     isAutoScrollEnabled: true,
     showTimestampsEnabled: false,
     scrollbackLength: 10000,
+    useReadlineParser: false,
   });
 
   sendOptions = signal<SendOptions>({

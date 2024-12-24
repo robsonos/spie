@@ -4,6 +4,7 @@ import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline,
   documentOutline,
+  helpCircleOutline,
   logInOutline,
   logOutOutline,
   pauseOutline,
@@ -28,6 +29,7 @@ export class AppComponent {
   constructor() {
     addIcons({ cloudUploadOutline });
     addIcons({ documentOutline });
+    addIcons({ helpCircleOutline });
     addIcons({ logInOutline });
     addIcons({ logOutOutline });
     addIcons({ pauseOutline });

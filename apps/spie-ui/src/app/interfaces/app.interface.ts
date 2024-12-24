@@ -9,6 +9,7 @@ export interface TerminalOptions {
   isAutoScrollEnabled: boolean;
   showTimestampsEnabled: boolean;
   scrollbackLength: ScrollbackLength;
+  useReadlineParser: boolean;
 }
 
 export interface SendOptions {

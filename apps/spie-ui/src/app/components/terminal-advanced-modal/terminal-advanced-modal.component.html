@@ -45,6 +45,20 @@
         </ion-item>
 
         <ion-item>
+          <ion-checkbox
+            justify="space-between"
+            checked="{{ terminalOptions().useReadlineParser }}"
+            (ionChange)="onChangeUseReadlineParser($event)"
+            >Use readline parser<ion-icon
+              color="warning"
+              class="tooltipIcon-top"
+              name="help-circle-outline"
+              matTooltip="Data received by the serialport library might arrive in multiple packets. Use this option to make terminal timestamps more readable if your data is terminated with a new line (\n) character."
+            ></ion-icon
+          ></ion-checkbox>
+        </ion-item>
+
+        <ion-item>
           <ion-range
             labelPlacement="start"
             label="Scrollback length"
