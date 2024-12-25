@@ -1,3 +1,17 @@
+## 0.3.0 (2024-12-25)
+
+### 🚀 Features
+
+- **spie-ui:** finish plotter feature ([0a33b8f](https://github.com/robsonos/spie/commit/0a33b8f))
+- **spie:** create data delimited event ([7cc4bba](https://github.com/robsonos/spie/commit/7cc4bba))
+- **spie-ui:** add @angular/material ([921738d](https://github.com/robsonos/spie/commit/921738d))
+- **repo:** upgrade to angular 19 ([b8700f5](https://github.com/robsonos/spie/commit/b8700f5))
+- **spie-ui:** restructure app to add support to plotter view ([42b7495](https://github.com/robsonos/spie/commit/42b7495))
+
+### ❤️ Thank You
+
+- Robson Oliveira dos Santos @robsonos
+
 ## 0.2.0 (2024-12-02)
 
 
