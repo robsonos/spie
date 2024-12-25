@@ -1,0 +1,50 @@
+<ion-modal #plotterAdvancedModal id="plotter-advanced-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Advanced Plotter Settings</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="plotterAdvancedModal.dismiss()"
+            >Close</ion-button
+          >
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-checkbox
+            justify="space-between"
+            checked="{{ plotterOptions().useSampleCount }}"
+            (ionChange)="onChangeUseSampleCount($event)"
+            >Use sample counter<ion-icon
+              color="warning"
+              class="tooltipIcon-top"
+              name="help-circle-outline"
+              matTooltip="The system may not be able to capture the time of the data event on fast data rates. Use this option to use the sample count instead of the timestamp for the xaxis. You will still be able to see the timestamp information when the chart is paused "
+            ></ion-icon
+          ></ion-checkbox>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            labelPlacement="start"
+            label="Scrollback size"
+            [pin]="true"
+            [snaps]="true"
+            [min]="0"
+            [max]="4"
+            [step]="1"
+            [pinFormatter]="pinFormatter"
+            [value]="
+              NUMBER_OF_POINTS_VALUES.indexOf(plotterOptions().numberOfPoints)
+            "
+            (ionKnobMoveEnd)="onChangeNumberOfPoints($event)"
+          >
+          </ion-range>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

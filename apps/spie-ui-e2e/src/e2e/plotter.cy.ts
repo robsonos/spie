@@ -41,6 +41,13 @@ describe('Plotter routine', () => {
     cy.get('.apexcharts-canvas').should('be.visible');
   });
 
+  it.only('should use sample count by default', () => {
+    cy.get('.apexcharts-xaxis-title-text').should(
+      'contain.text',
+      'Sample count'
+    );
+  });
+
   it('should render series', () => {
     const numberOfPoints = 2;
     const mockEventData = plotOneVariable.eventData.slice(0, numberOfPoints);
@@ -51,16 +58,14 @@ describe('Plotter routine', () => {
         return new Promise<void>((resolve) => {
           // Mock data event with numberOfPoints point 50ms apart
           mockEventData.forEach((data, index) => {
-            setTimeout(() => {
-              win.onSerialPortEventTrigger({
-                type: 'data',
-                data: data,
-              });
+            win.onSerialPortEventTrigger({
+              type: 'data-delimited',
+              data: data,
+            });
 
-              if (index === mockEventData.length - 1) {
-                resolve();
-              }
-            }, index * 50);
+            if (index === mockEventData.length - 1) {
+              resolve();
+            }
           });
         });
       })
@@ -81,16 +86,14 @@ describe('Plotter routine', () => {
         return new Promise<void>((resolve) => {
           // Mock data event with numberOfPoints point 50ms apart
           mockEventData.forEach((data, index) => {
-            setTimeout(() => {
-              win.onSerialPortEventTrigger({
-                type: 'data',
-                data: data,
-              });
+            win.onSerialPortEventTrigger({
+              type: 'data-delimited',
+              data: data,
+            });
 
-              if (index === mockEventData.length - 1) {
-                resolve();
-              }
-            }, index * 50);
+            if (index === mockEventData.length - 1) {
+              resolve();
+            }
           });
         });
       })
@@ -119,16 +122,14 @@ describe('Plotter routine', () => {
         return new Promise<void>((resolve) => {
           // Mock data event with numberOfPoints point 50ms apart
           mockEventData.forEach((data, index) => {
-            setTimeout(() => {
-              win.onSerialPortEventTrigger({
-                type: 'data',
-                data: data,
-              });
+            win.onSerialPortEventTrigger({
+              type: 'data-delimited',
+              data: data,
+            });
 
-              if (index === mockEventData.length - 1) {
-                resolve();
-              }
-            }, index * 50);
+            if (index === mockEventData.length - 1) {
+              resolve();
+            }
           });
         });
       })
@@ -161,24 +162,20 @@ describe('Plotter routine', () => {
   it('should render multiple variables and large series', () => {
     const mockEventData = plotThreeVariables.eventData;
     const mockSeries = plotThreeVariables.series;
-    const chartStartOffset = 89; // Estimated offset to the first tooltip
-    const chartEndOffset = 9; // Estimated offset to the last tooltip
 
     cy.window()
       .then((win) => {
         return new Promise<void>((resolve) => {
           // Mock data event with numberOfPoints point 50ms apart
           mockEventData.forEach((data, index) => {
-            setTimeout(() => {
-              win.onSerialPortEventTrigger({
-                type: 'data',
-                data: data,
-              });
+            win.onSerialPortEventTrigger({
+              type: 'data-delimited',
+              data: data,
+            });
 
-              if (index === mockEventData.length - 1) {
-                resolve();
-              }
-            }, index * 50);
+            if (index === mockEventData.length - 1) {
+              resolve();
+            }
           });
         });
       })
@@ -193,41 +190,47 @@ describe('Plotter routine', () => {
           .should('be.below', 940)
           .wait(500);
 
-        // Select the first path element and extract X coordinates
         cy.get('g.apexcharts-series path.apexcharts-line')
-          .first()
-          .then(($path) => {
-            const pathData = $path.attr('d');
+          .invoke('attr', 'd')
+          .then((dAttribute) => {
+            // Get coordinates from the first line element
+            const coordinates: { x: any; y: any }[] = [];
+            const commands = (dAttribute as string).match(
+              /[ML]\s*[-\d.]+\s*[-\d.]+/g
+            );
 
-            const xCoordinates = (pathData as string)
-              .split('L')
-              .map((segment, index, array) => {
-                const [x] = segment
-                  .trim()
-                  .replace('M', '')
-                  .split(' ')
-                  .map(Number);
+            if (commands) {
+              commands.forEach((command) => {
+                const [x, y] = command.slice(1).trim().split(/\s+/).map(Number);
+                coordinates.push({ x, y });
+              });
+            }
+            return coordinates;
+          })
+          .then((coordinates) => {
+            // Get the chart offset coordinates bases on the first vertical line
+            return cy.get('.apexcharts-xaxis-tick').then(($ticks) => {
+              const firstElement = $ticks[0];
+              const firstX = firstElement.getBoundingClientRect().x;
+              const firstY = firstElement.getBoundingClientRect().x;
 
-                // If it's the last element in the array, adjust the X coordinate
-                if (index === array.length - 1) {
-                  return x + chartStartOffset - chartEndOffset;
-                }
-
-                // Otherwise, add the pageOffset to the X value
-                return x + chartStartOffset;
-              })
-              .filter((x) => !isNaN(x)); // Filter out NaN values
-
+              return coordinates.map((point) => ({
+                x: point.x + firstX,
+                y: point.y + firstY + 15,
+              }));
+            });
+          })
+          .then((coordinates) => {
             // Test labels and values
             mockSeries.forEach((points, pointsIndex) => {
               // // Helper for debug
               // cy.get('body').then(($body) => {
               //   const refCircle = document.createElement('div');
               //   refCircle.style.position = 'absolute';
-              //   refCircle.style.left = `${xCoordinates[pointsIndex]}px`;
-              //   refCircle.style.top = `${150}px`;
-              //   refCircle.style.width = '5px';
-              //   refCircle.style.height = '5px';
+              //   refCircle.style.left = `${coordinates[pointsIndex].x}px`;
+              //   refCircle.style.top = `${coordinates[pointsIndex].y}px`;
+              //   refCircle.style.width = '2px';
+              //   refCircle.style.height = '2px';
               //   refCircle.style.borderRadius = '50%';
               //   refCircle.style.backgroundColor = 'red'; // Red for visibility
               //   refCircle.style.zIndex = '9999'; // High z-index to appear on top
@@ -238,8 +241,8 @@ describe('Plotter routine', () => {
 
               // Move mouse to estimated tooltip position
               cy.get('.apexcharts-canvas').trigger('mousemove', {
-                clientX: xCoordinates[pointsIndex],
-                clientY: 150,
+                clientX: coordinates[pointsIndex].x,
+                clientY: coordinates[pointsIndex].y,
               });
 
               points.forEach((point, pointIndex) => {
@@ -258,5 +261,36 @@ describe('Plotter routine', () => {
             });
           });
       });
+  });
+
+  it('should open and close the advanced modal', () => {
+    cy.get('app-plotter-component ion-button [name="settings-outline"]')
+      .parent()
+      .click();
+    cy.get('ion-modal ion-toolbar ion-title').should(
+      'contain',
+      'Advanced Plotter Settings'
+    );
+    cy.get('ion-modal ion-toolbar ion-button').click();
+    cy.get('ion-modal').should('not.be.visible');
+  });
+
+  it('should use timestamps if it is set', () => {
+    cy.get('app-plotter-component ion-button [name="settings-outline"]')
+      .parent()
+      .click();
+    cy.get('ion-modal ion-toolbar ion-title').should(
+      'contain',
+      'Advanced Plotter Settings'
+    );
+
+    cy.getAdvancedModalCheckboxElement(
+      'plotter-advanced-modal',
+      'Use sample counter'
+    ).click();
+
+    cy.get('ion-modal ion-toolbar ion-button').click();
+
+    cy.get('.apexcharts-xaxis-title-text').should('contain.text', 'Time (ms)');
   });
 });

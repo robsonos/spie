@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import {
   takeUntilDestroyed,
   toObservable,
@@ -16,22 +16,9 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { type DataEvent } from '@spie/types';
-import {
-  type ApexAxisChartSeries,
-  type ApexChart,
-  type ApexDataLabels,
-  type ApexGrid,
-  type ApexLegend,
-  type ApexMarkers,
-  type ApexStroke,
-  type ApexTooltip,
-  type ApexXAxis,
-  type ApexYAxis,
-  NgApexchartsModule,
-} from 'ng-apexcharts';
+import { NgApexchartsModule } from 'ng-apexcharts';
 import {
   BehaviorSubject,
-  Observable,
   Subject,
   bufferTime,
   combineLatest,
@@ -41,20 +28,14 @@ import {
   tap,
 } from 'rxjs';
 
-import { type WorkerMessage, type WorkerResult } from './plotter.worker';
+import {
+  type ChartOptions,
+  type PlotterOptions,
+  type Series,
+} from '../../interfaces/app.interface';
 import { SerialPortService } from '../../services/serial-port.service';
-
-interface ChartOptions {
-  dataLabels: ApexDataLabels;
-  yaxis: ApexYAxis;
-  xaxis: ApexXAxis;
-  grid: ApexGrid;
-  stroke: ApexStroke;
-  chart: ApexChart;
-  tooltip: ApexTooltip;
-  legend: ApexLegend;
-  markers: ApexMarkers;
-}
+import MessageParser from '../../utils/message-parser';
+import { PlotterAdvancedComponent } from '../plotter-advanced-modal/plotter-advanced-modal.component';
 
 @Component({
   selector: 'app-plotter-component',
@@ -71,87 +52,71 @@ interface ChartOptions {
     IonRow,
     IonText,
     NgApexchartsModule,
+    PlotterAdvancedComponent,
   ],
 })
 export class PlotterComponent {
   private readonly serialPortService = inject(SerialPortService);
 
+  private plotterAdvancedComponent = viewChild.required(
+    PlotterAdvancedComponent
+  );
+
   constructor() {
     this.dataEvent$.subscribe();
-    this.parsedPlotterData$.subscribe();
   }
 
   clearSeriesSubject = new Subject<void>();
   isOpen = this.serialPortService.isOpen;
 
-  worker: Worker | undefined;
   private dataEvent$ = merge(
-    this.serialPortService.dataEvent$.pipe(
+    this.serialPortService.dataDelimitedEvent$.pipe(
       filter(() => !this.isPausedSubject.getValue())
     ),
     this.clearSeriesSubject.pipe(map(() => ({ type: 'clear' } as DataEvent)))
   ).pipe(
-    // throttleTime(10),
-    tap((dataEvent) => {
-      if (dataEvent.type === 'clear') {
-        // Clear series
-        this.series.set([]);
-        return;
-      }
-
-      const message: WorkerMessage = {
-        message: [dataEvent.data],
-      };
-
-      this.worker?.postMessage(message);
-    }),
-    takeUntilDestroyed()
-  );
-  private parsedPlotterData$ = new Observable<WorkerResult>((observer) => {
-    this.worker = new Worker(new URL('./plotter.worker', import.meta.url));
-
-    const listener = (messageEvent: MessageEvent<WorkerResult>) => {
-      observer.next(messageEvent.data);
-    };
-
-    this.worker?.addEventListener('message', listener);
-
-    return () => {
-      this.worker?.removeEventListener('message', listener);
-    };
-  }).pipe(
     bufferTime(50),
-    tap((workerResults: WorkerResult[]) => {
-      workerResults.forEach((workerResult) => {
-        const newSeries = workerResult.series;
+    filter((dataEvents) => dataEvents.length > 0),
+    tap((dataEvents) => {
+      dataEvents.forEach((dataEvent) => {
+        if (dataEvent.type === 'clear') {
+          // Clear series
+          this.series.set([]);
+          return;
+        }
 
-        // TODO: Check if this is needed on tests
+        const newSeries = MessageParser.parse(
+          dataEvent.data,
+          this.plotterOptions().useSampleCount
+        );
+
         if (newSeries.length === 0) {
+          console.warn('Empty series returned');
           return;
         }
 
         // Update series with the correct amount of variables
         if (this.series().length !== newSeries.length) {
           console.warn('Number of variables has changed');
-
           this.series.set(newSeries);
-
           return;
         }
 
-        const scrollbackLength = 1000; // TODO: add to advanced settings
+        const numberOfPoints = this.plotterOptions().numberOfPoints;
 
         this.series.update((series) => {
           return series.map((dataset, index) => {
-            const data = dataset.data as { x: any; y: any }[];
+            const data = dataset.data;
             const newDataPoint = newSeries[index];
 
             if (newDataPoint && newDataPoint.data.length > 0) {
-              if (data.length >= scrollbackLength) {
-                data.shift();
+              const excessLength = data.length - numberOfPoints + 1;
+
+              if (excessLength > 0) {
+                data.splice(0, excessLength);
               }
 
-              data.push(newDataPoint.data[0] as { x: any; y: any });
+              data.push(newDataPoint.data[0]);
             }
 
             return { ...dataset, data };
@@ -170,7 +135,12 @@ export class PlotterComponent {
     { initialValue: false }
   );
 
-  series = signal<ApexAxisChartSeries>([]);
+  plotterOptions = signal<PlotterOptions>({
+    useSampleCount: true,
+    numberOfPoints: 500,
+  });
+
+  series = signal<Series>([]);
 
   chartOptions = computed<ChartOptions>(() => ({
     chart: {
@@ -210,10 +180,16 @@ export class PlotterComponent {
     },
     yaxis: {
       title: { text: 'Amplitude' },
+      min: (min) => min + min * 0.05,
+      max: (max) => max + max * 0.05,
     },
     xaxis: {
-      title: { text: 'Time (ms)' },
-      type: 'datetime', // TODO: toggle between time and linear (sample count)
+      title: {
+        text: this.plotterOptions().useSampleCount
+          ? 'Sample count'
+          : 'Time (ms)',
+      },
+      type: this.plotterOptions().useSampleCount ? 'numeric' : 'datetime',
     },
     grid: {
       show: true,
@@ -248,6 +224,6 @@ export class PlotterComponent {
   }
 
   async onClickPlotterAdvancedModal(): Promise<void> {
-    // this.terminalAdvancedComponent().terminalAdvancedModal().present(); // TODO
+    this.plotterAdvancedComponent().plotterAdvancedModal().present();
   }
 }
