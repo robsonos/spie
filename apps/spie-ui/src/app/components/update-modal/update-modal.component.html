@@ -1,0 +1,57 @@
+<ion-modal #updateModal id="update-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="secondary">
+        <ion-title>Download Progress</ion-title>
+        <ion-progress-bar
+          [value]="progressInfo().percent / 100"
+        ></ion-progress-bar>
+        @if (progressInfo().percent===0) {
+        <ion-spinner slot="end"></ion-spinner>
+        }
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <ion-list lines="none">
+        <ion-item lines="none">
+          <ion-icon name="document-outline" slot="start"></ion-icon>
+          <ion-label> Total Size </ion-label>
+          <ion-note slot="end">{{
+            formatBytes(progressInfo().total)
+          }}</ion-note>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+          <ion-label> Transferred </ion-label>
+          <ion-note slot="end">{{
+            formatBytes(progressInfo().transferred)
+          }}</ion-note>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon name="speedometer-outline" slot="start"></ion-icon>
+          <ion-label> Speed </ion-label>
+          <ion-note slot="end"
+            >{{ formatBytes(progressInfo().bytesPerSecond) }}/s</ion-note
+          >
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+          <ion-label> Progress </ion-label>
+          <ion-note slot="end"
+            >{{ progressInfo().percent | number : '1.2-2' }}%</ion-note
+          >
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon name="time-outline" slot="start"></ion-icon>
+          <ion-label> Time Remaining </ion-label>
+          <ion-note slot="end">{{ getEstimatedTime() }}</ion-note>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

@@ -46,4 +46,4 @@ Thumbs.db
 *.env*
 
 # act
-.actrc.*
+.act*

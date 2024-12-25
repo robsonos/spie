@@ -19,6 +19,111 @@ export default class UpdateEvents {
     (...args: any[]) => void
   >();
 
+  private static addEventListeners(
+    event: Electron.IpcMainEvent
+  ): Promise<void> {
+    if (UpdateEvents.areListenersRegistered) {
+      return Promise.resolve();
+    }
+
+    UpdateEvents.areListenersRegistered = true;
+
+    const addEventListener = (
+      updaterEventType: UpdaterEvents,
+      callback: (...args: any[]) => void
+    ) => {
+      if (!UpdateEvents.eventListeners.has(updaterEventType)) {
+        // console.log('UpdateEvents.addEventListener attach', updaterEventType, callback);
+        autoUpdater.on(updaterEventType, callback);
+        UpdateEvents.eventListeners.set(updaterEventType, callback);
+      }
+    };
+
+    addEventListener('error', (error: Error, message: string) => {
+      const updateNotification: AutoUpdaterEvent = {
+        type: 'error',
+        error,
+        message,
+      };
+      event.sender.send('app-update-event', updateNotification);
+    });
+
+    addEventListener('checking-for-update', () => {
+      const updateNotification: AutoUpdaterEvent = {
+        type: 'checking-for-update',
+      };
+      event.sender.send('app-update-event', updateNotification);
+    });
+
+    addEventListener('update-not-available', (updateInfo: UpdateInfo) => {
+      const updateNotification: AutoUpdaterEvent = {
+        type: 'update-not-available',
+        updateInfo,
+      };
+      event.sender.send('app-update-event', updateNotification);
+    });
+
+    addEventListener('update-available', (updateInfo: UpdateInfo) => {
+      new Notification({
+        title: 'Update Available for Download',
+        body: `Version ${updateInfo.releaseName} is ready for download.`,
+        icon: join(__dirname, 'assets/icon.ico'),
+      }).show();
+
+      const updateNotification: AutoUpdaterEvent = {
+        type: 'update-available',
+        updateInfo,
+      };
+
+      event.sender.send('app-update-event', updateNotification);
+    });
+
+    addEventListener(
+      'update-downloaded',
+      (updateDownloadedEvent: UpdateDownloadedEvent) => {
+        const updateNotification: AutoUpdaterEvent = {
+          type: 'update-downloaded',
+          updateDownloadedEvent,
+        };
+        event.sender.send('app-update-event', updateNotification);
+      }
+    );
+
+    addEventListener('download-progress', (progressInfo: ProgressInfo) => {
+      const updateNotification: AutoUpdaterEvent = {
+        type: 'download-progress',
+        progressInfo,
+      };
+      event.sender.send('app-update-event', updateNotification);
+    });
+
+    addEventListener('update-cancelled', (updateInfo: UpdateInfo) => {
+      const updateNotification: AutoUpdaterEvent = {
+        type: 'update-cancelled',
+        updateInfo,
+      };
+      event.sender.send('app-update-event', updateNotification);
+    });
+
+    return Promise.resolve();
+  }
+
+  private static removeEventListeners(): Promise<void> {
+    if (!UpdateEvents.areListenersRegistered) {
+      return Promise.resolve();
+    }
+
+    UpdateEvents.eventListeners.forEach((listener, updaterEventType) => {
+      // console.log('UpdateEvents.removeEventListener', updaterEventType, callback);
+      autoUpdater.off(updaterEventType, listener);
+    });
+    UpdateEvents.eventListeners.clear();
+
+    UpdateEvents.areListenersRegistered = false;
+
+    return Promise.resolve();
+  }
+
   static bootstrapEvents(): void {
     const checkForUpdates = async () => {
       try {
@@ -49,109 +154,27 @@ export default class UpdateEvents {
     const delayAfterAppReady = App.isDevelopmentMode() ? 3000 : 10000;
     setTimeout(checkForUpdates, delayAfterAppReady);
 
-    ipcMain.on('app-update-add-notification-event-listener', (event) => {
-      if (UpdateEvents.areListenersRegistered) {
-        return;
-      }
+    ipcMain.on('app-update-event-add-listener', (event) => {
+      // console.warn('app-update-event-add-listener');
 
-      UpdateEvents.areListenersRegistered = true;
-
-      const addEventListener = (
-        event: UpdaterEvents,
-        callback: (...args: any[]) => void
-      ) => {
-        if (!UpdateEvents.eventListeners.has(event)) {
-          autoUpdater.on(event, callback);
-          UpdateEvents.eventListeners.set(event, callback);
-        }
-      };
-
-      addEventListener('error', (error: Error, message: string) => {
-        const updateNotification: AutoUpdaterEvent = {
-          event: 'error',
-          error,
-          message,
-        };
-        event.sender.send('app-update-notification', updateNotification);
-      });
-
-      addEventListener('checking-for-update', () => {
-        const updateNotification: AutoUpdaterEvent = {
-          event: 'checking-for-update',
-        };
-        event.sender.send('app-update-notification', updateNotification);
-      });
-
-      addEventListener('update-not-available', (updateInfo: UpdateInfo) => {
-        const updateNotification: AutoUpdaterEvent = {
-          event: 'update-not-available',
-          updateInfo,
-        };
-        event.sender.send('app-update-notification', updateNotification);
-      });
-
-      addEventListener('update-available', (updateInfo: UpdateInfo) => {
-        new Notification({
-          title: 'Update Available for Download',
-          body: `Version ${updateInfo.releaseName} is ready for download.`,
-          icon: join(__dirname, 'assets/icon.ico'),
-        }).show();
-
-        const updateNotification: AutoUpdaterEvent = {
-          event: 'update-available',
-          updateInfo,
-        };
-
-        event.sender.send('app-update-notification', updateNotification);
-      });
-
-      addEventListener(
-        'update-downloaded',
-        (updateDownloadedEvent: UpdateDownloadedEvent) => {
-          const updateNotification: AutoUpdaterEvent = {
-            event: 'update-downloaded',
-            updateDownloadedEvent,
-          };
-          event.sender.send('app-update-notification', updateNotification);
-        }
-      );
-
-      addEventListener('download-progress', (progressInfo: ProgressInfo) => {
-        const updateNotification: AutoUpdaterEvent = {
-          event: 'download-progress',
-          progressInfo,
-        };
-        event.sender.send('app-update-notification', updateNotification);
-      });
-
-      addEventListener('update-cancelled', (updateInfo: UpdateInfo) => {
-        const updateNotification: AutoUpdaterEvent = {
-          event: 'update-cancelled',
-          updateInfo,
-        };
-        event.sender.send('app-update-notification', updateNotification);
-      });
+      return UpdateEvents.addEventListeners(event);
     });
 
-    ipcMain.on('app-update-remove-notification-event-listener', () => {
-      if (!UpdateEvents.areListenersRegistered) {
-        return;
-      }
-
-      UpdateEvents.eventListeners.forEach((listener, event) => {
-        autoUpdater.off(event, listener);
-      });
-      UpdateEvents.eventListeners.clear();
-
-      UpdateEvents.areListenersRegistered = false;
+    ipcMain.on('app-update-event-remove-listener', () => {
+      // console.warn('app-update-event-remove-listener');
+      return UpdateEvents.removeEventListeners();
     });
 
     ipcMain.handle('app-download-update', () => {
+      // console.warn('app-download-update');
       return autoUpdater.downloadUpdate();
     });
 
     ipcMain.handle('app-install-update', () => {
+      // console.warn('app-install-update');
       autoUpdater.quitAndInstall();
+
+      return Promise.resolve();
     });
   }
 }

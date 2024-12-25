@@ -13,7 +13,7 @@ export default {
     ],
   },
   transformIgnorePatterns: [
-    '<rootDir>/node_modules/(?!(@ionic/core|@ionic/angular|@stencil/core|.*.mjs$))',
+    '<rootDir>/node_modules/(?!(@ionic/core|@ionic/angular|@stencil/core|ionicons|@angular/*|.*\\.mjs$))',
   ],
   snapshotSerializers: [
     'jest-preset-angular/build/serializers/no-ng-attributes',

@@ -1,84 +1,66 @@
-import { type SerialPortEvent } from '@spie/types';
+import {
+  mockElectronAPI,
+  mockSerialPortList,
+} from '../fixtures/mocks/electron-api.mock';
 
-import { mockElectronAPI } from '../fixtures/mocks/electron-api.mock';
-
-describe('Terminal component', () => {
-  const mockSerialPortList = [
-    { path: '/dev/ttyUSB0', manufacturer: 'Manufacturer1' },
-    { path: '/dev/ttyUSB1', manufacturer: 'Manufacturer2' },
-  ];
-
-  let onEventTrigger: ((event: SerialPortEvent) => void) | null;
+describe('Terminal routine', () => {
+  const mockData =
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n';
 
   beforeEach(() => {
     cy.visit('/');
 
     cy.on('window:before:load', (win) => {
-      const listeners: Array<(serialPortEvent: SerialPortEvent) => void> = [];
-
-      win.electron = mockElectronAPI();
-      win.electron.serialPort.list = cy.stub().resolves(mockSerialPortList);
-
-      win.electron.serialPort.onEvent = cy
-        .stub()
-        .callsFake((callback: (serialPortEvent: SerialPortEvent) => void) => {
-          listeners.push(callback);
-
-          onEventTrigger = (serialPortEvent) => {
-            listeners.forEach((listener) => listener(serialPortEvent));
-          };
-
-          return () => {
-            const index = listeners.indexOf(callback);
-            if (index !== -1) {
-              listeners.splice(index, 1);
-            }
-          };
-        });
+      win.electron = mockElectronAPI(win);
     });
+
+    cy.window().should((win) => {
+      expect(win.onSerialPortEventTrigger).to.be.a('function');
+    });
+
+    cy.connect(mockSerialPortList[0].path, 9600);
   });
 
   it('should display data on the terminal', () => {
-    const data = 'test\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\n';
-    cy.wrap(null).then(() => {
-      if (onEventTrigger) {
-        onEventTrigger({
-          event: 'data',
-          data: data,
-        });
-      }
+    cy.window().then((win) => {
+      win.onSerialPortEventTrigger({
+        type: 'data',
+        data: mockData,
+      });
     });
 
-    cy.get('app-terminal ion-textarea textarea').should('contain', data);
+    cy.get('app-terminal-component ion-textarea textarea').should(
+      'contain',
+      mockData
+    );
   });
 
   it('should clear the terminal', () => {
-    const data = 'test\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\n';
-    cy.wrap(null).then(() => {
-      if (onEventTrigger) {
-        onEventTrigger({
-          event: 'data',
-          data: data,
-        });
-      }
+    cy.window().then((win) => {
+      win.onSerialPortEventTrigger({
+        type: 'data',
+        data: mockData,
+      });
     });
 
-    cy.get('app-terminal ion-button').contains('Clear Terminal').click();
-    cy.get('app-terminal ion-textarea textarea').should('contain', '');
+    cy.get('app-terminal-component ion-button').contains('Clear').click();
+    cy.get('app-terminal-component ion-textarea textarea').should(
+      'contain',
+      ''
+    );
   });
 
   it('should auto scroll when data is emitted', () => {
-    const data = 'test\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\n';
-    cy.wrap(null).then(() => {
-      if (onEventTrigger) {
-        onEventTrigger({
-          event: 'data',
-          data: data,
+    cy.window().then((win) => {
+      for (let index = 0; index < 10; index++) {
+        win.onSerialPortEventTrigger({
+          type: 'data',
+          data: mockData,
         });
       }
     });
 
-    cy.get('app-terminal ion-textarea textarea').then((textarea) => {
+    cy.get('app-terminal-component ion-textarea textarea').then((textarea) => {
       const scrollTop = textarea[0].scrollTop;
       const scrollHeight = textarea[0].scrollHeight;
       const clientHeight = textarea[0].clientHeight;
@@ -87,59 +69,93 @@ describe('Terminal component', () => {
     });
   });
 
+  it('should clear the terminal with clear event', () => {
+    cy.window().then((win) => {
+      win.onSerialPortEventTrigger({
+        type: 'data',
+        data: mockData,
+      });
+    });
+
+    cy.window().then((win) => {
+      win.onSerialPortEventTrigger({
+        type: 'clear',
+      });
+    });
+
+    // cy.get('app-terminal-component ion-button').contains('Clear').click();
+    cy.get('app-terminal-component ion-textarea textarea').should(
+      'contain',
+      ''
+    );
+  });
+
   it('should open and close the advanced modal', () => {
-    cy.get('app-terminal ion-button ion-icon').parent().click();
-    cy.get('ion-modal').should('be.visible');
+    cy.get('app-terminal-component ion-button [name="settings-outline"]')
+      .parent()
+      .click();
+    cy.get('ion-modal ion-toolbar ion-title').should(
+      'contain',
+      'Advanced Terminal Settings'
+    );
     cy.get('ion-modal ion-toolbar ion-button').click();
     cy.get('ion-modal').should('not.be.visible');
   });
 
   it('should clear the terminal after changing encoding', () => {
-    const data = 'test\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\n';
-    cy.wrap(null).then(() => {
-      if (onEventTrigger) {
-        onEventTrigger({
-          event: 'data',
-          data: data,
+    cy.window().then((win) => {
+      for (let index = 0; index < 10; index++) {
+        win.onSerialPortEventTrigger({
+          type: 'data',
+          data: mockData,
         });
       }
     });
 
-    cy.get('app-terminal ion-button ion-icon').parent().click();
+    cy.get('app-terminal-component ion-button [name="settings-outline"')
+      .parent()
+      .click();
     cy.getAdvancedModalSelectElement(
       'terminal-advanced-modal',
       'Encoding'
-    ).selectOption('Hex');
+    ).selectDropdownOption('Hex');
 
-    cy.get('app-terminal ion-textarea textarea').should('contain', '');
+    cy.get('app-terminal-component ion-textarea textarea').should(
+      'contain',
+      ''
+    );
   });
 
   it('should clear the terminal after changing show timestamps', () => {
-    const data = 'test\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\n';
-    cy.wrap(null).then(() => {
-      if (onEventTrigger) {
-        onEventTrigger({
-          event: 'data',
-          data: data,
+    cy.window().then((win) => {
+      for (let index = 0; index < 10; index++) {
+        win.onSerialPortEventTrigger({
+          type: 'data',
+          data: mockData,
         });
       }
     });
 
-    cy.get('app-terminal ion-button ion-icon').parent().click();
+    cy.get('app-terminal-component ion-button [name="settings-outline"')
+      .parent()
+      .click();
     cy.getAdvancedModalCheckboxElement(
       'terminal-advanced-modal',
       'Show Timestamps'
     ).click();
 
-    cy.get('app-terminal ion-textarea textarea').should('contain', '');
+    cy.get('app-terminal-component ion-textarea textarea').should(
+      'contain',
+      ''
+    );
   });
 
   it('should not auto scroll when auto scroll is disabled and data is emitted', () => {
     let initialScrollTop = 0;
 
-    const data = 'test\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\ntest\n';
-
-    cy.get('app-terminal ion-button ion-icon').parent().click();
+    cy.get('app-terminal-component ion-button [name="settings-outline"')
+      .parent()
+      .click();
     cy.getAdvancedModalCheckboxElement(
       'terminal-advanced-modal',
       'Auto Scroll'
@@ -150,18 +166,20 @@ describe('Terminal component', () => {
       initialScrollTop = textarea[0].scrollTop;
     });
 
-    cy.wrap(null).then(() => {
-      if (onEventTrigger) {
-        onEventTrigger({
-          event: 'data',
-          data: data,
+    cy.window().then((win) => {
+      for (let index = 0; index < 10; index++) {
+        win.onSerialPortEventTrigger({
+          type: 'data',
+          data: mockData,
         });
       }
     });
 
-    cy.get('app-terminal ion-textarea textarea').then((textarea) => {
+    cy.get('app-terminal-component ion-textarea textarea').then((textarea) => {
       const currentScrollTop = textarea[0].scrollTop;
       expect(currentScrollTop).to.equal(initialScrollTop);
     });
   });
+
+  // TODO: PAUSE/CONTINUE
 });

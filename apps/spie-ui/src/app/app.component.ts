@@ -1,11 +1,46 @@
 import { Component } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import {
+  cloudUploadOutline,
+  documentOutline,
+  helpCircleOutline,
+  logInOutline,
+  logOutOutline,
+  pauseOutline,
+  playOutline,
+  pulseOutline,
+  sendOutline,
+  settingsOutline,
+  speedometerOutline,
+  statsChartOutline,
+  terminalOutline,
+  timeOutline,
+  trashOutline,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['./app.component.scss'],
-  standalone: true,
   imports: [IonApp, IonRouterOutlet],
 })
-export class AppComponent {}
+export class AppComponent {
+  constructor() {
+    addIcons({ cloudUploadOutline });
+    addIcons({ documentOutline });
+    addIcons({ helpCircleOutline });
+    addIcons({ logInOutline });
+    addIcons({ logOutOutline });
+    addIcons({ pauseOutline });
+    addIcons({ playOutline });
+    addIcons({ pulseOutline });
+    addIcons({ sendOutline });
+    addIcons({ settingsOutline });
+    addIcons({ speedometerOutline });
+    addIcons({ statsChartOutline });
+    addIcons({ terminalOutline });
+    addIcons({ timeOutline });
+    addIcons({ trashOutline });
+  }
+}

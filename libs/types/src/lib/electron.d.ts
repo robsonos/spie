@@ -9,13 +9,13 @@ import {
 } from 'electron-updater';
 
 export type AutoUpdaterEvent =
-  | { event: 'error'; error: Error; message?: string }
-  | { event: 'checking-for-update' }
-  | { event: 'update-not-available'; updateInfo: UpdateInfo }
-  | { event: 'update-available'; updateInfo: UpdateInfo }
-  | { event: 'update-downloaded'; updateDownloadedEvent: UpdateDownloadedEvent }
-  | { event: 'download-progress'; progressInfo: ProgressInfo }
-  | { event: 'update-cancelled'; updateInfo: UpdateInfo };
+  | { type: 'error'; error: Error; message?: string }
+  | { type: 'checking-for-update' }
+  | { type: 'update-not-available'; updateInfo: UpdateInfo }
+  | { type: 'update-available'; updateInfo: UpdateInfo }
+  | { type: 'update-downloaded'; updateDownloadedEvent: UpdateDownloadedEvent }
+  | { type: 'download-progress'; progressInfo: ProgressInfo }
+  | { type: 'update-cancelled'; updateInfo: UpdateInfo };
 
 export type Delimiter = 'none' | 'cr' | 'lf' | 'crlf';
 
@@ -24,11 +24,17 @@ export type Encoding = 'ascii' | 'hex';
 export type SerialPortEventType = 'error' | 'open' | 'close' | 'data' | 'drain';
 
 export type SerialPortEvent =
-  | { event: 'error'; error: Error }
-  | { event: 'open' }
-  | { event: 'close' }
-  | { event: 'data'; data: string }
-  | { event: 'drain' };
+  | { type: 'error'; error: Error }
+  | { type: 'open' }
+  | { type: 'close' }
+  | { type: 'data'; data: string }
+  | { type: 'data-delimited'; data: string }
+  | { type: 'drain' };
+
+export type DataEvent =
+  | { type: 'data'; data: string }
+  | { type: 'data-delimited'; data: string }
+  | { type: 'clear' };
 
 export interface SerialPortAPI {
   list: () => Promise<PortInfo[]>;
@@ -37,6 +43,8 @@ export interface SerialPortAPI {
   write: (data: string, encoding: Encoding) => Promise<boolean>;
   isOpen: () => Promise<boolean>;
   setReadEncoding: (encoding: Encoding) => Promise<void>;
+  getReadEncoding: () => Promise<Encoding>;
+  getOpenOptions: () => Promise<OpenOptions | null>;
   onEvent: (callback: (serialPortEvent: SerialPortEvent) => void) => () => void;
 }
 

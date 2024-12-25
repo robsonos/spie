@@ -24,18 +24,19 @@
           }
         ],
         "styles": [
+          "@angular/material/prebuilt-themes/azure-blue.css",
           "apps/spie-ui/src/global.scss",
           "apps/spie-ui/src/theme/variables.scss"
         ],
-        "scripts": []
+        "scripts": ["node_modules/apexcharts/dist/apexcharts.min.js"]
       },
       "configurations": {
         "production": {
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumWarning": "2mb",
+              "maximumError": "5mb"
             },
             {
               "type": "anyComponentStyle",
@@ -54,7 +55,8 @@
         "ci": {
           "progress": false
         }
-      }
+      },
+      "defaultConfiguration": "production"
     },
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",

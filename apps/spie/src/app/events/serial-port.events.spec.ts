@@ -146,6 +146,36 @@ describe('Serial Port events', () => {
     });
   });
 
+  describe('getReadEncoding', () => {
+    it('should invoke serial-port-get-read-encoding and get encoding', async () => {
+      const mockEncoding = 'hex';
+
+      (ipcRenderer.invoke as jest.Mock).mockResolvedValue(mockEncoding);
+
+      const encoding = await window.electron.serialPort.getReadEncoding();
+
+      expect(ipcRenderer.invoke).toHaveBeenCalledWith(
+        'serial-port-get-read-encoding'
+      );
+      expect(encoding).toEqual(mockEncoding);
+    });
+  });
+
+  describe('getOpenOptions', () => {
+    it('should invoke serial-port-get-open-options and get open options', async () => {
+      const mockOpenOptions = { path: '/dev/ttyUSB0', baudRate: 9600 };
+
+      (ipcRenderer.invoke as jest.Mock).mockResolvedValue(mockOpenOptions);
+
+      const openOptions = await window.electron.serialPort.getOpenOptions();
+
+      expect(ipcRenderer.invoke).toHaveBeenCalledWith(
+        'serial-port-get-open-options'
+      );
+      expect(openOptions).toEqual(openOptions);
+    });
+  });
+
   describe('onEvent', () => {
     it('should add listener', () => {
       const callback = jest.fn();
@@ -153,10 +183,10 @@ describe('Serial Port events', () => {
       const cleanup = window.electron.serialPort.onEvent(callback);
 
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'serial-port-add-notification-event-listener'
+        'serial-port-event-add-listener'
       );
       expect(ipcRenderer.on).toHaveBeenCalledWith(
-        'serial-port-notification',
+        'serial-port-event',
         expect.any(Function)
       );
 
@@ -166,7 +196,7 @@ describe('Serial Port events', () => {
     it('should handle error event', () => {
       const callback = jest.fn();
       const error = new Error('Test error');
-      const mockEvent: SerialPortEvent = { event: 'error', error };
+      const mockEvent: SerialPortEvent = { type: 'error', error };
 
       (ipcRenderer.on as jest.Mock).mockImplementationOnce((_, listener) => {
         listener({}, mockEvent);
@@ -179,7 +209,7 @@ describe('Serial Port events', () => {
 
     it('should handle open event', () => {
       const callback = jest.fn();
-      const mockEvent: SerialPortEvent = { event: 'open' };
+      const mockEvent: SerialPortEvent = { type: 'open' };
 
       (ipcRenderer.on as jest.Mock).mockImplementationOnce((_, listener) => {
         listener({}, mockEvent);
@@ -192,7 +222,7 @@ describe('Serial Port events', () => {
 
     it('should handle close event', () => {
       const callback = jest.fn();
-      const mockEvent: SerialPortEvent = { event: 'close' };
+      const mockEvent: SerialPortEvent = { type: 'close' };
 
       (ipcRenderer.on as jest.Mock).mockImplementationOnce((_, listener) => {
         listener({}, mockEvent);
@@ -208,14 +238,14 @@ describe('Serial Port events', () => {
       const encoding = 'hex';
       const chunk = Buffer.from('test data');
       const mockEvent: SerialPortEvent = {
-        event: 'data',
+        type: 'data',
         data: chunk.toString('hex').toUpperCase().match(/.{2}/g).join(' '),
       };
 
       await window.electron.serialPort.setReadEncoding(encoding);
 
       (ipcRenderer.on as jest.Mock).mockImplementationOnce((_, listener) => {
-        listener({}, { event: 'data', data: mockEvent.data });
+        listener({}, { type: 'data', data: mockEvent.data });
       });
 
       window.electron.serialPort.onEvent(callback);
@@ -228,14 +258,14 @@ describe('Serial Port events', () => {
       const encoding = 'ascii';
       const chunk = Buffer.from('test data');
       const mockEvent: SerialPortEvent = {
-        event: 'data',
+        type: 'data',
         data: chunk.toString('ascii'),
       };
 
       await window.electron.serialPort.setReadEncoding(encoding);
 
       (ipcRenderer.on as jest.Mock).mockImplementationOnce((_, listener) => {
-        listener({}, { event: 'data', data: mockEvent.data });
+        listener({}, { type: 'data', data: mockEvent.data });
       });
 
       window.electron.serialPort.onEvent(callback);
@@ -245,7 +275,7 @@ describe('Serial Port events', () => {
 
     it('should handle drain event', () => {
       const callback = jest.fn();
-      const mockEvent: SerialPortEvent = { event: 'drain' };
+      const mockEvent: SerialPortEvent = { type: 'drain' };
 
       (ipcRenderer.on as jest.Mock).mockImplementationOnce((_, listener) => {
         listener({}, mockEvent);
@@ -264,11 +294,11 @@ describe('Serial Port events', () => {
       cleanup();
 
       expect(ipcRenderer.removeListener).toHaveBeenCalledWith(
-        'serial-port-notification',
+        'serial-port-event',
         expect.any(Function)
       );
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'serial-port-remove-notification-event-listener'
+        'serial-port-event-remove-listener'
       );
     });
   });

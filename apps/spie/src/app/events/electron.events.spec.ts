@@ -23,12 +23,6 @@ describe('Electron events', () => {
     jest.clearAllMocks();
   });
 
-  describe('platform', () => {
-    it('should expose the correct platform value', () => {
-      expect(window.electron.platform).toBe(process.platform);
-    });
-  });
-
   describe('quit', () => {
     it('should send quit event with the specified code', () => {
       const code = 1;

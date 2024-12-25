@@ -25,6 +25,11 @@ module.exports = [
           style: 'kebab-case',
         },
       ],
+      '@angular-eslint/component-class-suffix': [
+        'error',
+        { suffixes: ['Page', 'Component'] },
+      ],
+      '@angular-eslint/prefer-standalone': ['error'],
     },
   },
   {

@@ -1,43 +1,15 @@
 import { describe } from 'node:test';
 
 import { TestBed } from '@angular/core/testing';
-import type {
-  AutoUpdaterEvent,
-  ElectronAPI,
-  SerialPortEvent,
-} from '@spie/types';
-import {
-  type ProgressInfo,
-  type UpdateDownloadedEvent,
-  type UpdateInfo,
-} from 'electron-updater';
+import type { AutoUpdaterEvent, SerialPortEvent } from '@spie/types';
 
 import { ElectronService } from './electron.service';
+import { mockElectronAPI } from '../../test-setup';
 
 describe('ElectronService', () => {
   let service: ElectronService;
 
-  const mockElectronAPI: ElectronAPI = {
-    platform: '',
-    quit: jest.fn(),
-    getVersion: jest.fn(),
-    downloadUpdate: jest.fn(),
-    installUpdate: jest.fn(),
-    onUpdateEvent: jest.fn(),
-    serialPort: {
-      list: jest.fn(),
-      open: jest.fn(),
-      close: jest.fn(),
-      write: jest.fn(),
-      isOpen: jest.fn(),
-      setReadEncoding: jest.fn(),
-      onEvent: jest.fn(),
-    },
-  };
-
   beforeEach(() => {
-    (window as Window).electron = mockElectronAPI;
-
     TestBed.configureTestingModule({
       providers: [ElectronService],
     });
@@ -116,218 +88,185 @@ describe('ElectronService', () => {
 
   describe('onUpdateEvent', () => {
     it('should handle error event', (done) => {
-      const error = new Error('Test error');
-      const mockEvent: AutoUpdaterEvent = { event: 'error', error };
-
+      const mockEvent: AutoUpdaterEvent = {
+        type: 'error',
+        error: new Error('Test error'),
+      };
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
           callback(mockEvent);
           return jest.fn();
         }
       );
-
       const observer = {
-        next: (event: AutoUpdaterEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: AutoUpdaterEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
-
       const subscription = service.onUpdateEvent().subscribe(observer);
-
       subscription.unsubscribe();
     });
 
     it('should handle checking-for-update event', (done) => {
-      const mockEvent: AutoUpdaterEvent = { event: 'checking-for-update' };
-
+      const mockEvent: AutoUpdaterEvent = { type: 'checking-for-update' };
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
           callback(mockEvent);
           return jest.fn();
         }
       );
-
       const observer = {
-        next: (event: AutoUpdaterEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: AutoUpdaterEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
-
       const subscription = service.onUpdateEvent().subscribe(observer);
-
       subscription.unsubscribe();
     });
 
     it('should handle update-not-available event', (done) => {
-      const updateInfo: UpdateInfo = {
-        version: '1.0.0',
-        files: [],
-        path: '/test',
-        sha512: 'test',
-        releaseDate: new Date().toISOString(),
-      };
       const mockEvent: AutoUpdaterEvent = {
-        event: 'update-not-available',
-        updateInfo,
+        type: 'update-not-available',
+        updateInfo: {
+          version: '1.0.0',
+          files: [],
+          path: '/test',
+          sha512: 'test',
+          releaseDate: new Date().toISOString(),
+        },
       };
-
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
           callback(mockEvent);
           return jest.fn();
         }
       );
-
       const observer = {
-        next: (event: AutoUpdaterEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: AutoUpdaterEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
-
       const subscription = service.onUpdateEvent().subscribe(observer);
-
       subscription.unsubscribe();
     });
 
     it('should handle update-available event', (done) => {
-      const updateInfo: UpdateInfo = {
-        version: '1.0.0',
-        files: [],
-        path: '/test',
-        sha512: 'test',
-        releaseDate: new Date().toISOString(),
-      };
       const mockEvent: AutoUpdaterEvent = {
-        event: 'update-available',
-        updateInfo,
+        type: 'update-available',
+        updateInfo: {
+          version: '1.0.0',
+          files: [],
+          path: '/test',
+          sha512: 'test',
+          releaseDate: new Date().toISOString(),
+        },
       };
-
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
           callback(mockEvent);
           return jest.fn();
         }
       );
-
       const observer = {
-        next: (event: AutoUpdaterEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: AutoUpdaterEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
-
       const subscription = service.onUpdateEvent().subscribe(observer);
-
       subscription.unsubscribe();
     });
 
     it('should handle update-downloaded event', (done) => {
-      const updateDownloadedEvent: UpdateDownloadedEvent = {
-        downloadedFile: '/test/test.exe',
-        version: '1.0.0',
-        files: [],
-        path: '/test',
-        sha512: 'test',
-        releaseDate: new Date().toISOString(),
-      };
       const mockEvent: AutoUpdaterEvent = {
-        event: 'update-downloaded',
-        updateDownloadedEvent,
+        type: 'update-downloaded',
+        updateDownloadedEvent: {
+          downloadedFile: '/test/test.exe',
+          version: '1.0.0',
+          files: [],
+          path: '/test',
+          sha512: 'test',
+          releaseDate: new Date().toISOString(),
+        },
       };
-
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
           callback(mockEvent);
           return jest.fn();
         }
       );
-
       const observer = {
-        next: (event: AutoUpdaterEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: AutoUpdaterEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
-
       const subscription = service.onUpdateEvent().subscribe(observer);
-
       subscription.unsubscribe();
     });
 
     it('should handle download-progress event', (done) => {
-      const progressInfo: ProgressInfo = {
-        total: 100,
-        delta: 1,
-        transferred: 75.5,
-        percent: 75.5,
-        bytesPerSecond: 1115.55,
-      };
       const mockEvent: AutoUpdaterEvent = {
-        event: 'download-progress',
-        progressInfo,
+        type: 'download-progress',
+        progressInfo: {
+          total: 100,
+          delta: 1,
+          transferred: 75.5,
+          percent: 75.5,
+          bytesPerSecond: 1115.55,
+        },
       };
-
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
           callback(mockEvent);
           return jest.fn();
         }
       );
-
       const observer = {
-        next: (event: AutoUpdaterEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: AutoUpdaterEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
-
       const subscription = service.onUpdateEvent().subscribe(observer);
-
       subscription.unsubscribe();
     });
 
     it('should handle update-cancelled event', (done) => {
-      const updateInfo: UpdateInfo = {
-        version: '1.0.0',
-        files: [],
-        path: '/test',
-        sha512: 'test',
-        releaseDate: new Date().toISOString(),
-      };
       const mockEvent: AutoUpdaterEvent = {
-        event: 'update-cancelled',
-        updateInfo,
+        type: 'update-cancelled',
+        updateInfo: {
+          version: '1.0.0',
+          files: [],
+          path: '/test',
+          sha512: 'test',
+          releaseDate: new Date().toISOString(),
+        },
       };
-
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockImplementation(
         (callback) => {
           callback(mockEvent);
           return jest.fn();
         }
       );
-
       const observer = {
-        next: (event: AutoUpdaterEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: AutoUpdaterEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
-
       const subscription = service.onUpdateEvent().subscribe(observer);
-
       subscription.unsubscribe();
     });
 
     it('should clean up the listener when unsubscribed', () => {
       const callback = jest.fn();
-
       (mockElectronAPI.onUpdateEvent as jest.Mock).mockReturnValue(callback);
       const subscription = service.onUpdateEvent().subscribe();
       subscription.unsubscribe();
-
       expect(callback).toHaveBeenCalled();
     });
   });
@@ -430,10 +369,39 @@ describe('ElectronService', () => {
     });
   });
 
+  describe('serialPort.getReadEncoding', () => {
+    it('should set the read encoding', async () => {
+      const mockEncoding = 'hex';
+
+      (
+        mockElectronAPI.serialPort.getReadEncoding as jest.Mock
+      ).mockResolvedValue(mockEncoding);
+
+      const encoding = await service.serialPort.getReadEncoding();
+      expect(mockElectronAPI.serialPort.getReadEncoding).toHaveBeenCalled();
+      expect(encoding).toEqual(mockEncoding);
+    });
+  });
+
+  describe('serialPort.getOpenOptions', () => {
+    it('should get the open options', async () => {
+      const mockOpenOptions = { path: '/dev/ttyUSB0', baudRate: 9600 };
+
+      (
+        mockElectronAPI.serialPort.getOpenOptions as jest.Mock
+      ).mockResolvedValue(mockOpenOptions);
+
+      const openOptions = await service.serialPort.getOpenOptions();
+
+      expect(mockElectronAPI.serialPort.getOpenOptions).toHaveBeenCalled();
+      expect(openOptions).toEqual(mockOpenOptions);
+    });
+  });
+
   describe('serialPort.onEvent', () => {
     it('should handle error event', (done) => {
       const error = new Error('Test error');
-      const mockEvent: SerialPortEvent = { event: 'error', error };
+      const mockEvent: SerialPortEvent = { type: 'error', error };
 
       (mockElectronAPI.serialPort.onEvent as jest.Mock).mockImplementation(
         (callback) => {
@@ -443,8 +411,8 @@ describe('ElectronService', () => {
       );
 
       const observer = {
-        next: (event: SerialPortEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: SerialPortEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
@@ -455,7 +423,7 @@ describe('ElectronService', () => {
     });
 
     it('should handle open event', (done) => {
-      const mockEvent: SerialPortEvent = { event: 'open' };
+      const mockEvent: SerialPortEvent = { type: 'open' };
 
       (mockElectronAPI.serialPort.onEvent as jest.Mock).mockImplementation(
         (callback) => {
@@ -465,8 +433,8 @@ describe('ElectronService', () => {
       );
 
       const observer = {
-        next: (event: SerialPortEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: SerialPortEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
@@ -477,7 +445,7 @@ describe('ElectronService', () => {
     });
 
     it('should handle open event', (done) => {
-      const mockEvent: SerialPortEvent = { event: 'open' };
+      const mockEvent: SerialPortEvent = { type: 'open' };
 
       (mockElectronAPI.serialPort.onEvent as jest.Mock).mockImplementation(
         (callback) => {
@@ -487,8 +455,8 @@ describe('ElectronService', () => {
       );
 
       const observer = {
-        next: (event: SerialPortEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: SerialPortEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
@@ -499,7 +467,7 @@ describe('ElectronService', () => {
     });
 
     it('should handle close event', (done) => {
-      const mockEvent: SerialPortEvent = { event: 'close' };
+      const mockEvent: SerialPortEvent = { type: 'close' };
 
       (mockElectronAPI.serialPort.onEvent as jest.Mock).mockImplementation(
         (callback) => {
@@ -509,8 +477,8 @@ describe('ElectronService', () => {
       );
 
       const observer = {
-        next: (event: SerialPortEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: SerialPortEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };
@@ -524,7 +492,7 @@ describe('ElectronService', () => {
       const encoding = 'hex';
       const chunk = Buffer.from('test data');
       const mockEvent: SerialPortEvent = {
-        event: 'data',
+        type: 'data',
         data: chunk
           .toString('hex')
           .toUpperCase()
@@ -542,8 +510,8 @@ describe('ElectronService', () => {
       );
 
       const observer = {
-        next: (event: SerialPortEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: SerialPortEvent) => {
+          expect(type).toEqual(mockEvent);
           // done();
         },
       };
@@ -557,7 +525,7 @@ describe('ElectronService', () => {
       const encoding = 'ascii';
       const chunk = Buffer.from('test data');
       const mockEvent: SerialPortEvent = {
-        event: 'data',
+        type: 'data',
         data: chunk.toString('ascii'),
       };
 
@@ -571,8 +539,8 @@ describe('ElectronService', () => {
       );
 
       const observer = {
-        next: (event: SerialPortEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: SerialPortEvent) => {
+          expect(type).toEqual(mockEvent);
         },
       };
 
@@ -582,7 +550,7 @@ describe('ElectronService', () => {
     });
 
     it('should handle drain event', (done) => {
-      const mockEvent: SerialPortEvent = { event: 'drain' };
+      const mockEvent: SerialPortEvent = { type: 'drain' };
 
       (mockElectronAPI.serialPort.onEvent as jest.Mock).mockImplementation(
         (callback) => {
@@ -592,8 +560,8 @@ describe('ElectronService', () => {
       );
 
       const observer = {
-        next: (event: SerialPortEvent) => {
-          expect(event).toEqual(mockEvent);
+        next: (type: SerialPortEvent) => {
+          expect(type).toEqual(mockEvent);
           done();
         },
       };

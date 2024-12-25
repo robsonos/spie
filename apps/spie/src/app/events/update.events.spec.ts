@@ -84,7 +84,7 @@ describe('Update Events', () => {
     it('should handle update notifications correctly', () => {
       const callback = jest.fn();
       const mockData = {
-        event: 'update-available',
+        type: 'update-available',
         updateInfo: { version: '1.2.3' },
       };
 
@@ -95,10 +95,10 @@ describe('Update Events', () => {
       const cleanup = window.electron.onUpdateEvent(callback);
 
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'app-update-add-notification-event-listener'
+        'app-update-event-add-listener'
       );
       expect(ipcRenderer.on).toHaveBeenCalledWith(
-        'app-update-notification',
+        'app-update-event',
         expect.any(Function)
       );
 
@@ -106,11 +106,11 @@ describe('Update Events', () => {
 
       cleanup();
       expect(ipcRenderer.removeListener).toHaveBeenCalledWith(
-        'app-update-notification',
+        'app-update-event',
         expect.any(Function)
       );
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'app-update-remove-notification-event-listener'
+        'app-update-event-remove-listener'
       );
     });
   });
@@ -123,10 +123,10 @@ describe('onUpdateEvent', () => {
     const cleanup = window.electron.onUpdateEvent(callback);
 
     expect(ipcRenderer.send).toHaveBeenCalledWith(
-      'app-update-add-notification-event-listener'
+      'app-update-event-add-listener'
     );
     expect(ipcRenderer.on).toHaveBeenCalledWith(
-      'app-update-notification',
+      'app-update-event',
       expect.any(Function)
     );
 
@@ -136,7 +136,7 @@ describe('onUpdateEvent', () => {
   it('should handle error event', () => {
     const callback = jest.fn();
     const error = new Error('Test error');
-    const mockEvent: AutoUpdaterEvent = { event: 'error', error };
+    const mockEvent: AutoUpdaterEvent = { type: 'error', error };
 
     (ipcRenderer.on as jest.Mock).mockImplementationOnce((_, listener) => {
       listener({}, mockEvent);
@@ -149,7 +149,7 @@ describe('onUpdateEvent', () => {
 
   it('should handle checking-for-update event', () => {
     const callback = jest.fn();
-    const mockEvent: AutoUpdaterEvent = { event: 'checking-for-update' };
+    const mockEvent: AutoUpdaterEvent = { type: 'checking-for-update' };
 
     (ipcRenderer.on as jest.Mock).mockImplementationOnce((_, listener) => {
       listener({}, mockEvent);
@@ -170,7 +170,7 @@ describe('onUpdateEvent', () => {
       releaseDate: new Date().toISOString(),
     };
     const mockEvent: AutoUpdaterEvent = {
-      event: 'update-not-available',
+      type: 'update-not-available',
       updateInfo,
     };
 
@@ -193,7 +193,7 @@ describe('onUpdateEvent', () => {
       releaseDate: new Date().toISOString(),
     };
     const mockEvent: AutoUpdaterEvent = {
-      event: 'update-available',
+      type: 'update-available',
       updateInfo,
     };
 
@@ -217,7 +217,7 @@ describe('onUpdateEvent', () => {
       releaseDate: new Date().toISOString(),
     };
     const mockEvent: AutoUpdaterEvent = {
-      event: 'update-downloaded',
+      type: 'update-downloaded',
       updateDownloadedEvent,
     };
 
@@ -240,7 +240,7 @@ describe('onUpdateEvent', () => {
       bytesPerSecond: 1115.55,
     };
     const mockEvent: AutoUpdaterEvent = {
-      event: 'download-progress',
+      type: 'download-progress',
       progressInfo,
     };
 
@@ -263,7 +263,7 @@ describe('onUpdateEvent', () => {
       releaseDate: new Date().toISOString(),
     };
     const mockEvent: AutoUpdaterEvent = {
-      event: 'update-cancelled',
+      type: 'update-cancelled',
       updateInfo,
     };
 
@@ -283,11 +283,11 @@ describe('onUpdateEvent', () => {
     cleanup();
 
     expect(ipcRenderer.removeListener).toHaveBeenCalledWith(
-      'app-update-notification',
+      'app-update-event',
       expect.any(Function)
     );
     expect(ipcRenderer.send).toHaveBeenCalledWith(
-      'app-update-remove-notification-event-listener'
+      'app-update-event-remove-listener'
     );
   });
 });
