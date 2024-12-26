@@ -48,6 +48,8 @@ export class UpdateModalComponent {
   private readonly toasterService = inject(ToasterService);
   private readonly alertController = inject(AlertController);
 
+  updateModal = viewChild.required<IonModal>('updateModal');
+
   progressInfo = toSignal(
     this.electronService.onUpdateEvent().pipe(
       tap(async (autoUpdaterEvent) => {
@@ -140,8 +142,6 @@ export class UpdateModalComponent {
       } as ProgressInfo,
     }
   );
-
-  updateModal = viewChild.required<IonModal>('updateModal');
 
   formatBytes(bytes: number, decimals = 2): string {
     if (bytes === 0) return '0 Bytes';

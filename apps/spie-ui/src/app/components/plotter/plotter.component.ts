@@ -19,12 +19,17 @@ import { type DataEvent } from '@spie/types';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import {
   BehaviorSubject,
+  type Observable,
   Subject,
   bufferTime,
   combineLatest,
   filter,
+  from,
   map,
   merge,
+  scan,
+  startWith,
+  switchMap,
   tap,
 } from 'rxjs';
 
@@ -33,7 +38,7 @@ import {
   type PlotterOptions,
   type Series,
 } from '../../interfaces/app.interface';
-import { SerialPortService } from '../../services/serial-port.service';
+import { ElectronService } from '../../services/electron.service';
 import MessageParser from '../../utils/message-parser';
 import { PlotterAdvancedComponent } from '../plotter-advanced-modal/plotter-advanced-modal.component';
 
@@ -56,7 +61,7 @@ import { PlotterAdvancedComponent } from '../plotter-advanced-modal/plotter-adva
   ],
 })
 export class PlotterComponent {
-  private readonly serialPortService = inject(SerialPortService);
+  private readonly electronService = inject(ElectronService);
 
   private plotterAdvancedComponent = viewChild.required(
     PlotterAdvancedComponent
@@ -67,12 +72,38 @@ export class PlotterComponent {
   }
 
   clearSeriesSubject = new Subject<void>();
-  isOpen = this.serialPortService.isOpen;
+
+  isOpen = toSignal(
+    from(this.electronService.serialPort.isOpen()).pipe(
+      switchMap((isOpen) =>
+        this.electronService.serialPort.onEvent().pipe(
+          startWith({ type: isOpen ? 'open' : 'close' }),
+          scan((currentIsOpen, serialPortEvent) => {
+            if (serialPortEvent.type === 'open') {
+              return true;
+            }
+
+            if (serialPortEvent.type === 'close') {
+              return false;
+            }
+
+            return currentIsOpen;
+          }, isOpen)
+        )
+      )
+    ),
+    { initialValue: false }
+  );
+
+  private onDataDelimited$: Observable<DataEvent> = toObservable(
+    this.isOpen
+  ).pipe(
+    switchMap(() => this.electronService.serialPort.onEvent()),
+    filter((serialPortEvent) => serialPortEvent.type === 'data-delimited')
+  );
 
   private dataEvent$ = merge(
-    this.serialPortService.dataDelimitedEvent$.pipe(
-      filter(() => !this.isPausedSubject.getValue())
-    ),
+    this.onDataDelimited$.pipe(filter(() => !this.isPausedSubject.getValue())),
     this.clearSeriesSubject.pipe(map(() => ({ type: 'clear' } as DataEvent)))
   ).pipe(
     bufferTime(50),
@@ -128,12 +159,6 @@ export class PlotterComponent {
   );
 
   isPausedSubject = new BehaviorSubject<boolean>(false);
-  private isPaused = toSignal(
-    combineLatest([this.isPausedSubject, toObservable(this.isOpen)]).pipe(
-      map(([isPaused, isOpen]) => isPaused || !isOpen)
-    ),
-    { initialValue: false }
-  );
 
   plotterOptions = signal<PlotterOptions>({
     useSampleCount: true,
@@ -202,7 +227,7 @@ export class PlotterComponent {
     },
     stroke: {
       show: true,
-      curve: 'straight', // TODO: toggle between  straight and stepline?
+      curve: 'straight',
       width: 1,
     },
     legend: {
@@ -213,6 +238,13 @@ export class PlotterComponent {
       size: 0,
     },
   }));
+
+  private isPaused = toSignal(
+    combineLatest([this.isPausedSubject, toObservable(this.isOpen)]).pipe(
+      map(([isPaused, isOpen]) => isPaused || !isOpen)
+    ),
+    { initialValue: false }
+  );
 
   onClickClearSeries(): void {
     this.clearSeriesSubject.next();

@@ -1,5 +1,5 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   IonAccordion,
   IonAccordionGroup,
@@ -16,12 +16,14 @@ import {
   IonSelectOption,
   LoadingController,
 } from '@ionic/angular/standalone';
-import { type PortInfo } from '@serialport/bindings-interface';
-import { Subject, tap } from 'rxjs';
+import {
+  type OpenOptions,
+  type PortInfo,
+} from '@serialport/bindings-interface';
+import { Subject, from, scan, startWith, switchMap, tap } from 'rxjs';
 
 import { type SelectCustomEvent } from '../../interfaces/ionic.interface';
 import { ElectronService } from '../../services/electron.service';
-import { SerialPortService } from '../../services/serial-port.service';
 import { ToasterService } from '../../services/toaster.service';
 import { ConnectionAdvancedComponent } from '../connection-advanced-modal/connection-advanced-modal.component';
 
@@ -50,7 +52,10 @@ export class ConnectionComponent {
   private readonly loadingController = inject(LoadingController);
   private readonly toasterService = inject(ToasterService);
   private readonly electronService = inject(ElectronService);
-  private readonly serialPortService = inject(SerialPortService);
+
+  private connectionAdvancedComponent = viewChild.required(
+    ConnectionAdvancedComponent
+  );
 
   constructor() {
     this.reconnectSubject
@@ -63,7 +68,6 @@ export class ConnectionComponent {
             try {
               await this.electronService.serialPort.close();
               await this.electronService.serialPort.open(this.openOptions());
-              this.serialPortService.clearDataSubject.next();
             } catch (error) {
               await this.toasterService.presentErrorToast(error);
             }
@@ -100,19 +104,50 @@ export class ConnectionComponent {
       });
   }
 
-  isOpen = this.serialPortService.isOpen;
-  openOptions = this.serialPortService.openOptions;
   reconnectSubject = new Subject<void>();
 
-  private connectionAdvancedComponent = viewChild.required(
-    ConnectionAdvancedComponent
+  openOptions = signal<OpenOptions>({
+    path: '',
+    baudRate: 9600,
+    dataBits: 8,
+    lock: true,
+    stopBits: 1,
+    parity: 'none',
+    rtscts: false,
+    xon: false,
+    xoff: false,
+    xany: false,
+    hupcl: true,
+  });
+
+  serialPorts = signal<PortInfo[]>([]);
+
+  isOpen = toSignal(
+    from(this.electronService.serialPort.isOpen()).pipe(
+      switchMap((isOpen) =>
+        this.electronService.serialPort.onEvent().pipe(
+          startWith({ type: isOpen ? 'open' : 'close' }),
+          scan((currentIsOpen, serialPortEvent) => {
+            if (serialPortEvent.type === 'open') {
+              return true;
+            }
+
+            if (serialPortEvent.type === 'close') {
+              return false;
+            }
+
+            return currentIsOpen;
+          }, isOpen)
+        )
+      )
+    ),
+    { initialValue: false }
   );
 
   baudRates = [
     300, 600, 750, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400,
     460800, 500000, 921600, 1000000, 2000000,
   ];
-  serialPorts = signal<PortInfo[]>([]);
 
   async onClickSerialPort(event: MouseEvent): Promise<void> {
     const pointerEvent = event as PointerEvent;
