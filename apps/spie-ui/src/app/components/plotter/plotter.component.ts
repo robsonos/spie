@@ -122,13 +122,13 @@ export class PlotterComponent {
         );
 
         if (newSeries.length === 0) {
-          console.warn('Empty series returned');
+          // console.warn('Empty series returned');
           return;
         }
 
         // Update series with the correct amount of variables
         if (this.series().length !== newSeries.length) {
-          console.warn('Number of variables has changed');
+          // console.warn('Number of variables has changed');
           this.series.set(newSeries);
           return;
         }

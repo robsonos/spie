@@ -26,9 +26,7 @@ describe('Send routine', () => {
       win.onAutoUpdaterEventTrigger(mockEvent);
     });
 
-    cy.get('ion-toast')
-      .should('have.attr', 'color', 'danger')
-      .then(console.log);
+    cy.get('ion-toast').should('have.attr', 'color', 'danger');
 
     cy.get('ion-toast')
       .shadow()
@@ -251,9 +249,7 @@ describe('Send routine', () => {
       win.onAutoUpdaterEventTrigger(mockEvent);
     });
 
-    cy.get('ion-toast')
-      .should('have.attr', 'color', 'danger')
-      .then(console.log);
+    cy.get('ion-toast').should('have.attr', 'color', 'danger');
     cy.get('ion-toast')
       .shadow()
       .find('.toast-header')
