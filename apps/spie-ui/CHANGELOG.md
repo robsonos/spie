@@ -1,3 +1,13 @@
+## 0.3.1 (2024-12-29)
+
+### 🩹 Fixes
+
+- **repo:** fix encoding when using plotter ([d2c34d8](https://github.com/robsonos/spie/commit/d2c34d8))
+
+### ❤️ Thank You
+
+- Robson Oliveira dos Santos @robsonos
+
 ## 0.3.0 (2024-12-25)
 
 ### 🚀 Features
