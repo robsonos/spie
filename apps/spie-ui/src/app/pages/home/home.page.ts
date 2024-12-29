@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   IonIcon,
   IonLabel,
@@ -9,6 +9,8 @@ import {
 
 import { ConnectionComponent } from '../../components/connection/connection.component';
 import { UpdateModalComponent } from '../../components/update-modal/update-modal.component';
+import { ElectronService } from '../../services/electron.service';
+import { ToasterService } from '../../services/toaster.service';
 
 @Component({
   selector: 'app-home',
@@ -24,4 +26,21 @@ import { UpdateModalComponent } from '../../components/update-modal/update-modal
     UpdateModalComponent,
   ],
 })
-export class HomePage {}
+export class HomePage {
+  private readonly electronService = inject(ElectronService);
+  private readonly toasterService = inject(ToasterService);
+
+  onTabChange(event: { tab: string }) {
+    const selectedTab = event.tab;
+    if (selectedTab === 'plotter') {
+      this.electronService.serialPort.getReadEncoding().then((readEncoding) => {
+        if (readEncoding === 'hex') {
+          this.toasterService.presentWarningToast(
+            'Encoding changed to ascii for plotter'
+          );
+          this.electronService.serialPort.setReadEncoding('ascii');
+        }
+      });
+    }
+  }
+}

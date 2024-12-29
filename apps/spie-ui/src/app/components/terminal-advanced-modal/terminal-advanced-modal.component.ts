@@ -1,4 +1,4 @@
-import { Component, inject, input, viewChild } from '@angular/core';
+import { Component, inject, input, model, viewChild } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   IonButton,
@@ -19,14 +19,16 @@ import {
 import { type Encoding } from '@spie/types';
 import { type Subject } from 'rxjs';
 
-import { SCROLLBACK_LENGTH_VALUES } from '../../interfaces/app.interface';
+import {
+  SCROLLBACK_LENGTH_VALUES,
+  type TerminalOptions,
+} from '../../interfaces/app.interface';
 import {
   type CheckboxCustomEvent,
   type RangeCustomEvent,
   type SelectCustomEvent,
 } from '../../interfaces/ionic.interface';
 import { ElectronService } from '../../services/electron.service';
-import { SerialPortService } from '../../services/serial-port.service';
 
 @Component({
   selector: 'app-terminal-advanced-modal-component',
@@ -52,10 +54,9 @@ import { SerialPortService } from '../../services/serial-port.service';
 })
 export class TerminalAdvancedComponent {
   private readonly electronService = inject(ElectronService);
-  private readonly serialPortService = inject(SerialPortService);
 
   clearTerminalSubject = input.required<Subject<void>>();
-  terminalOptions = this.serialPortService.terminalOptions;
+  terminalOptions = model.required<TerminalOptions>();
 
   terminalAdvancedModal = viewChild.required<IonModal>('terminalAdvancedModal');
 

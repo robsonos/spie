@@ -1,5 +1,9 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import {
+  takeUntilDestroyed,
+  toObservable,
+  toSignal,
+} from '@angular/core/rxjs-interop';
 import {
   IonButton,
   IonCard,
@@ -16,16 +20,20 @@ import {
 import { type DataEvent } from '@spie/types';
 import {
   BehaviorSubject,
+  type Observable,
   Subject,
   filter,
+  from,
   map,
   merge,
+  scan,
+  startWith,
   switchMap,
   tap,
 } from 'rxjs';
 
+import { type TerminalOptions } from '../../interfaces/app.interface';
 import { ElectronService } from '../../services/electron.service';
-import { SerialPortService } from '../../services/serial-port.service';
 import { TerminalAdvancedComponent } from '../terminal-advanced-modal/terminal-advanced-modal.component';
 
 @Component({
@@ -48,31 +56,63 @@ import { TerminalAdvancedComponent } from '../terminal-advanced-modal/terminal-a
   ],
 })
 export class TerminalComponent {
-  private readonly serialPortService = inject(SerialPortService);
   private readonly electronService = inject(ElectronService);
 
   constructor() {
-    // Retrieve previous readEncoding (useful for development)
-    this.electronService.serialPort.getReadEncoding().then((readEncoding) => {
-      this.terminalOptions.update((terminalOptions) => ({
-        ...terminalOptions,
-        encoding: readEncoding,
-      }));
-    });
-
     this.dataEvent$.subscribe();
   }
 
   clearTerminalSubject = new Subject<void>();
-  isOpen = this.serialPortService.isOpen;
-  terminalOptions = this.serialPortService.terminalOptions;
+  isPausedSubject = new BehaviorSubject<boolean>(false);
+
+  data = signal('');
+  terminalOptions = signal<TerminalOptions>({
+    encoding: 'ascii',
+    isAutoScrollEnabled: true,
+    showTimestampsEnabled: false,
+    scrollbackLength: 10000,
+    useReadlineParser: false,
+  });
+
+  isOpen = toSignal(
+    from(this.electronService.serialPort.isOpen()).pipe(
+      switchMap((isOpen) =>
+        this.electronService.serialPort.onEvent().pipe(
+          startWith({ type: isOpen ? 'open' : 'close' }),
+          scan((currentIsOpen, serialPortEvent) => {
+            if (serialPortEvent.type === 'open') {
+              return true;
+            }
+
+            if (serialPortEvent.type === 'close') {
+              return false;
+            }
+
+            return currentIsOpen;
+          }, isOpen)
+        )
+      )
+    ),
+    { initialValue: false }
+  );
+
+  private onData$: Observable<DataEvent> = toObservable(this.isOpen).pipe(
+    switchMap(() => this.electronService.serialPort.onEvent()),
+    filter((serialPortEvent) => serialPortEvent.type === 'data')
+  );
+
+  private onDataDelimited$: Observable<DataEvent> = toObservable(
+    this.isOpen
+  ).pipe(
+    switchMap(() => this.electronService.serialPort.onEvent()),
+    filter((serialPortEvent) => serialPortEvent.type === 'data-delimited')
+  );
+
   private dataEvent$ = merge(
     toObservable(this.terminalOptions).pipe(
       map((terminalOptions) => terminalOptions.useReadlineParser),
       switchMap((useReadlineParser) =>
-        useReadlineParser
-          ? this.serialPortService.dataDelimitedEvent$
-          : this.serialPortService.dataEvent$
+        useReadlineParser ? this.onDataDelimited$ : this.onData$
       ),
       filter(() => !this.isPausedSubject.getValue())
     ),
@@ -128,8 +168,6 @@ export class TerminalComponent {
     }),
     takeUntilDestroyed()
   );
-  data = signal('');
-  isPausedSubject = new BehaviorSubject<boolean>(false);
 
   terminalTextArea = viewChild.required<IonTextarea>('terminalTextArea');
   private terminalAdvancedComponent = viewChild.required(

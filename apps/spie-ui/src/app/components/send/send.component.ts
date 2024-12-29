@@ -1,5 +1,9 @@
-import { Component, inject, viewChild } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Component, inject, signal, viewChild } from '@angular/core';
+import {
+  takeUntilDestroyed,
+  toObservable,
+  toSignal,
+} from '@angular/core/rxjs-interop';
 import {
   IonButton,
   IonCard,
@@ -14,11 +18,11 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { type Delimiter } from '@spie/types';
-import { scan } from 'rxjs';
+import { from, scan, startWith, switchMap } from 'rxjs';
 
+import { type SendOptions } from '../../interfaces/app.interface';
 import { type IonInputCustomEvent } from '../../interfaces/ionic.interface';
 import { ElectronService } from '../../services/electron.service';
-import { SerialPortService } from '../../services/serial-port.service';
 import { ToasterService } from '../../services/toaster.service';
 import { SendAdvancedComponent } from '../send-advanced-modal/send-advanced-modal.component';
 
@@ -44,7 +48,9 @@ import { SendAdvancedComponent } from '../send-advanced-modal/send-advanced-moda
 export class SendComponent {
   private readonly toasterService = inject(ToasterService);
   private readonly electronService = inject(ElectronService);
-  private readonly serialPortService = inject(SerialPortService);
+
+  private sendInput = viewChild.required<IonInput>('sendInput');
+  private sendAdvancedComponent = viewChild.required(SendAdvancedComponent);
 
   constructor() {
     toObservable(this.sendOptions)
@@ -62,11 +68,33 @@ export class SendComponent {
       .subscribe();
   }
 
-  isOpen = this.serialPortService.isOpen;
-  sendOptions = this.serialPortService.sendOptions;
+  sendOptions = signal<SendOptions>({
+    delimiter: 'lf',
+    encoding: 'ascii',
+    isSendInputValid: false,
+  });
 
-  private sendInput = viewChild.required<IonInput>('sendInput');
-  private sendAdvancedComponent = viewChild.required(SendAdvancedComponent);
+  isOpen = toSignal(
+    from(this.electronService.serialPort.isOpen()).pipe(
+      switchMap((isOpen) =>
+        this.electronService.serialPort.onEvent().pipe(
+          startWith({ type: isOpen ? 'open' : 'close' }),
+          scan((currentIsOpen, serialPortEvent) => {
+            if (serialPortEvent.type === 'open') {
+              return true;
+            }
+
+            if (serialPortEvent.type === 'close') {
+              return false;
+            }
+
+            return currentIsOpen;
+          }, isOpen)
+        )
+      )
+    ),
+    { initialValue: false }
+  );
 
   async onClickSend(): Promise<void> {
     const rawData = this.sendInput().value as string;

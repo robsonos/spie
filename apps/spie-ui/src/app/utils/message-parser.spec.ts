@@ -153,7 +153,6 @@ describe('PlotterComponent', () => {
               const parsedMessages = messages.map((message) => {
                 return MessageParser.parse(message, useSampleCount);
               });
-              // console.log(JSON.stringify(parsedMessages));
               expect(parsedMessages).toEqual(assertion);
             });
 
@@ -196,7 +195,6 @@ describe('PlotterComponent', () => {
               const parsedMessages = messages.map((message) => {
                 return MessageParser.parse(message, useSampleCount);
               });
-              // console.log(JSON.stringify(parsedMessages));
               expect(parsedMessages).toEqual(assertion);
             });
 

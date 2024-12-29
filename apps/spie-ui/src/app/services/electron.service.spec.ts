@@ -21,10 +21,15 @@ describe('ElectronService', () => {
   });
 
   describe('quit', () => {
+    it('should call window.electron.quit with the default code (0)', () => {
+      service.quit();
+      expect(mockElectronAPI.quit).toHaveBeenCalledWith(0); // Default value
+    });
+
     it('should call window.electron.quit with the specified code', () => {
       const code = 1;
       service.quit(code);
-      expect(mockElectronAPI.quit).toHaveBeenCalledWith(1);
+      expect(mockElectronAPI.quit).toHaveBeenCalledWith(code);
     });
   });
 
