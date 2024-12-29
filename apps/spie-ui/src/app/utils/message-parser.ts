@@ -12,10 +12,6 @@ export default class MessageParser {
     const tokens: string[] = [];
 
     message.split(delimiterRegex).forEach((part, index) => {
-      if (!part) {
-        return;
-      }
-
       if (part.includes(':')) {
         const [key, value] = part.split(':').map((s) => s.trim());
         if (key && value) {
@@ -83,7 +79,7 @@ export default class MessageParser {
 
     return Array.from(datasetNames).map((label) => ({
       name: label,
-      data: datasetData[label] || [],
+      data: datasetData[label],
     }));
   }
 }
