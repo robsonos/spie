@@ -5,7 +5,7 @@ import type {
   SerialPortEventType,
 } from '@spie/types';
 import { ipcMain } from 'electron';
-import { ReadlineParser, SerialPort } from 'serialport';
+import { DelimiterParser, SerialPort } from 'serialport';
 
 export default class SerialPortEvents {
   private static eventListeners = new Map<
@@ -17,8 +17,8 @@ export default class SerialPortEvents {
     (...args: any[]) => void
   >();
   private static serialPort: SerialPort | null = null;
-  private static parser: ReadlineParser | null = null;
-  private static parserCallback: (data: string) => void | null = null;
+  private static parser: DelimiterParser | null = null;
+  private static parserCallback: (chunk: Buffer) => void | null = null;
   private static encoding: Encoding = 'ascii';
   private static areListenersRegistered = false;
   private static openOptions: OpenOptions | null = null;
@@ -89,7 +89,12 @@ export default class SerialPortEvents {
       event.sender.send('serial-port-event', notification);
     });
 
-    SerialPortEvents.parserCallback = (data: string) => {
+    SerialPortEvents.parserCallback = (chunk: Buffer) => {
+      const data: string =
+        SerialPortEvents.encoding === 'hex'
+          ? chunk.toString('hex').toUpperCase().match(/.{2}/g).join(' ')
+          : chunk.toString('ascii');
+
       const notification: SerialPortEvent = { type: 'data-delimited', data };
       event.sender.send('serial-port-event', notification);
     };
@@ -147,7 +152,7 @@ export default class SerialPortEvents {
         );
 
         SerialPortEvents.parser = SerialPortEvents.serialPort.pipe(
-          new ReadlineParser({ includeDelimiter: true }) // TODO: remove includeDelimiter
+          new DelimiterParser({ delimiter: '\n', includeDelimiter: true })
         );
 
         // Process queued listeners after opening

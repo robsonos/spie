@@ -59,14 +59,6 @@ export class TerminalComponent {
   private readonly electronService = inject(ElectronService);
 
   constructor() {
-    // Retrieve previous readEncoding (useful for development)
-    this.electronService.serialPort.getReadEncoding().then((readEncoding) => {
-      this.terminalOptions.update((terminalOptions) => ({
-        ...terminalOptions,
-        encoding: readEncoding,
-      }));
-    });
-
     this.dataEvent$.subscribe();
   }
 

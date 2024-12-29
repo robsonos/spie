@@ -1,4 +1,4 @@
-<ion-tabs>
+<ion-tabs #tab (ionTabsDidChange)="onTabChange($event)">
   <app-connection-component />
 
   <ion-tab-bar slot="bottom">
