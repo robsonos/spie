@@ -71,6 +71,7 @@ export class TerminalComponent {
     isAutoScrollEnabled: true,
     showTimestampsEnabled: false,
     scrollbackLength: 10000,
+    rows: 30,
     useReadlineParser: false,
   });
 

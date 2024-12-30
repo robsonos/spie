@@ -8,7 +8,7 @@
       <ion-textarea
         #terminalTextArea
         readonly
-        rows="25"
+        [rows]="terminalOptions().rows"
         placeholder="Incoming data will appear here"
         class="terminal-textarea"
         [value]="data()"

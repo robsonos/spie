@@ -93,12 +93,23 @@ export class TerminalAdvancedComponent {
     // this.clearTerminalSubject().next();
   }
 
-  onScrollbackLength(event: RangeCustomEvent): void {
+  onChangeScrollbackLength(event: RangeCustomEvent): void {
     const index = event.detail.value as number;
     const selectedOption = SCROLLBACK_LENGTH_VALUES[index];
     this.terminalOptions.update((terminalOptions) => ({
       ...terminalOptions,
       scrollbackLength: selectedOption,
+    }));
+
+    // this.clearTerminalSubject().next();
+  }
+
+  onChangeRows(event: RangeCustomEvent): void {
+    const selectedOption = event.detail.value as number;
+    // const selectedOption = ROWS_VALUES[index];
+    this.terminalOptions.update((terminalOptions) => ({
+      ...terminalOptions,
+      rows: selectedOption,
     }));
 
     // this.clearTerminalSubject().next();

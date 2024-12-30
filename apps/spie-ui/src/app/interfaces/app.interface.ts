@@ -20,6 +20,7 @@ export interface TerminalOptions {
   isAutoScrollEnabled: boolean;
   showTimestampsEnabled: boolean;
   scrollbackLength: ScrollbackLength;
+  rows: number;
   useReadlineParser: boolean;
 }
 
