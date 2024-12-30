@@ -27,20 +27,22 @@ import {
 })
 export class AppComponent {
   constructor() {
-    addIcons({ cloudUploadOutline });
-    addIcons({ documentOutline });
-    addIcons({ helpCircleOutline });
-    addIcons({ logInOutline });
-    addIcons({ logOutOutline });
-    addIcons({ pauseOutline });
-    addIcons({ playOutline });
-    addIcons({ pulseOutline });
-    addIcons({ sendOutline });
-    addIcons({ settingsOutline });
-    addIcons({ speedometerOutline });
-    addIcons({ statsChartOutline });
-    addIcons({ terminalOutline });
-    addIcons({ timeOutline });
-    addIcons({ trashOutline });
+    addIcons({
+      cloudUploadOutline,
+      documentOutline,
+      helpCircleOutline,
+      logInOutline,
+      logOutOutline,
+      pauseOutline,
+      playOutline,
+      pulseOutline,
+      sendOutline,
+      settingsOutline,
+      speedometerOutline,
+      statsChartOutline,
+      terminalOutline,
+      timeOutline,
+      trashOutline,
+    });
   }
 }
