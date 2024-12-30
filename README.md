@@ -3,29 +3,38 @@
 <h3 align="center"> SPIE</h3>
 </p>
 <p align="center">
-  <img src="https://img.shields.io/maintenance/yes/2024?style=flat-square"/>
-  <a href="https://github.com/robsonos/spie/releases" style="color: inherit; text-decoration: none;">
-    <img alt="GitHub Release" src="https://img.shields.io/github/v/release/robsonos/spie">
-  </a>
+  <img
+      alt="Maintenance status"
+      src="https://img.shields.io/maintenance/yes/2024?style=flat-square">
   <a
     href="https://github.com/robsonos/spie/actions/workflows/ci.yml"
     style="color: inherit; text-decoration: none;">
     <img
       alt="GitHub Workflow Status (with event)"
-      src="https://img.shields.io/github/actions/workflow/status/robsonos/spie/ci.yml"/>
+      src="https://img.shields.io/github/actions/workflow/status/robsonos/spie/ci.yml">
   </a>
-</p>
-<p align="center">
-  <a href="LICENSE" style="color: inherit; text-decoration: none;">
-    <img alt="GitHub License" src="https://img.shields.io/github/license/robsonos/spie">
-  </a>
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-  <a href="#contributors" style="color: inherit; text-decoration: none;">
+  <a
+    href="LICENSE"
+    style="color: inherit; text-decoration: none;">
     <img
-      alt="GitHub contributors from allcontributors.org"
-      src="https://img.shields.io/badge/all_contributors-0-orange.svg?style=flat-square"/>
+      alt="GitHub License"
+      src="https://img.shields.io/github/license/robsonos/spie">
   </a>
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
+  <br />
+  <a
+    href="https://github.com/robsonos/spie/releases"
+    style="color: inherit; text-decoration: none;">
+    <img
+      alt="GitHub Release version"
+      src="https://img.shields.io/github/v/release/robsonos/spie">
+  </a>
+  <a
+    href="#contributors"
+    style="color: inherit; text-decoration: none;">
+    <img
+        alt="GitHub contributors from allcontributors.org"
+        src="https://img.shields.io/github/all-contributors/robsonos/spie">
+  </a>
 </p>
 
 This repository helps you quickly set up and develop your serial port communication project. Built with **ElectronJS** and a modern **Ionic/Angular** front-end, it uses an **NX monorepo** structure for efficient project management.
