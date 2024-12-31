@@ -6,31 +6,31 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 
+import { MonitorComponent } from '../../../components/monitor/monitor.component';
 import { SendComponent } from '../../../components/send/send.component';
-import { TerminalComponent } from '../../../components/terminal/terminal.component';
 import { ElectronService } from '../../../services/electron.service';
 
 @Component({
-  selector: 'app-terminal',
-  templateUrl: 'terminal.page.html',
-  styleUrls: ['./terminal.page.scss'],
+  selector: 'app-monitor',
+  templateUrl: 'monitor.page.html',
+  styleUrls: ['./monitor.page.scss'],
   imports: [
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
     SendComponent,
-    TerminalComponent,
+    MonitorComponent,
   ],
 })
-export class TerminalPage {
+export class MonitorPage {
   private readonly electronService = inject(ElectronService);
-  terminalComponent = viewChild.required(TerminalComponent);
+  monitorComponent = viewChild.required(MonitorComponent);
 
   ionViewWillEnter() {
     this.electronService.serialPort.getReadEncoding().then((readEncoding) => {
-      this.terminalComponent().terminalOptions.update((terminalOptions) => ({
-        ...terminalOptions,
+      this.monitorComponent().monitorOptions.update((monitorOptions) => ({
+        ...monitorOptions,
         encoding: readEncoding,
       }));
     });

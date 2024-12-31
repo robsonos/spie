@@ -1,16 +1,16 @@
 <ion-card>
   <ion-card-header>
-    <ion-text color="secondary">Terminal</ion-text>
+    <ion-text color="secondary">Monitor</ion-text>
   </ion-card-header>
 
   <ion-card-content>
     <ion-item lines="none">
       <ion-textarea
-        #terminalTextArea
+        #monitorTextArea
         readonly
-        [rows]="terminalOptions().rows"
+        [rows]="monitorOptions().rows"
         placeholder="Incoming data will appear here"
-        class="terminal-textarea"
+        class="monitor-textarea"
         [value]="data()"
       ></ion-textarea>
     </ion-item>
@@ -24,7 +24,7 @@
               isPausedSubject.getValue() && isOpen() ? 'danger' : 'secondary'
             "
             [disabled]="!isOpen()"
-            (click)="onClickPauseTerminal()"
+            (click)="onClickPauseMonitor()"
           >
             <ion-icon
               slot="start"
@@ -42,7 +42,7 @@
           <ion-button
             expand="block"
             color="secondary"
-            (click)="onClickClearTerminal()"
+            (click)="onClickClearMonitor()"
           >
             <ion-icon
               slot="start"
@@ -55,7 +55,7 @@
           <ion-button
             fill="clear"
             color="secondary"
-            (click)="onClickTerminalAdvancedModal()"
+            (click)="onClickMonitorAdvancedModal()"
           >
             <ion-icon name="icon-settings-outlined"></ion-icon>
           </ion-button>
@@ -65,7 +65,7 @@
   </ion-card-content>
 </ion-card>
 
-<app-terminal-advanced-modal-component
-  [clearTerminalSubject]="clearTerminalSubject"
-  [(terminalOptions)]="terminalOptions"
+<app-monitor-advanced-modal-component
+  [clearMonitorSubject]="clearMonitorSubject"
+  [(monitorOptions)]="monitorOptions"
 />

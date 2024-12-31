@@ -32,14 +32,14 @@ import {
   tap,
 } from 'rxjs';
 
-import { type TerminalOptions } from '../../interfaces/app.interface';
+import { type MonitorOptions } from '../../interfaces/app.interface';
 import { ElectronService } from '../../services/electron.service';
-import { TerminalAdvancedComponent } from '../terminal-advanced-modal/terminal-advanced-modal.component';
+import { MonitorAdvancedComponent } from '../monitor-advanced-modal/monitor-advanced-modal.component';
 
 @Component({
-  selector: 'app-terminal-component',
-  templateUrl: 'terminal.component.html',
-  styleUrls: ['./terminal.component.scss'],
+  selector: 'app-monitor-component',
+  templateUrl: 'monitor.component.html',
+  styleUrls: ['./monitor.component.scss'],
   imports: [
     IonButton,
     IonCard,
@@ -52,21 +52,21 @@ import { TerminalAdvancedComponent } from '../terminal-advanced-modal/terminal-a
     IonRow,
     IonText,
     IonTextarea,
-    TerminalAdvancedComponent,
+    MonitorAdvancedComponent,
   ],
 })
-export class TerminalComponent {
+export class MonitorComponent {
   private readonly electronService = inject(ElectronService);
 
   constructor() {
     this.dataEvent$.subscribe();
   }
 
-  clearTerminalSubject = new Subject<void>();
+  clearMonitorSubject = new Subject<void>();
   isPausedSubject = new BehaviorSubject<boolean>(false);
 
   data = signal('');
-  terminalOptions = signal<TerminalOptions>({
+  monitorOptions = signal<MonitorOptions>({
     encoding: 'ascii',
     isAutoScrollEnabled: true,
     showTimestampsEnabled: false,
@@ -110,14 +110,14 @@ export class TerminalComponent {
   );
 
   private dataEvent$ = merge(
-    toObservable(this.terminalOptions).pipe(
-      map((terminalOptions) => terminalOptions.useReadlineParser),
+    toObservable(this.monitorOptions).pipe(
+      map((monitorOptions) => monitorOptions.useReadlineParser),
       switchMap((useReadlineParser) =>
         useReadlineParser ? this.onDataDelimited$ : this.onData$
       ),
       filter(() => !this.isPausedSubject.getValue())
     ),
-    this.clearTerminalSubject.pipe(map(() => ({ type: 'clear' } as DataEvent)))
+    this.clearMonitorSubject.pipe(map(() => ({ type: 'clear' } as DataEvent)))
   ).pipe(
     tap(async (dataEvent) => {
       if (dataEvent.type === 'clear') {
@@ -129,7 +129,7 @@ export class TerminalComponent {
 
       this.data.update((prevData) => {
         // Append timestamp if it is enabled
-        if (this.terminalOptions().showTimestampsEnabled) {
+        if (this.monitorOptions().showTimestampsEnabled) {
           const date = new Date();
           const hours = date.getHours().toString().padStart(2, '0');
           const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -142,12 +142,11 @@ export class TerminalComponent {
         prevData += `${data}`;
 
         // Append new line if hex encoding
-        if (this.terminalOptions().encoding === 'hex') {
+        if (this.monitorOptions().encoding === 'hex') {
           prevData += '\n';
         }
 
-        const excess =
-          prevData.length - this.terminalOptions().scrollbackLength;
+        const excess = prevData.length - this.monitorOptions().scrollbackLength;
 
         if (excess > 0) {
           return prevData.slice(excess);
@@ -157,10 +156,10 @@ export class TerminalComponent {
       });
 
       // Apply autoscroll
-      const isAutoScrollEnabled = this.terminalOptions().isAutoScrollEnabled;
+      const isAutoScrollEnabled = this.monitorOptions().isAutoScrollEnabled;
       if (isAutoScrollEnabled) {
-        const terminalTextArea = this.terminalTextArea();
-        const textarea = await terminalTextArea.getInputElement();
+        const monitorTextArea = this.monitorTextArea();
+        const textarea = await monitorTextArea.getInputElement();
         textarea.scrollTo({
           top: textarea.scrollHeight,
           behavior: 'instant',
@@ -170,21 +169,21 @@ export class TerminalComponent {
     takeUntilDestroyed()
   );
 
-  terminalTextArea = viewChild.required<IonTextarea>('terminalTextArea');
-  private terminalAdvancedComponent = viewChild.required(
-    TerminalAdvancedComponent
+  monitorTextArea = viewChild.required<IonTextarea>('monitorTextArea');
+  private monitorAdvancedComponent = viewChild.required(
+    MonitorAdvancedComponent
   );
 
-  onClickClearTerminal(): void {
-    this.clearTerminalSubject.next();
+  onClickClearMonitor(): void {
+    this.clearMonitorSubject.next();
   }
 
-  onClickPauseTerminal(): void {
+  onClickPauseMonitor(): void {
     const currentValue = this.isPausedSubject.getValue();
     this.isPausedSubject.next(!currentValue);
   }
 
-  async onClickTerminalAdvancedModal() {
-    this.terminalAdvancedComponent().terminalAdvancedModal().present();
+  async onClickMonitorAdvancedModal() {
+    this.monitorAdvancedComponent().monitorAdvancedModal().present();
   }
 }

@@ -20,8 +20,8 @@ import { type Encoding } from '@spie/types';
 import { type Subject } from 'rxjs';
 
 import {
+  type MonitorOptions,
   SCROLLBACK_LENGTH_VALUES,
-  type TerminalOptions,
 } from '../../interfaces/app.interface';
 import {
   type CheckboxCustomEvent,
@@ -31,9 +31,9 @@ import {
 import { ElectronService } from '../../services/electron.service';
 
 @Component({
-  selector: 'app-terminal-advanced-modal-component',
-  templateUrl: 'terminal-advanced-modal.component.html',
-  styleUrls: ['./terminal-advanced-modal.component.scss'],
+  selector: 'app-monitor-advanced-modal-component',
+  templateUrl: 'monitor-advanced-modal.component.html',
+  styleUrls: ['./monitor-advanced-modal.component.scss'],
   imports: [
     IonButton,
     IonButtons,
@@ -52,77 +52,77 @@ import { ElectronService } from '../../services/electron.service';
     MatTooltipModule,
   ],
 })
-export class TerminalAdvancedComponent {
+export class MonitorAdvancedComponent {
   private readonly electronService = inject(ElectronService);
 
-  clearTerminalSubject = input.required<Subject<void>>();
-  terminalOptions = model.required<TerminalOptions>();
+  clearMonitorSubject = input.required<Subject<void>>();
+  monitorOptions = model.required<MonitorOptions>();
 
-  terminalAdvancedModal = viewChild.required<IonModal>('terminalAdvancedModal');
+  monitorAdvancedModal = viewChild.required<IonModal>('monitorAdvancedModal');
 
   SCROLLBACK_LENGTH_VALUES = SCROLLBACK_LENGTH_VALUES;
 
-  onChangeTerminalEncoding(event: SelectCustomEvent<Encoding>): void {
+  onChangeMonitorEncoding(event: SelectCustomEvent<Encoding>): void {
     const selectedOption = event.detail.value;
-    this.terminalOptions.update((terminalOptions) => ({
-      ...terminalOptions,
+    this.monitorOptions.update((monitorOptions) => ({
+      ...monitorOptions,
       encoding: selectedOption,
     }));
 
     this.electronService.serialPort.setReadEncoding(selectedOption);
-    this.clearTerminalSubject().next();
+    this.clearMonitorSubject().next();
   }
 
   onChangeShowTimestamps(event: CheckboxCustomEvent<boolean>): void {
     const selectedOption = event.detail.checked;
-    this.terminalOptions.update((terminalOptions) => ({
-      ...terminalOptions,
+    this.monitorOptions.update((monitorOptions) => ({
+      ...monitorOptions,
       showTimestampsEnabled: selectedOption,
     }));
 
-    this.clearTerminalSubject().next();
+    this.clearMonitorSubject().next();
   }
 
   onChangeAutoScroll(event: CheckboxCustomEvent<boolean>): void {
     const selectedOption = event.detail.checked;
-    this.terminalOptions.update((terminalOptions) => ({
-      ...terminalOptions,
+    this.monitorOptions.update((monitorOptions) => ({
+      ...monitorOptions,
       isAutoScrollEnabled: selectedOption,
     }));
 
-    // this.clearTerminalSubject().next();
+    // this.clearMonitorSubject().next();
   }
 
   onChangeScrollbackLength(event: RangeCustomEvent): void {
     const index = event.detail.value as number;
     const selectedOption = SCROLLBACK_LENGTH_VALUES[index];
-    this.terminalOptions.update((terminalOptions) => ({
-      ...terminalOptions,
+    this.monitorOptions.update((monitorOptions) => ({
+      ...monitorOptions,
       scrollbackLength: selectedOption,
     }));
 
-    // this.clearTerminalSubject().next();
+    // this.clearMonitorSubject().next();
   }
 
   onChangeRows(event: RangeCustomEvent): void {
     const selectedOption = event.detail.value as number;
     // const selectedOption = ROWS_VALUES[index];
-    this.terminalOptions.update((terminalOptions) => ({
-      ...terminalOptions,
+    this.monitorOptions.update((monitorOptions) => ({
+      ...monitorOptions,
       rows: selectedOption,
     }));
 
-    // this.clearTerminalSubject().next();
+    // this.clearMonitorSubject().next();
   }
 
   onChangeUseReadlineParser(event: CheckboxCustomEvent<boolean>): void {
     const selectedOption = event.detail.checked;
-    this.terminalOptions.update((terminalOptions) => ({
-      ...terminalOptions,
+    this.monitorOptions.update((monitorOptions) => ({
+      ...monitorOptions,
       useReadlineParser: selectedOption,
     }));
 
-    this.clearTerminalSubject().next();
+    this.clearMonitorSubject().next();
   }
 
   pinFormatter(value: number): string {

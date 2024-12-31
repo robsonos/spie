@@ -8,9 +8,9 @@ export const routes: Routes = [
     component: HomePage,
     children: [
       {
-        path: 'terminal',
+        path: 'monitor',
         loadComponent: () =>
-          import('./terminal/terminal.page').then((m) => m.TerminalPage),
+          import('./monitor/monitor.page').then((m) => m.MonitorPage),
       },
       {
         path: 'plotter',
@@ -19,7 +19,7 @@ export const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: 'terminal',
+        redirectTo: 'monitor',
         pathMatch: 'full',
       },
       {
