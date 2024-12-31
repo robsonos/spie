@@ -30,8 +30,8 @@
               slot="start"
               [name]="
                 isPausedSubject.getValue() && isOpen()
-                  ? 'pause-outline'
-                  : 'play-outline'
+                  ? 'icon-pause-outlined'
+                  : 'icon-play-arrow-outlined'
               "
             ></ion-icon>
             {{ isPausedSubject.getValue() && isOpen() ? 'Continue' : 'Pause' }}
@@ -44,7 +44,10 @@
             color="secondary"
             (click)="onClickClearTerminal()"
           >
-            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            <ion-icon
+              slot="start"
+              name="icon-delete-outline-outlined"
+            ></ion-icon>
             Clear
           </ion-button>
         </ion-col>
@@ -54,7 +57,7 @@
             color="secondary"
             (click)="onClickTerminalAdvancedModal()"
           >
-            <ion-icon name="settings-outline"></ion-icon>
+            <ion-icon name="icon-settings-outlined"></ion-icon>
           </ion-button>
         </ion-col>
       </ion-row>

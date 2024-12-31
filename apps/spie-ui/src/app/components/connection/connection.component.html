@@ -55,7 +55,9 @@
               >
                 <ion-icon
                   slot="start"
-                  [name]="isOpen() ? 'log-out-outline' : 'log-in-outline'"
+                  [name]="
+                    isOpen() ? 'icon-power-off-outlined' : 'icon-power-outlined'
+                  "
                 ></ion-icon>
                 {{ isOpen() ? 'Disconnect' : 'Connect' }}
               </ion-button>
@@ -66,7 +68,7 @@
                 color="secondary"
                 (click)="onClickConnectionAdvancedModal()"
               >
-                <ion-icon name="settings-outline"></ion-icon>
+                <ion-icon name="icon-settings-outlined"></ion-icon>
               </ion-button>
             </ion-col>
           </ion-row>

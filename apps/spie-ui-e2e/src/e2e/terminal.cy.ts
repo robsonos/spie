@@ -91,7 +91,7 @@ describe('Terminal routine', () => {
   });
 
   it('should open and close the advanced modal', () => {
-    cy.get('app-terminal-component ion-button [name="settings-outline"]')
+    cy.get('app-terminal-component ion-button [name="icon-settings-outlined"]')
       .parent()
       .click();
     cy.get('ion-modal ion-toolbar ion-title').should(
@@ -112,7 +112,7 @@ describe('Terminal routine', () => {
       }
     });
 
-    cy.get('app-terminal-component ion-button [name="settings-outline"')
+    cy.get('app-terminal-component ion-button [name="icon-settings-outlined"')
       .parent()
       .click();
     cy.getAdvancedModalSelectElement(
@@ -136,7 +136,7 @@ describe('Terminal routine', () => {
       }
     });
 
-    cy.get('app-terminal-component ion-button [name="settings-outline"')
+    cy.get('app-terminal-component ion-button [name="icon-settings-outlined"')
       .parent()
       .click();
     cy.getAdvancedModalCheckboxElement(
@@ -153,7 +153,7 @@ describe('Terminal routine', () => {
   it('should not auto scroll when auto scroll is disabled and data is emitted', () => {
     let initialScrollTop = 0;
 
-    cy.get('app-terminal-component ion-button [name="settings-outline"')
+    cy.get('app-terminal-component ion-button [name="icon-settings-outlined"')
       .parent()
       .click();
     cy.getAdvancedModalCheckboxElement(

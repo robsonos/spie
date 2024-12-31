@@ -69,7 +69,7 @@ describe('Send routine', () => {
   });
 
   it('should open and close the advanced modal', () => {
-    cy.get('app-send-component ion-button [name="settings-outline"]')
+    cy.get('app-send-component ion-button [name="icon-settings-outlined"]')
       .parent()
       .click();
     cy.get('ion-modal ion-toolbar ion-title').should(
@@ -86,7 +86,7 @@ describe('Send routine', () => {
       .invoke('val', mockData)
       .trigger('input');
 
-    cy.get('app-send-component ion-button [name="settings-outline"]')
+    cy.get('app-send-component ion-button [name="icon-settings-outlined"]')
       .parent()
       .click();
     cy.getAdvancedModalSelectElement(
@@ -102,7 +102,7 @@ describe('Send routine', () => {
     const mockData = 'test test test test test test test test test test';
     const expectedHexData = 'EE EE EE EE EE';
 
-    cy.get('app-send-component ion-button [name="settings-outline"]')
+    cy.get('app-send-component ion-button [name="icon-settings-outlined"]')
       .parent()
       .click();
     cy.getAdvancedModalSelectElement(
@@ -125,7 +125,7 @@ describe('Send routine', () => {
     const mockData = 'test test test test test test test test test test\n\n\n';
     const formattedData = 'EEEEEEEEEE';
 
-    cy.get('app-send-component ion-button [name="settings-outline"]')
+    cy.get('app-send-component ion-button [name="icon-settings-outlined"]')
       .parent()
       .click();
     cy.getAdvancedModalSelectElement(
@@ -153,7 +153,7 @@ describe('Send routine', () => {
     const mockData = 'test test test test test test test test test test';
     const formattedData = `${mockData}\r\n`;
 
-    cy.get('app-send-component ion-button [name="settings-outline"]')
+    cy.get('app-send-component ion-button [name="icon-settings-outlined"]')
       .parent()
       .click();
     cy.getAdvancedModalSelectElement(

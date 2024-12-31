@@ -113,7 +113,9 @@ describe('Connect routine', () => {
   });
 
   it('should open and close the advanced modal', () => {
-    cy.get('app-connection-component ion-button [name="settings-outline"]')
+    cy.get(
+      'app-connection-component ion-button [name="icon-settings-outlined"]'
+    )
       .parent()
       .click();
     cy.get('ion-modal ion-toolbar ion-title').should(
@@ -127,7 +129,9 @@ describe('Connect routine', () => {
   it('should reconnect after changing advanced settings', () => {
     cy.connect(mockSerialPortList[0].path, 9600);
 
-    cy.get('app-connection-component ion-button [name="settings-outline"]')
+    cy.get(
+      'app-connection-component ion-button [name="icon-settings-outlined"]'
+    )
       .parent()
       .click();
 

@@ -264,7 +264,7 @@ describe('Plotter routine', () => {
   });
 
   it('should open and close the advanced modal', () => {
-    cy.get('app-plotter-component ion-button [name="settings-outline"]')
+    cy.get('app-plotter-component ion-button [name="icon-settings-outlined"]')
       .parent()
       .click();
     cy.get('ion-modal ion-toolbar ion-title').should(
@@ -276,7 +276,7 @@ describe('Plotter routine', () => {
   });
 
   it('should use timestamps if it is set', () => {
-    cy.get('app-plotter-component ion-button [name="settings-outline"]')
+    cy.get('app-plotter-component ion-button [name="icon-settings-outlined"]')
       .parent()
       .click();
     cy.get('ion-modal ion-toolbar ion-title').should(
