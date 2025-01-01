@@ -1,0 +1,71 @@
+<ion-card>
+  <ion-card-header>
+    <ion-text color="secondary">Monitor</ion-text>
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-item lines="none">
+      <ion-textarea
+        #monitorTextArea
+        readonly
+        [rows]="monitorOptions().rows"
+        placeholder="Incoming data will appear here"
+        class="monitor-textarea"
+        [value]="data()"
+      ></ion-textarea>
+    </ion-item>
+
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-button
+            expand="block"
+            [color]="
+              isPausedSubject.getValue() && isOpen() ? 'danger' : 'secondary'
+            "
+            [disabled]="!isOpen()"
+            (click)="onClickPauseMonitor()"
+          >
+            <ion-icon
+              slot="start"
+              [name]="
+                isPausedSubject.getValue() && isOpen()
+                  ? 'icon-pause-outlined'
+                  : 'icon-play-arrow-outlined'
+              "
+            ></ion-icon>
+            {{ isPausedSubject.getValue() && isOpen() ? 'Continue' : 'Pause' }}
+          </ion-button>
+        </ion-col>
+
+        <ion-col>
+          <ion-button
+            expand="block"
+            color="secondary"
+            (click)="onClickClearMonitor()"
+          >
+            <ion-icon
+              slot="start"
+              name="icon-delete-outline-outlined"
+            ></ion-icon>
+            Clear
+          </ion-button>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-button
+            fill="clear"
+            color="secondary"
+            (click)="onClickMonitorAdvancedModal()"
+          >
+            <ion-icon name="icon-settings-outlined"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+</ion-card>
+
+<app-monitor-advanced-modal-component
+  [clearMonitorSubject]="clearMonitorSubject"
+  [(monitorOptions)]="monitorOptions"
+/>

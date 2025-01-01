@@ -15,40 +15,46 @@
     <ion-content>
       <ion-list lines="none">
         <ion-item lines="none">
-          <ion-icon name="document-outline" slot="start"></ion-icon>
-          <ion-label> Total Size </ion-label>
+          <ion-icon name="icon-folder-zip-outlined" slot="start"></ion-icon>
+          <ion-label>Total Size</ion-label>
           <ion-note slot="end">{{
             formatBytes(progressInfo().total)
           }}</ion-note>
         </ion-item>
 
         <ion-item lines="none">
-          <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-          <ion-label> Transferred </ion-label>
+          <ion-icon
+            name="icon-incomplete-circle-outlined"
+            slot="start"
+          ></ion-icon>
+          <ion-label>Transferred</ion-label>
           <ion-note slot="end">{{
             formatBytes(progressInfo().transferred)
           }}</ion-note>
         </ion-item>
 
         <ion-item lines="none">
-          <ion-icon name="speedometer-outline" slot="start"></ion-icon>
-          <ion-label> Speed </ion-label>
+          <ion-icon name="icon-speed-outlined" slot="start"></ion-icon>
+          <ion-label>Speed</ion-label>
           <ion-note slot="end"
             >{{ formatBytes(progressInfo().bytesPerSecond) }}/s</ion-note
           >
         </ion-item>
 
         <ion-item lines="none">
-          <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
-          <ion-label> Progress </ion-label>
+          <ion-icon name="icon-downloading-outlined" slot="start"></ion-icon>
+          <ion-label>Progress</ion-label>
           <ion-note slot="end"
             >{{ progressInfo().percent | number : '1.2-2' }}%</ion-note
           >
         </ion-item>
 
         <ion-item lines="none">
-          <ion-icon name="time-outline" slot="start"></ion-icon>
-          <ion-label> Time Remaining </ion-label>
+          <ion-icon
+            name="icon-hourglass-bottom-outlined"
+            slot="start"
+          ></ion-icon>
+          <ion-label>Time Remaining</ion-label>
           <ion-note slot="end">{{ getEstimatedTime() }}</ion-note>
         </ion-item>
       </ion-list>

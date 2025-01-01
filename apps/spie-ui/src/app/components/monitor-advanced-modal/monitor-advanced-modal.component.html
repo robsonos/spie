@@ -1,0 +1,98 @@
+<ion-modal #monitorAdvancedModal id="monitor-advanced-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Advanced Monitor Settings</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="monitorAdvancedModal.dismiss()"
+            >Close</ion-button
+          >
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-select
+            label="Encoding"
+            placeholder="Select Encoding"
+            justify="space-between"
+            (ionChange)="onChangeMonitorEncoding($event)"
+            [value]="monitorOptions().encoding"
+          >
+            <ion-select-option value="ascii">ASCII</ion-select-option>
+            <ion-select-option value="hex">Hex</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-checkbox
+            justify="space-between"
+            checked="{{ monitorOptions().showTimestampsEnabled }}"
+            (ionChange)="onChangeShowTimestamps($event)"
+            >Show Timestamps</ion-checkbox
+          >
+        </ion-item>
+
+        <ion-item>
+          <ion-checkbox
+            justify="space-between"
+            checked="{{ monitorOptions().isAutoScrollEnabled }}"
+            (ionChange)="onChangeAutoScroll($event)"
+            >Auto Scroll</ion-checkbox
+          >
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            labelPlacement="start"
+            label="Scrollback length"
+            [pin]="true"
+            [snaps]="true"
+            [min]="0"
+            [max]="4"
+            [step]="1"
+            [pinFormatter]="pinFormatter"
+            [value]="
+              SCROLLBACK_LENGTH_VALUES.indexOf(
+                monitorOptions().scrollbackLength
+              )
+            "
+            (ionKnobMoveEnd)="onChangeScrollbackLength($event)"
+          >
+          </ion-range>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            labelPlacement="start"
+            label="Rows"
+            [pin]="true"
+            [snaps]="true"
+            [min]="10"
+            [max]="50"
+            [step]="10"
+            [value]="monitorOptions().rows"
+            (ionKnobMoveEnd)="onChangeRows($event)"
+          >
+          </ion-range>
+        </ion-item>
+
+        <ion-item>
+          <ion-checkbox
+            justify="space-between"
+            checked="{{ monitorOptions().useReadlineParser }}"
+            (ionChange)="onChangeUseReadlineParser($event)"
+            >Use readline parser<ion-icon
+              color="warning"
+              class="tooltipIcon-top"
+              name="icon-help-outline-outlined"
+              matTooltip="Data received by the serialport library might arrive in multiple packets. Use this option to make monitor timestamps more readable if your data is terminated with a new line (\n) character."
+            ></ion-icon
+          ></ion-checkbox>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

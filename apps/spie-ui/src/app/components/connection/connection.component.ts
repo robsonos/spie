@@ -67,6 +67,7 @@ export class ConnectionComponent {
             await loading.present();
             try {
               await this.electronService.serialPort.close();
+              await new Promise((resolve) => setTimeout(resolve, 100));
               await this.electronService.serialPort.open(this.openOptions());
             } catch (error) {
               await this.toasterService.presentErrorToast(error);

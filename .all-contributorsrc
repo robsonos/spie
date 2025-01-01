@@ -2,8 +2,8 @@
   "projectName": "spie",
   "projectOwner": "ronsonos",
   "commit": true,
-  "badgeTemplate": "<a href=\"#contributors\"><img alt=\"GitHub contributors from allcontributors.org\" src=\"https://img.shields.io/github/all-contributors/<%= projectOwner %>/<%= projectName %>?color=ee8449&style=flat-square\"/></a>",
   "linkToUsage": true,
   "skipCi": true,
-  "contributors": []
+  "repoType": "github",
+  "commitConvention": "angular"
 }
