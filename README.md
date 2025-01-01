@@ -1,11 +1,11 @@
 <p align="center">
   <img src="./docs/logo.png" width="500">
-<h3 align="center"> SPIE</h3>
+<h3 align="center">SPIE</h3>
 </p>
 <p align="center">
   <img
       alt="Maintenance status"
-      src="https://img.shields.io/maintenance/yes/2024?style=flat-square">
+      src="https://img.shields.io/maintenance/yes/2025?style=flat-square">
   <a
     href="https://github.com/robsonos/spie/actions/workflows/ci.yml"
     style="color: inherit; text-decoration: none;">
@@ -75,34 +75,25 @@ For a demo, check the [sample binaries](https://github.com/robsonos/spie/release
 
 ## Features
 
-<p align="center"><br><img src="./docs/demo.gif" width="500"></p>
+### Connection
 
-- **Port Configuration**
+<p align="center"><br><img src="./docs/demo-connection.gif" width="500"></p>
 
-  - **Port Selection:** Displays available serial ports with details like path and manufacturer.
-  - **Baud Rate:** Match your serial device configuration with flexible baud rate selection.
-  - **Connect/Disconnect Control:** Toggle the connection with a single click.
-  - **Advanced Settings:**
-    - **Data Bits:** Choose from 5, 6, 7, or 8 data bits.
-    - **Stop Bits:** Options include 1, 1.5, or 2 stop bits.
-    - **Parity:** Support for None, Even, and Odd parity.
-    - **Flow Control:** Configure RTS/CTS, XON/XOFF, XANY, and HUPCL settings.
+### Sending Data
 
-- **Terminal**
+<p align="center"><br><img src="./docs/demo-send.gif" width="500"></p>
 
-  - **Display Incoming Data:** View serial data in a user-friendly terminal.
-  - **Clear Terminal:** Clear the terminal display at any time.
-  - **Advanced Display Options:**
-    - **Encoding:** Display data in ASCII or Hex.
-    - **Auto Scroll:** Automatically scroll to display the latest data.
-    - **Show Timestamps:** Enable timestamps for incoming data.
-    - **Scrollback Size:** Adjust scrollback length to retain a custom amount of data history.
+### Terminal
 
-- **Sending Data**
-  - **Quick Input:** Type and send data instantly.
-  - **Advanced Send Options:**
-    - **Encoding:** ASCII or Hex support.
-    - **Delimiter:** Append CR, LF, CRLF, or send data as-is.
+<p align="center"><br><img src="./docs/demo-terminal.gif" width="500"></p>
+
+### Plotter
+
+<p align="center"><br><img src="./docs/demo-plotter.gif" width="500"></p>
+
+### Auto update
+
+<p align="center"><br><img src="./docs/demo-auto-update.gif" width="500"></p>
 
 [Back to Index](#index)
 
@@ -136,78 +127,45 @@ nx run-many -t serve
 
 ### Sample Arduino code
 
-For testing the application, use this Arduino code:
+If you want a minimalistic two way serial example, use the following:
 
 ```cpp
 #include <Arduino.h>
 
-const uint8_t numPhases = 12;           // Number of variables (1, 2, or 3)
-const uint16_t signalFrequency = 1;     // Frequency of the sine wave in Hz
-const uint16_t samplingFrequency = 500; // Sampling frequency in Hz (up to 500Hz)
-const int16_t amplitude = 1000;         // Amplitude of the sine wave
-const int16_t offset = 0;               // Offset for the sine wave (to make it positive)
-const float errorPercentage = 0;        // Configurable error percentage (5.0 means ±5%)
-bool addTime = false;
+int period = 1000;
+unsigned long time_now = 0;
 
-// Calculated Constants
-const uint16_t pointsPerWave = samplingFrequency / signalFrequency;
-const uint32_t samplingInterval = 1000000 / samplingFrequency;
-
-void setup()
-{
-    // Initialize serial communication
-    Serial.begin(115200);
-    pinMode(0, INPUT);
-    randomSeed(analogRead(0)); // Initialize random seed
+void setup() {
+  Serial.begin(115200);
 }
 
-void loop()
-{
-    static uint32_t lastSampleTime = 0;
-    static uint16_t pointIndex = 0;
-    uint32_t currentMicros = micros();
-    uint32_t elapsedSampleTime = currentMicros - lastSampleTime;
+void loop() {
+  if (Serial.available() > 0)
+    Serial.write(Serial.read());
 
-    // Check if it's time for the next sample
-    if (elapsedSampleTime >= samplingInterval)
-    {
-        lastSampleTime = currentMicros;
-
-        // Build the output string
-        String output = "";
-
-        if (addTime)
-        {
-            output += String(elapsedSampleTime) + "\t";
-        }
-
-        // Generate and append up to numPhases sine wave values
-        for (int phase = 0; phase < numPhases; ++phase)
-        {
-            float phaseShift = (2.0 * PI / numPhases) * phase; // Phase shift for multi-phase signals
-            float radians = 2.0 * PI * pointIndex / pointsPerWave + phaseShift;
-            int sineValue = offset + amplitude * sin(radians);
-
-            // Add random error
-            float errorFactor = random(-1000, 1001) / 1000.0;
-            int error = sineValue * (errorFactor * (errorPercentage / 100.0));
-            sineValue += error;
-
-            output += String(sineValue);
-            if (phase < numPhases - 1)
-            {
-                output += "\t"; // Tab delimiter for intermediate values
-            }
-        }
-
-        // Print the entire string in one call
-        Serial.println(output);
-
-        // Move to the next point
-        pointIndex = (pointIndex + 1) % pointsPerWave;
-    }
+  if (millis() > time_now + period) {
+    time_now = millis();
+    Serial.print("Hello World ");
+    Serial.println(millis());
+  }
 }
 ```
+
+For a example used on the plotter images, check out [spie-firmware](https://github.com/robsonos/spie-firmware).
+
+### Plotter
+
+The Plotter expects a line feed LF (`\n`) to separate records. Ensure that there is a linebreak character after the last variable in each record.  
+You can use different delimiters to separate variables within a record: space (` `), tab (`\t`), or comma (`,`).  
+For labeled data, the plotter can interpret variables in the format `<label>:<value>`.  
+The Plotter supports parsing single and multiple variables in each record, handles duplicates for the same
+variable label, and correctly groups the data under their respective labels.
+
+Examples:
+
+Single variable: `1\n`, `2\n`  
+Multiple variables: `1,2\n`, `3,4\n`  
+Multiple labeled variables: `temp1:1,temp2:2\n`, `temp1:3,temp2:4\n`
 
 [Back to Index](#index)
 
@@ -347,3 +305,21 @@ Sample `event.json`
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 [Back to Index](#index)
+
+<!-- TODO:
+- repo:
+	- code coverage badge
+	- pre-release
+	- protect main branch
+- spie-ui
+	- tour
+	- stop/play button logic
+  - settings page
+    - dark mode
+    - i18n
+	  - show current version
+	  - OSS licenses
+- spie
+	- Logger: libs/logger/src/lib/serializers/serialize-dev-log.ts, https://www.npmjs.com/package/electron-log
+	- better error messages
+-->
