@@ -180,6 +180,12 @@ Here are the most commonly used NX tasks:
 nx run-many -t serve
 ```
 
+> [NOTE]
+> If you see a blank screen, that will be because `spie` finished building before `spie-ui`.
+> You can reload the web application with either `CTRL+R` on the `develop tool window` or typing `r` followed by
+> `ENTER` on the terminal window.
+> Alternatively, you can run `nx run spie-ui:serve` first and then `nx run spie:serve`.
+
 - Lint the code:
 
 ```sh
