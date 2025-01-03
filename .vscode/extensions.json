@@ -6,6 +6,7 @@
     "eamodio.gitlens",
     "esbenp.prettier-vscode",
     "firsttris.vscode-jest-runner",
+    "github.vscode-github-actions",
     "gruntfuggly.todo-tree",
     "ionic.ionic",
     "joshbolduc.commitlint",

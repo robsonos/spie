@@ -11,6 +11,8 @@ env:
 jobs:
   cd:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.nx-release.outputs.version }}
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
@@ -30,6 +32,113 @@ jobs:
         uses: snow-actions/git-config-user@v1.0.0
 
       - name: CD
+        id: nx-release
+        run: |
+          # Run nx release and capture the output
+          OUTPUT=$(npx nx release --skip-publish)
+          echo "Full nx release output:"
+          echo "$OUTPUT"
+
+          # Extract the new release version
+          VERSION=$(echo "$OUTPUT" | grep -oP '(?<=New version )\d+\.\d+\.\d+')
+
+          # Trim whitespace and newlines (just in case)
+          VERSION=$(echo "$VERSION" | tr -d '\n\r')
+
+          # Debug
+          echo "Extracted VERSION: '$VERSION'"
+          echo "Length of VERSION: ${#VERSION}"
+
+          # Check if VERSION is empty
+          if [ -z "$VERSION" ]; then
+            echo "Error: No version found in nx release output."
+            exit 1
+          fi
+
+          # Set the new release version as a job output
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx nx release --skip-publish
+
+  build-binaries:
+    needs: cd
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install setuptools on macOS
+        if: matrix.os == 'macos-latest'
+        run: python3 -m pip install setuptools --break-system-packages
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npx nx run-many -t build --prod
+
+      - name: Update version in package.json
+        # Temporary fix for https://github.com/bennymeg/nx-electron/issues/270
+        run: |
+          node -e "const fs = require('fs');
+                  const tag = process.env.VERSION || '';
+                  const version = tag.startsWith('v') ? tag.slice(1) : tag;
+                  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+                  pkg.version = version;
+                  fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+                  console.log('Updated version to:', version);"
+        env:
+          VERSION: ${{ needs.cd.outputs.version }}
+
+      - name: Build executable
+        run: npx nx run spie:make
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.os }}
+          retention-days: 1
+          path: |
+            dist/executables/latest*.yml
+            dist/executables/*.xz
+            dist/executables/*.rpm
+            dist/executables/*.zip
+            dist/executables/*.dmg
+            dist/executables/*.exe
+            dist/executables/*.deb
+            dist/executables/*.blockmap
+
+  upload-assets:
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/executables
+          merge-multiple: true
+
+      - name: Upload Assets to Release
+        if: ${{ !env.ACT }}
+        uses: alexellis/upload-assets@0.4.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_paths: '["dist/executables/*"]'
+
+      - name: List downloaded content
+        if: ${{ env.ACT }}
+        run: |
+          ls -R ./dist/executables
