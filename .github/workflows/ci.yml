@@ -45,7 +45,7 @@ jobs:
       - name: Run nx release dry-run
         id: nx-release
         run: |
-          # Capture the output of nx release to a variable
+          # Run nx release and capture the output of it into a variable
           OUTPUT=$(npx nx release --dry-run)
           echo "$OUTPUT"
 

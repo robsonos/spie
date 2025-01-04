@@ -1,6 +1,7 @@
-name: Release
+name: Binaries
 
 on:
+  workflow_dispatch:
   release:
     types: [created]
 
@@ -52,40 +53,9 @@ jobs:
       - name: Build executable
         run: npx nx run spie:make
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts-${{ matrix.os }}
-          retention-days: 1
-          path: |
-            dist/executables/latest*.yml
-            dist/executables/*.xz
-            dist/executables/*.rpm
-            dist/executables/*.zip
-            dist/executables/*.dmg
-            dist/executables/*.exe
-            dist/executables/*.deb
-            dist/executables/*.blockmap
-
-  upload-assets:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist/executables
-          merge-multiple: true
-
       - name: Upload Assets to Release
         if: ${{ !env.ACT }}
-        uses: alexellis/upload-assets@0.4.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: AButler/upload-release-assets@v3.0
         with:
-          asset_paths: '["dist/executables/*"]'
-
-      - name: List downloaded content
-        if: ${{ env.ACT }}
-        run: |
-          ls -R ./dist/executables
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          files: 'dist/executables/latest*.yml;dist/executables/*.xz;dist/executables/*.rpm;dist/executables/*.zip;dist/executables/*.dmg;dist/executables/*.exe;dist/executables/*.deb;dist/executables/*.blockmap'

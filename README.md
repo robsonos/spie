@@ -48,7 +48,7 @@ The repository provides:
 - Enforced code linting and formatting
 - Enforced conventional commits
 - Streamlined workspace management and remote caching with [NX](https://nx.dev/)
-- CI/CD and Release pipelines with local testing
+- CI/CD workflows
 - Angular's signals and RxJS for reactivity and state management
 - Unit testing examples
 - E2E testing examples
@@ -70,7 +70,7 @@ For a demo, check the [sample binaries](https://github.com/robsonos/spie/release
 - [Features](#features)
 - [Getting started](#getting-started)
 - [Nx tasks](#nx-tasks)
-- [CD/CI/Release workflow](#cdcirelease-workflow)
+- [CI/CD workflows](#cicd-workflows)
 - [Troubleshooting](#troubleshooting)
 
 ## Features
@@ -180,6 +180,12 @@ Here are the most commonly used NX tasks:
 nx run-many -t serve
 ```
 
+> [NOTE]
+> If you see a blank screen, that will be because `spie` finished building before `spie-ui`.
+> You can reload the web application with either `CTRL+R` on the `develop tool window` or typing `r` followed by
+> `ENTER` on the terminal window.
+> Alternatively, you can run `nx run spie-ui:serve` first and then `nx run spie:serve`.
+
 - Lint the code:
 
 ```sh
@@ -235,14 +241,13 @@ Output files are located in `dist\executables`
 
 [Back to Index](#index)
 
-## CD/CI/Release workflow
+## CI/CD workflows
 
-There are many ways CD/CI/Release workflow can be implemented. I chose the most convenient one and here is how it is meant to work:
+There are many ways CD/CI workflow can be implemented. I chose the most convenient one and here is how it is meant to work:
 
-- `dev`: holds the development code. Pushes to this will trigger the `CI workflow`, test your code, and create a PR to merge it into `main`.
-- `main`: holds the code for the latest release. Pushes to this will trigger the `CD workflow` and create a new github release and tag. You should never need to push commits to `main`; use `dev` and create a PR instead. The code on this branch should always come from merges from `dev`.
-- Once a new release is done, the `Release` workflow will be triggered to build and add the binaries to the release.
-- If you need to maintain more release channels, like `main` is at `v3.x.x` but you need to support `v1.x.x`, I would recommend using a similar approach:
+- `dev`: holds the development code. Pushes to this branch will trigger the `CI workflow`, which will test the code that changes since the last release, and display a summary of the the next release.
+- `main`: holds the code for the latest release. Pushes to this branch will trigger the `CD workflow`, which will create a new github release, a tag. New releases will then trigger the `Binaries workflow` to build and upload binaries the release.
+- If you need to maintain more release channels, form instance `main` is at `v3.x.x` and you need to support `v1.x.x`, I would recommend using a similar approach:
   - `main` for `v3.x.x`
   - `main/v1` for `v1.x.x`
   - `dev` for `v3.x.x` development
