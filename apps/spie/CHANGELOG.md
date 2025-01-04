@@ -1,3 +1,13 @@
+## 0.4.0 (2025-01-04)
+
+### 🚀 Features
+
+- **spie-ui:** add better icons ([5c1a660](https://github.com/robsonos/spie/commit/5c1a660))
+
+### ❤️ Thank You
+
+- Robson Oliveira dos Santos @robsonos
+
 ## 0.3.1 (2024-12-29)
 
 ### 🩹 Fixes

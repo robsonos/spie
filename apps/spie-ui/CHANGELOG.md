@@ -1,3 +1,20 @@
+## 0.4.0 (2025-01-04)
+
+### 🚀 Features
+
+- **spie-ui:** rename terminal features to monitor ([085026d](https://github.com/robsonos/spie/commit/085026d))
+- **spie-ui:** add better icons ([5c1a660](https://github.com/robsonos/spie/commit/5c1a660))
+- **spie-ui:** terminal rows ([142c851](https://github.com/robsonos/spie/commit/142c851))
+
+### 🩹 Fixes
+
+- **spie-ui:** fix send button ([0b8d09e](https://github.com/robsonos/spie/commit/0b8d09e))
+- **spie-ui:** fix issues when changing open options ([eb5ac15](https://github.com/robsonos/spie/commit/eb5ac15))
+
+### ❤️ Thank You
+
+- Robson Oliveira dos Santos @robsonos
+
 ## 0.3.1 (2024-12-29)
 
 ### 🩹 Fixes
