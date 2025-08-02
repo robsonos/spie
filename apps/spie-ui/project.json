@@ -7,11 +7,10 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@angular-devkit/build-angular:application",
+      "executor": "@angular/build:application",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/spie-ui",
-        "index": "apps/spie-ui/src/index.html",
         "browser": "apps/spie-ui/src/main.ts",
         "polyfills": ["zone.js"],
         "tsConfig": "apps/spie-ui/tsconfig.app.json",
@@ -40,8 +39,8 @@
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "2kb",
-              "maximumError": "4kb"
+              "maximumWarning": "6kb",
+              "maximumError": "10kb"
             }
           ],
           "outputHashing": "all"
@@ -59,7 +58,8 @@
       "defaultConfiguration": "production"
     },
     "serve": {
-      "executor": "@angular-devkit/build-angular:dev-server",
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
       "configurations": {
         "production": {
           "buildTarget": "spie-ui:build:production"
@@ -71,7 +71,7 @@
       "defaultConfiguration": "development"
     },
     "extract-i18n": {
-      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "executor": "@angular/build:extract-i18n",
       "options": {
         "buildTarget": "spie-ui:build"
       }
@@ -87,6 +87,7 @@
       }
     },
     "serve-static": {
+      "continuous": true,
       "executor": "@nx/web:file-server",
       "options": {
         "buildTarget": "spie-ui:build",

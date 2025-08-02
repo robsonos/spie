@@ -124,7 +124,7 @@ export default class UpdateEvents {
     return Promise.resolve();
   }
 
-  static bootstrapEvents(): void {
+  static bootstrapUpdateEvents(): void {
     const checkForUpdates = async () => {
       try {
         autoUpdater.autoDownload = false;

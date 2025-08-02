@@ -1,14 +1,20 @@
-const nx = require('@nx/eslint-plugin');
+import nx from '@nx/eslint-plugin';
 
-const baseConfig = require('../../eslint.config.cjs');
+import baseConfig from '../../eslint.config.mjs';
 
-module.exports = [
+export default [
   ...baseConfig,
   ...nx.configs['flat/angular'],
   ...nx.configs['flat/angular-template'],
   {
     files: ['**/*.ts'],
     rules: {
+      '@angular-eslint/component-class-suffix': [
+        'error',
+        {
+          suffixes: ['Page', 'Component'],
+        },
+      ],
       '@angular-eslint/directive-selector': [
         'error',
         {
@@ -25,11 +31,6 @@ module.exports = [
           style: 'kebab-case',
         },
       ],
-      '@angular-eslint/component-class-suffix': [
-        'error',
-        { suffixes: ['Page', 'Component'] },
-      ],
-      '@angular-eslint/prefer-standalone': ['error'],
     },
   },
   {
