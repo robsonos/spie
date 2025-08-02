@@ -1,3 +1,13 @@
+## 0.5.0 (2025-08-02)
+
+### 🚀 Features
+
+- **repo:** upgrade tech stack ([4454b2d](https://github.com/robsonos/spie/commit/4454b2d))
+
+### ❤️ Thank You
+
+- Robson Oliveira dos Santos @robsonos
+
 ## 0.4.0 (2025-01-04)
 
 ### 🚀 Features
