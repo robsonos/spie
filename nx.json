@@ -97,6 +97,5 @@
         "createRelease": "github"
       }
     }
-  },
-  "useLegacyCache": true
+  }
 }

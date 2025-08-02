@@ -5,11 +5,11 @@
   "author": {
     "name": "Robson Oliveira dos Santos",
     "email": "robsonos@outlook.com",
-    "url": "https://github.com/ronbsonos/"
+    "url": "https://github.com/robsonos/"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ronbsonos/spie.git"
+    "url": "git+https://github.com/robsonos/spie.git"
   },
   "license": "MIT",
   "private": true,
