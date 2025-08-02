@@ -8,11 +8,11 @@
     "firsttris.vscode-jest-runner",
     "github.vscode-github-actions",
     "gruntfuggly.todo-tree",
-    "ionic.ionic",
     "joshbolduc.commitlint",
     "naumovs.color-highlight",
     "nrwl.angular-console",
     "streetsidesoftware.code-spell-checker",
-    "streetsidesoftware.code-spell-checker-australian-english"
+    "streetsidesoftware.code-spell-checker-australian-english",
+    "webnative.webnative"
   ]
 }

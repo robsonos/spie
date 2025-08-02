@@ -18,9 +18,9 @@ export default class Main {
   }
 
   static bootstrapAppEvents(): void {
-    UpdateEvents.bootstrapEvents();
-    ElectronEvents.bootstrapEvents();
-    SerialPortEvents.bootstrapEvents();
+    UpdateEvents.bootstrapUpdateEvents();
+    ElectronEvents.bootstrapElectronEvents();
+    SerialPortEvents.bootstrapSerialPortEvents();
   }
 }
 

@@ -3,7 +3,7 @@ import { app, ipcMain } from 'electron';
 import { environment } from '../../environments/environment';
 
 export default class ElectronEvents {
-  static bootstrapEvents(): void {
+  static bootstrapElectronEvents(): void {
     ipcMain.on('quit', (_, code) => {
       // console.warn('quit');
       app.exit(code);

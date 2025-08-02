@@ -125,7 +125,7 @@ export default class SerialPortEvents {
     return Promise.resolve();
   }
 
-  static bootstrapEvents(): void {
+  static bootstrapSerialPortEvents(): void {
     ipcMain.handle('serial-port-list', () => {
       // console.warn('serial-port-list');
       return SerialPort.list();
